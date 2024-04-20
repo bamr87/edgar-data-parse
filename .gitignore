@@ -1,3 +1,4 @@
 # .gitignore
 *.zip
 error_log.txt
+company-submissions-*.json
