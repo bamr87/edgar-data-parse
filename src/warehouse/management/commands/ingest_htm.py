@@ -1,8 +1,11 @@
-from django.core.management.base import BaseCommand
-from warehouse.models import Company, Filing, Section, Table
-from parse import parse_sec_htm
-from fetch import cik_ticker, download_filing
 import os
+
+from django.core.management.base import BaseCommand
+
+from fetch import cik_ticker, download_filing
+from parse import parse_sec_htm
+from warehouse.models import Company, Filing, Section, Table
+
 
 class Command(BaseCommand):
     help = 'Ingest an HTM filing into the warehouse models'
@@ -47,6 +50,9 @@ class Command(BaseCommand):
             Section.objects.create(filing=filing, name=name, content=content)
 
         for table in parsed.get('tables', []):
+            Table.objects.create(filing=filing, data=table)
+
+        self.stdout.write(self.style.SUCCESS(f'Ingested filing {filename} for company {company}'))
             Table.objects.create(filing=filing, data=table)
 
         self.stdout.write(self.style.SUCCESS(f'Ingested filing {filename} for company {company}'))

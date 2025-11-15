@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Company, Filing, Section, Table, Fact
+
+from .models import Company, Fact, Filing, Section, Table
+
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
@@ -28,5 +30,7 @@ class TableAdmin(admin.ModelAdmin):
 @admin.register(Fact)
 class FactAdmin(admin.ModelAdmin):
     list_display = ("company", "concept", "period_end", "value")
+    search_fields = ("concept",)
+    list_filter = ("taxonomy",)
     search_fields = ("concept",)
     list_filter = ("taxonomy",)

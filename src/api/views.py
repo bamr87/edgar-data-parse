@@ -1,17 +1,15 @@
-from rest_framework import viewsets, status
+import os
+
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from warehouse.models import Company, Filing, Fact, Section, Table
-from .serializers import (
-    CompanySerializer,
-    FilingSerializer,
-    FactSerializer,
-    SectionSerializer,
-    TableSerializer,
-)
-from parse import parse_sec_htm
+
 from fetch import cik_ticker, download_filing
-import os
+from parse import parse_sec_htm
+from warehouse.models import Company, Fact, Filing, Section, Table
+
+from .serializers import (CompanySerializer, FactSerializer, FilingSerializer,
+                          SectionSerializer, TableSerializer)
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
@@ -98,6 +96,9 @@ class TableViewSet(viewsets.ModelViewSet):
 
 class FactViewSet(viewsets.ModelViewSet):
     queryset = Fact.objects.all()
+    serializer_class = FactSerializer
+    filterset_fields = ['company', 'taxonomy', 'concept']
+    search_fields = ['concept']
     serializer_class = FactSerializer
     filterset_fields = ['company', 'taxonomy', 'concept']
     search_fields = ['concept']

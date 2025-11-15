@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from warehouse.models import Company, Filing, Fact, Section, Table
+
+from warehouse.models import Company, Fact, Filing, Section, Table
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -29,4 +30,5 @@ class TableSerializer(serializers.ModelSerializer):
 class FactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fact
+        fields = '__all__'
         fields = '__all__'
