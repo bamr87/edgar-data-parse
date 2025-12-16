@@ -1,0 +1,4 @@
+metric,label,description,unit,value,filed,fy,fp,form,start,end,accn
+Revenue,Revenue,Total revenue,USD,81462000000,2024-01-29,2023,FY,10-K,2023-01-01,2023-12-31,0001318605-24-000008
+Revenue,Revenue,Total revenue,USD,96773000000,2025-01-27,2024,FY,10-K,2024-01-01,2024-12-31,0001318605-25-000006
+Assets,Assets,Total assets,USD,106618000000,2024-01-29,2023,FY,10-K,,2023-12-31,0001318605-24-000008

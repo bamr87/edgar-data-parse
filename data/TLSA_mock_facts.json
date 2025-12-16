@@ -1,0 +1,53 @@
+{
+  "cik": "0001318605",
+  "entityName": "TESLA, INC.",
+  "facts": {
+    "us-gaap": {
+      "Revenue": {
+        "label": "Revenue",
+        "description": "Total revenue",
+        "units": {
+          "USD": [
+            {
+              "val": 81462000000,
+              "filed": "2024-01-29",
+              "fy": 2023,
+              "fp": "FY",
+              "form": "10-K",
+              "start": "2023-01-01",
+              "end": "2023-12-31",
+              "accn": "0001318605-24-000008"
+            },
+            {
+              "val": 96773000000,
+              "filed": "2025-01-27",
+              "fy": 2024,
+              "fp": "FY",
+              "form": "10-K",
+              "start": "2024-01-01",
+              "end": "2024-12-31",
+              "accn": "0001318605-25-000006"
+            }
+          ]
+        }
+      },
+      "Assets": {
+        "label": "Assets",
+        "description": "Total assets",
+        "units": {
+          "USD": [
+            {
+              "val": 106618000000,
+              "filed": "2024-01-29",
+              "fy": 2023,
+              "fp": "FY",
+              "form": "10-K",
+              "end": "2023-12-31",
+              "accn": "0001318605-24-000008"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
