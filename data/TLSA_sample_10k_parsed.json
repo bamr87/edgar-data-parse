@@ -1,0 +1,46 @@
+{
+  "sections": {
+    "Item 1. Business": "",
+    "Item 1A. Risk Factors": "",
+    "Item 7. Management's Discussion and Analysis": "",
+    "Item 8. Financial Statements": ""
+  },
+  "tables": [
+    [
+      [
+        "Category",
+        "2024",
+        "2023"
+      ],
+      [
+        "Total revenues",
+        "$96,773",
+        "$81,462"
+      ],
+      [
+        "Cost of revenues",
+        "$79,113",
+        "$65,121"
+      ],
+      [
+        "Gross profit",
+        "$17,660",
+        "$16,341"
+      ]
+    ],
+    [
+      [
+        "Assets",
+        "Amount"
+      ],
+      [
+        "Current assets",
+        "$45,066"
+      ],
+      [
+        "Total assets",
+        "$106,618"
+      ]
+    ]
+  ]
+}
