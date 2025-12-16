@@ -1,7 +1,7 @@
 {
   "ticker": "TLSA",
   "mode": "local_mock",
-  "timestamp": "2025-12-16T02:15:14.002447",
+  "timestamp": "2025-12-16T02:18:49.091006",
   "tests": {
     "cik_lookup": true,
     "sample_facts": true,
