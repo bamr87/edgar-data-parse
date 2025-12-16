@@ -5,14 +5,73 @@ from bs4 import BeautifulSoup
 import re
 
 def facts_to_csv(facts, filename):
-    us_gaap_data = facts["facts"]["us-gaap"]
+    """Convert facts JSON to CSV format"""
+    us_gaap_data = facts.get("facts", {}).get("us-gaap", {})
     data = []
-    # ... (extracted logic from notebook cell 20)
-    # Implement the CSV writing as in the notebook
+    
+    for metric, metric_data in us_gaap_data.items():
+        label = metric_data.get("label", metric)
+        description = metric_data.get("description", "")
+        units_data = metric_data.get("units", {})
+        
+        for unit_type, unit_values in units_data.items():
+            for entry in unit_values:
+                row = {
+                    "metric": metric,
+                    "label": label,
+                    "description": description,
+                    "unit": unit_type,
+                    "value": entry.get("val"),
+                    "filed": entry.get("filed"),
+                    "fy": entry.get("fy"),
+                    "fp": entry.get("fp"),
+                    "form": entry.get("form"),
+                    "start": entry.get("start"),
+                    "end": entry.get("end"),
+                    "accn": entry.get("accn")
+                }
+                data.append(row)
+    
+    df = pd.DataFrame(data)
+    df.to_csv(filename, index=False)
+    return df
 
 def facts_DF(ticker, headers):
-    # ... (extracted from notebook cell 30)
-    # Return df and labels_dict
+    """Convert facts to a pandas DataFrame"""
+    from fetch import get_facts
+    
+    facts = get_facts(ticker)
+    us_gaap_data = facts.get("facts", {}).get("us-gaap", {})
+    
+    data = []
+    labels_dict = {}
+    
+    for metric, metric_data in us_gaap_data.items():
+        label = metric_data.get("label", metric)
+        labels_dict[metric] = label
+        description = metric_data.get("description", "")
+        units_data = metric_data.get("units", {})
+        
+        for unit_type, unit_values in units_data.items():
+            for entry in unit_values:
+                row = {
+                    "metric": metric,
+                    "label": label,
+                    "description": description,
+                    "unit": unit_type,
+                    "value": entry.get("val"),
+                    "filed": entry.get("filed"),
+                    "fy": entry.get("fy"),
+                    "fp": entry.get("fp"),
+                    "form": entry.get("form"),
+                    "start": entry.get("start"),
+                    "end": entry.get("end"),
+                    "accn": entry.get("accn")
+                }
+                data.append(row)
+    
+    df = pd.DataFrame(data)
+    return df, labels_dict
 
 def parse_sec_htm(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:

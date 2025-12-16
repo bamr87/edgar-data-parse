@@ -24,8 +24,33 @@ def cik_ticker(ticker):
             return {"cik": str(company["cik_str"]).zfill(10), "name": str(company["title"])}
     raise ValueError(f"Ticker {ticker} not found")
 
-# Add other fetch functions similarly, e.g., get_submission_data, get_facts, download_file
-# Ensure all requests handle 429 and use retries
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def get_facts(ticker):
+    """Fetch company facts from SEC EDGAR API"""
+    cik_data = cik_ticker(ticker)
+    cik = cik_data["cik"]
+    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 429:
+        raise Exception("Rate limit exceeded")
+    response.raise_for_status()
+    facts = response.json()
+    logging.info(f"Fetched facts for {ticker} (CIK: {cik})")
+    return facts
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def get_submission_data(ticker):
+    """Fetch company submission data from SEC EDGAR API"""
+    cik_data = cik_ticker(ticker)
+    cik = cik_data["cik"]
+    url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+    response = requests.get(url, headers=headers)
+    if response.status_code == 429:
+        raise Exception("Rate limit exceeded")
+    response.raise_for_status()
+    submissions = response.json()
+    logging.info(f"Fetched submissions for {ticker} (CIK: {cik})")
+    return submissions
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def download_filing(url, save_path):

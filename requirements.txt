@@ -1,13 +1,12 @@
 pandas
 requests
-logging
 numpy
 tqdm
 tenacity
 langchain
+langchain-openai
 openai
 python-dotenv
-argparse
 
 beautifulsoup4
 lxml
