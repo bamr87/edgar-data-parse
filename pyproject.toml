@@ -1,0 +1,53 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "-ra",
+]
+markers = [
+    "slow: slow tests (not selected by default in CI if you filter)",
+    "integration: hits DB or multiple layers",
+    "requires_network: needs live network (excluded from CI)",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/manage.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = [
+    "src/ai_summarize.py",
+    "src/clean_json.py",
+    "src/csv_to_json.py",
+    "src/edgartools.py",
+    "src/fetch.py",
+    "src/main.py",
+    "src/parse.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/**" = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"

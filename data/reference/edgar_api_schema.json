@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "description": "Canonical shapes of SEC EDGAR JSON APIs as consumed by this project (not a substitute for SEC documentation).",
+    "sources": [
+      "https://www.sec.gov/edgar/sec-api-documentation",
+      "https://data.sec.gov/"
+    ],
+    "schema_version": 1
+  },
+  "company_facts": {
+    "endpoint_pattern": "/api/xbrl/companyfacts/CIK##########.json",
+    "root": {
+      "cik": { "type": "string", "notes": "May be returned with or without leading zeros; normalize to 10 digits when matching." },
+      "entityName": { "type": "string" },
+      "facts": { "type": "object", "notes": "Nested map: taxonomy → concept → concept_payload" }
+    },
+    "concept_payload": {
+      "label": { "type": "string" },
+      "description": { "type": "string" },
+      "units": {
+        "type": "object",
+        "notes": "Keys are unit labels (e.g. USD, shares, pure); values are arrays of fact_point"
+      }
+    },
+    "fact_point": {
+      "end": { "type": "date", "format": "YYYY-MM-DD", "notes": "Balance sheet / period end; primary time key for point-in-time facts." },
+      "start": { "type": "date", "format": "YYYY-MM-DD", "optional": true, "notes": "Interval start for duration facts." },
+      "val": { "type": "number" },
+      "accn": { "type": "string", "notes": "Accession number of filing containing the fact." },
+      "fy": { "type": ["integer", "null"] },
+      "fp": { "type": ["string", "null"], "notes": "Fiscal period e.g. FY, Q1." },
+      "form": { "type": "string", "notes": "Form type e.g. 10-K, 10-Q." },
+      "filed": { "type": "date", "format": "YYYY-MM-DD" },
+      "frame": { "type": "string", "optional": true, "notes": "CY####Q# etc. when present." }
+    }
+  },
+  "company_concept": {
+    "endpoint_pattern": "/api/xbrl/companyconcept/CIK##########/{taxonomy}/{tag}.json",
+    "root": {
+      "cik": { "type": "integer", "notes": "Numeric CIK in this response." },
+      "taxonomy": { "type": "string" },
+      "tag": { "type": "string" },
+      "label": { "type": "string" },
+      "description": { "type": "string" },
+      "entityName": { "type": "string" },
+      "units": { "type": "object", "same_as": "company_facts.concept_payload.units" }
+    }
+  },
+  "submissions": {
+    "endpoint_pattern": "/submissions/CIK##########.json",
+    "root_highlights": {
+      "cik": { "type": "string" },
+      "entityType": { "type": "string" },
+      "sic": { "type": "string", "optional": true },
+      "name": { "type": "string" },
+      "tickers": { "type": "array", "items": { "type": "string" } },
+      "exchanges": { "type": "array" },
+      "filings": {
+        "type": "object",
+        "notes": "Includes filings.recent with parallel arrays (accessionNumber, filingDate, form, ...)."
+      }
+    }
+  },
+  "warehouse_mapping": {
+    "Fact": {
+      "taxonomy": "facts.* key (taxonomy namespace)",
+      "concept": "facts.*.* key (XBRL concept local name)",
+      "period_start": "fact_point.start",
+      "period_end": "fact_point.end",
+      "unit": "units map key for the series",
+      "value": "fact_point.val",
+      "dimensions": {
+        "unit": "duplicate of unit key for traceability",
+        "form": "fact_point.form",
+        "filed": "fact_point.filed",
+        "frame": "fact_point.frame",
+        "accn": "fact_point.accn"
+      }
+    }
+  }
+}

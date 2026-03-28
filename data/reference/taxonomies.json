@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "description": "XBRL taxonomy namespaces commonly present in SEC company facts (non-exhaustive).",
+    "schema_version": 1
+  },
+  "taxonomies": [
+    {
+      "id": "us-gaap",
+      "label": "US GAAP Financial Reporting Taxonomy",
+      "role": "primary_financial_statements",
+      "notes": "Most issuer financial statement facts."
+    },
+    {
+      "id": "dei",
+      "label": "Document and Entity Information",
+      "role": "filing_metadata",
+      "notes": "Entity identifiers, document period end, shares outstanding context, etc."
+    },
+    {
+      "id": "ifrs-full",
+      "label": "IFRS Taxonomy",
+      "role": "primary_financial_statements",
+      "notes": "Used by some foreign private issuers and dual reporters."
+    },
+    {
+      "id": "srt",
+      "label": "SEC Reporting Taxonomy",
+      "role": "schedules_and_supplemental",
+      "notes": "Often used for segment, revenue disaggregation, and other supplemental disclosures."
+    },
+    {
+      "id": "invest",
+      "label": "SEC Investment Taxonomy",
+      "role": "investment_companies",
+      "notes": "Registered investment companies and similar filers."
+    }
+  ]
+}

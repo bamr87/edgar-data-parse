@@ -80,4 +80,11 @@ yarn-debug.log*
 yarn-error.log*
 companyfacts.zip
 *.zip
-*.csv large files
+
+# Large CRM / export datasets (keep companies-sample.csv in git; generate full files locally)
+/data/companies.csv
+/data/companies.json
+/data/companies-clean.json
+
+# Ad-hoc local venvs
+.venv-ci/

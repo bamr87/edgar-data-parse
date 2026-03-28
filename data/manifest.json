@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "description": "Index of the data directory: what is stable reference material vs operational/sample datasets.",
+    "schema_version": 1
+  },
+  "reference": {
+    "path": "reference",
+    "purpose": "Versioned JSON consumed by the application; EDGAR API shapes, taxonomy list, and financial concept model.",
+    "regenerate_command": "python src/manage.py generate_edgar_reference",
+    "regenerate_notes": "Merges live SEC companyfacts/submissions/companyconcept data; set USER_AGENT_EMAIL. Preserves hand-authored sections; updates meta.generated_from_edgar and taxonomies list. Use --with-accounting to also merge acct_facts* into generated/us_gaap_account_map.json.",
+    "files": [
+      { "name": "edgar_api_schema.json", "kind": "api_contract" },
+      { "name": "taxonomies.json", "kind": "taxonomy_registry" },
+      { "name": "financial_model.json", "kind": "financial_model" },
+      { "name": "accounting_model.json", "kind": "accounting_schema" },
+      { "name": "generated/us_gaap_account_map.json", "kind": "accounting_map", "notes": "Produced by sync_accounting_reference; merge of data/acct_facts*.csv/json." }
+    ],
+    "accounting_sync_command": "python src/manage.py sync_accounting_reference"
+  },
+  "datasets": {
+    "notes": "Large or sample exports; not imported automatically unless a management command or script specifies them. acct_facts*.csv/json feed the reference accounting map via sync_accounting_reference.",
+    "examples": [
+      "companies-sample.csv",
+      "companies.json",
+      "companies-clean.json",
+      "companies.csv",
+      "crm_sync_sample.json",
+      "acct_facts.csv",
+      "acct_facts.json",
+      "acct_facts_updated.json",
+      "us_gaap_facts.csv"
+    ]
+  }
+}

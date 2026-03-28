@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install ruff
+      - run: ruff check src tests
+
+  django-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Check for missing migrations
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          DJANGO_SETTINGS_MODULE: config.settings
+        run: python src/manage.py makemigrations --check --dry-run
+
+  test-sqlite:
+    runs-on: ubuntu-latest
+    needs: [lint, django-migrations]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Django system check
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          DJANGO_SETTINGS_MODULE: config.settings_test
+        run: python src/manage.py check
+      - name: Pytest with coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          DJANGO_SETTINGS_MODULE: config.settings_test
+        run: |
+          pytest \
+            --cov=warehouse --cov=config --cov=sec_edgar --cov=public_data \
+            --cov=api \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=25
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  test-postgres:
+    runs-on: ubuntu-latest
+    needs: [lint, django-migrations]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_edgar
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test -d test_edgar"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test_edgar
+      PYTHONPATH: ${{ github.workspace }}/src
+      DJANGO_SETTINGS_MODULE: config.settings_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: python src/manage.py migrate --noinput
+      - run: |
+          pytest -q \
+            --cov=warehouse --cov=config --cov=sec_edgar --cov=public_data \
+            --cov=api \
+            --cov-fail-under=25

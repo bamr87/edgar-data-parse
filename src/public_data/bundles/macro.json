@@ -1,0 +1,12 @@
+{
+  "slug": "macro",
+  "name": "Macro indicators (FRED)",
+  "description": "Industrial production, capacity utilization, PPI finished goods, policy rate, unemployment — FRED.",
+  "series": [
+    { "provider": "fred", "id": "INDPRO", "note": "Industrial Production Index" },
+    { "provider": "fred", "id": "TCU", "note": "Capacity Utilization: Total Industry" },
+    { "provider": "fred", "id": "PPIFIS", "note": "PPI: Finished Goods" },
+    { "provider": "fred", "id": "FEDFUNDS", "note": "Effective Federal Funds Rate" },
+    { "provider": "fred", "id": "UNRATE", "note": "Unemployment Rate" }
+  ]
+}

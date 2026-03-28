@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "description": "Stable US-GAAP concept groupings and derived KPI definitions. Tags are local names under taxonomy us-gaap; filers may use alternates—lists are preference order for resolution.",
+    "default_taxonomy": "us-gaap",
+    "schema_version": 1,
+    "accounting": {
+      "schema_doc": "accounting_model.json",
+      "canonical_map": "generated/us_gaap_account_map.json",
+      "sync_command": "python src/manage.py sync_accounting_reference",
+      "notes": "Merge data/acct_facts.csv, acct_facts.json, acct_facts_updated.json into the canonical map; load at runtime via sec_edgar.reference_data.load_accounting_by_concept."
+    }
+  },
+  "concept_groups": {
+    "revenue": [
+      "Revenues",
+      "RevenueFromContractWithCustomerExcludingAssessedTax",
+      "SalesRevenueNet",
+      "RevenueFromContractWithCustomerIncludingAssessedTax"
+    ],
+    "cost_of_revenue": [
+      "CostOfGoodsAndServicesSold",
+      "CostOfRevenue",
+      "CostOfSales"
+    ],
+    "inventory": ["InventoryNet", "InventoryFinishedGoodsNetOfReserves"],
+    "property_plant_equipment_net": [
+      "PropertyPlantAndEquipmentNet",
+      "PropertyPlantAndEquipmentAndFinanceLeaseRightOfUseAssetAfterAccumulatedDepreciationAndAmortization"
+    ],
+    "capex": [
+      "PaymentsToAcquirePropertyPlantAndEquipment",
+      "PaymentsForCapitalImprovements"
+    ],
+    "accounts_receivable_current": ["AccountsReceivableNetCurrent"],
+    "accounts_payable_current": ["AccountsPayableCurrent"]
+  },
+  "derived_kpis": {
+    "gross_margin": {
+      "formula": "(revenue - cost_of_revenue) / revenue",
+      "requires": ["revenue", "cost_of_revenue"],
+      "notes": "Skipped if revenue is null or zero."
+    },
+    "inventory_turns_sales_basis": {
+      "formula": "revenue / inventory",
+      "requires": ["revenue", "inventory"],
+      "notes": "Sales-based turns; not COGS-based inventory turnover."
+    },
+    "sales_to_ppe": {
+      "formula": "revenue / property_plant_equipment_net",
+      "requires": ["revenue", "property_plant_equipment_net"]
+    },
+    "capex_intensity": {
+      "formula": "capex / revenue",
+      "requires": ["capex", "revenue"]
+    },
+    "working_capital_proxy": {
+      "formula": "accounts_receivable_current - accounts_payable_current",
+      "requires_any": ["accounts_receivable_current", "accounts_payable_current"],
+      "notes": "Uses zero for missing operands when at least one present."
+    }
+  },
+  "statement_roles": {
+    "balance_sheet": {
+      "description": "Point-in-time; facts typically use end date without start.",
+      "typical_unit": "USD"
+    },
+    "income_statement": {
+      "description": "Duration; facts often include start and end.",
+      "typical_unit": "USD"
+    },
+    "cash_flow_statement": {
+      "description": "Duration; aligns with reporting period.",
+      "typical_unit": "USD"
+    }
+  }
+}

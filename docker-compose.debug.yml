@@ -1,0 +1,19 @@
+# Merge with the main file for step-through debugging of Django inside the API container:
+#   docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d db web
+# Then use launch config "Docker: Attach to API (debugpy)" in .vscode/launch.json.
+#
+# Stops the normal `web` service first if it is already running: docker compose down web
+#
+services:
+  web:
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./src:/app/src
+    command:
+      - sh
+      - -c
+      - >-
+        pip install --no-cache-dir -q debugpy &&
+        python -m debugpy --listen 0.0.0.0:5678 --wait-for-client
+        manage.py runserver 0.0.0.0:8000 --noreload
