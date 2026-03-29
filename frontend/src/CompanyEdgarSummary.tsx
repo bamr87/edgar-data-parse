@@ -147,8 +147,7 @@ function changeClass(current: number | null | undefined, previous: number | null
 /** Format a margin percentage for display. */
 function formatMargin(pct: number | null): string {
   if (pct == null) return '—'
-  const sign = pct >= 0 ? '' : ''
-  return `${sign}${pct.toFixed(1)}%`
+  return `${pct.toFixed(1)}%`
 }
 
 /** CSS class for a positive/zero/negative margin. */
