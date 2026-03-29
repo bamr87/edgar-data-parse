@@ -5,12 +5,14 @@ import {
   companyFromEdgar,
   findCompanyIdByCik,
   getFacets,
+  getRecentCompanies,
   getResolvedSecUserAgentEmail,
   searchCompanyMetadata,
   SEC_USER_AGENT_EMAIL_STORAGE_KEY,
   type CompanyMetadataListResponse,
   type EdgarSearchResult,
   type FacetsResponse,
+  type RecentCompany,
 } from './api'
 
 function pct(part: number, whole: number): string {
@@ -37,6 +39,7 @@ export default function EdgarDashboard() {
   const [addingCik, setAddingCik] = useState<string | null>(null)
 
   const [secEmailDraft, setSecEmailDraft] = useState(() => getResolvedSecUserAgentEmail())
+  const [recentCompanies, setRecentCompanies] = useState<RecentCompany[]>(() => getRecentCompanies())
 
   useEffect(() => {
     void (async () => {
@@ -120,6 +123,11 @@ export default function EdgarDashboard() {
 
   const openWarehouseCompany = (id: number) => {
     navigate(`/companies/${id}`)
+  }
+
+  /** Refresh the recently-viewed list from storage (called after navigation returns). */
+  const refreshRecent = () => {
+    setRecentCompanies(getRecentCompanies())
   }
 
   const openSecMatch = async (row: EdgarSearchResult) => {
@@ -214,6 +222,29 @@ export default function EdgarDashboard() {
                 <span className="meta-stat-label">With industry text</span>
               </div>
             </div>
+          </section>
+        )}
+
+        {recentCompanies.length > 0 && (
+          <section className="panel dash-panel" aria-labelledby="dash-recent-heading">
+            <h2 id="dash-recent-heading">Recently viewed</h2>
+            <ul className="dash-hit-list" aria-label="Recently viewed companies">
+              {recentCompanies.map((co) => (
+                <li key={co.id}>
+                  <button
+                    type="button"
+                    className="dash-hit-button"
+                    onClick={() => {
+                      refreshRecent()
+                      openWarehouseCompany(co.id)
+                    }}
+                  >
+                    <span className="dash-hit-title">{co.name}</span>
+                    <span className="dash-hit-meta">{co.ticker ?? '—'}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

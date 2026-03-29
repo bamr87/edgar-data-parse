@@ -356,6 +356,44 @@ export type ConceptTimeseriesResponse = {
   series: ConceptTimeseriesPoint[]
 }
 
+// ---------------------------------------------------------------------------
+// Recently-viewed companies (localStorage)
+// ---------------------------------------------------------------------------
+
+export const RECENT_COMPANIES_KEY = 'edgarRecentCompanies'
+const MAX_RECENT = 8
+
+export type RecentCompany = {
+  id: number
+  name: string
+  ticker: string | null
+}
+
+export function saveRecentCompany(id: number, name: string, ticker: string | null): void {
+  try {
+    const existing = getRecentCompanies()
+    const updated = [{ id, name, ticker }, ...existing.filter((c) => c.id !== id)].slice(
+      0,
+      MAX_RECENT,
+    )
+    localStorage.setItem(RECENT_COMPANIES_KEY, JSON.stringify(updated))
+  } catch {
+    /* localStorage unavailable */
+  }
+}
+
+export function getRecentCompanies(): RecentCompany[] {
+  try {
+    const raw = localStorage.getItem(RECENT_COMPANIES_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed as RecentCompany[]
+  } catch {
+    return []
+  }
+}
+
 /** Historical facts for one XBRL concept (newest first). */
 export function getConceptTimeseries(
   companyId: number,
