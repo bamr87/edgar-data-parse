@@ -7,6 +7,7 @@ import {
   getFilingsForCompany,
   getLatestByConcepts,
   getResolvedSecUserAgentEmail,
+  saveRecentCompany,
   syncCompanyFacts,
   syncCompanySubmissions,
   type AnalyticsLatestValue,
@@ -20,8 +21,11 @@ import TablePager from './components/TablePager'
 /** Latest `us-gaap` facts to show when synced (tune to your pipeline). */
 const DEFAULT_KPI_CONCEPTS = [
   'Revenues',
+  'GrossProfit',
   'OperatingIncomeLoss',
   'NetIncomeLoss',
+  'EarningsPerShareBasic',
+  'NetCashProvidedByUsedInOperatingActivities',
   'CashAndCashEquivalentsAtCarryingValue',
   'Assets',
   'Liabilities',
@@ -30,8 +34,11 @@ const DEFAULT_KPI_CONCEPTS = [
 
 const KPI_DISPLAY_LABELS: Record<(typeof DEFAULT_KPI_CONCEPTS)[number], string> = {
   Revenues: 'Revenue',
+  GrossProfit: 'Gross profit',
   OperatingIncomeLoss: 'Operating income',
   NetIncomeLoss: 'Net income',
+  EarningsPerShareBasic: 'EPS (basic)',
+  NetCashProvidedByUsedInOperatingActivities: 'Operating cash flow',
   CashAndCashEquivalentsAtCarryingValue: 'Cash & equivalents',
   Assets: 'Total assets',
   Liabilities: 'Total liabilities',
@@ -50,16 +57,112 @@ type FilingSortField = 'filing_date' | 'form_type' | 'accession_number'
 function formatNum(v: number | null | undefined, unit: string | null | undefined): string {
   if (v == null) return '—'
   const u = (unit || '').toLowerCase()
-  if (u === 'usd' || u.includes('usd') || u === 'shares') {
+  // Per-share values (EPS): keep 2 decimal places
+  if (u === 'usd/shares' || u.includes('/share')) {
+    const sign = v < 0 ? '-' : ''
+    return `${sign}$${Math.abs(v).toFixed(2)}`
+  }
+  if (u === 'usd' || u.includes('usd')) {
+    const abs = Math.abs(v)
+    const sign = v < 0 ? '-' : ''
+    if (abs >= 1_000_000_000_000) return `${sign}$${(abs / 1_000_000_000_000).toFixed(2)}T`
+    if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(2)}B`
+    if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}M`
+    if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(1)}K`
+    return `${sign}$${abs.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+  }
+  if (u === 'shares') {
+    const abs = Math.abs(v)
+    const sign = v < 0 ? '-' : ''
+    if (abs >= 1_000_000_000) return `${sign}${(abs / 1_000_000_000).toFixed(2)}B`
+    if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M`
+    if (abs >= 1_000) return `${sign}${(abs / 1_000).toFixed(1)}K`
     return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(v)
   }
-  return String(v)
+  return v % 1 === 0 ? String(v) : v.toFixed(2)
+}
+
+/** Full precision label for tooltip (shows exact raw number). */
+function formatNumFull(v: number | null | undefined, unit: string | null | undefined): string {
+  if (v == null) return ''
+  const u = (unit || '').toLowerCase()
+  // Per-share values: show 4 decimal places
+  if (u === 'usd/shares' || u.includes('/share')) {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    }).format(v)
+  }
+  if (u === 'usd' || u.includes('usd')) {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(v)
+  }
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(v)
+}
+
+/** Compute derived financial margins (percentage) and ratios from KPI snapshot. */
+function computeMargins(kpis: Record<string, AnalyticsLatestValue>): {
+  grossMargin: number | null
+  operatingMargin: number | null
+  netMargin: number | null
+  debtToEquity: number | null
+} {
+  const rev = kpis['Revenues']?.value
+  const gross = kpis['GrossProfit']?.value
+  const opIncome = kpis['OperatingIncomeLoss']?.value
+  const netIncome = kpis['NetIncomeLoss']?.value
+  const liabilities = kpis['Liabilities']?.value
+  const equity = kpis['StockholdersEquity']?.value
+  return {
+    grossMargin: rev != null && rev !== 0 && gross != null ? (gross / rev) * 100 : null,
+    operatingMargin:
+      rev != null && rev !== 0 && opIncome != null ? (opIncome / rev) * 100 : null,
+    netMargin: rev != null && rev !== 0 && netIncome != null ? (netIncome / rev) * 100 : null,
+    debtToEquity:
+      equity != null && equity !== 0 && liabilities != null ? liabilities / equity : null,
+  }
+}
+
+/** Period-over-period % change (current vs previous). Returns null if not calculable. */
+function pctChange(current: number | null | undefined, previous: number | null | undefined): string | null {
+  if (current == null || previous == null || previous === 0) return null
+  const pct = ((current - previous) / Math.abs(previous)) * 100
+  const sign = pct >= 0 ? '+' : ''
+  return `${sign}${pct.toFixed(1)}%`
+}
+
+/** CSS class name for a positive/negative/neutral ratio change. */
+function changeClass(current: number | null | undefined, previous: number | null | undefined): string {
+  if (current == null || previous == null) return ''
+  if (current > previous) return 'fa-change-pos'
+  if (current < previous) return 'fa-change-neg'
+  return ''
+}
+
+/** Format a margin percentage for display. */
+function formatMargin(pct: number | null): string {
+  if (pct == null) return '—'
+  return `${pct.toFixed(1)}%`
+}
+
+/** CSS class for a positive/zero/negative margin. */
+function marginClass(pct: number | null): string {
+  if (pct == null) return ''
+  if (pct > 0) return 'fa-margin-pos'
+  if (pct < 0) return 'fa-margin-neg'
+  return ''
 }
 
 /** Human-readable unit for labels (skill: state currency / measure explicitly). */
 function formatMeasureLabel(unit: string | null | undefined): string {
   if (!unit) return ''
   const u = unit.toLowerCase()
+  if (u === 'usd/shares' || u.includes('/share')) return 'USD/share'
   if (u === 'usd' || u.includes('usd')) return 'USD'
   if (u === 'shares') return 'shares'
   if (u === 'pure' || u === 'number') return ''
@@ -223,6 +326,7 @@ export default function CompanyEdgarSummary() {
         const co = await getCompany(id)
         if (cancelled) return
         setCompany(co)
+        saveRecentCompany(co.id, co.name, co.ticker)
 
         const slices = await loadSyncAndKpis(id)
         if (cancelled) return
@@ -555,6 +659,7 @@ export default function CompanyEdgarSummary() {
                   const unitTag = row ? formatMeasureLabel(row.unit) : ''
                   const pr = row ? periodRange(row) : null
                   const dimLine = row ? formatDimensionsShort(row.dimensions) : null
+                  const fullVal = row ? formatNumFull(row.value, row.unit) : ''
                   return (
                     <div key={concept} className="detail-kpi-card">
                       <span className="detail-kpi-label">{KPI_DISPLAY_LABELS[concept]}</span>
@@ -562,7 +667,10 @@ export default function CompanyEdgarSummary() {
                         {concept}
                       </span>
                       <div className="detail-kpi-value-row">
-                        <span className="detail-kpi-value">
+                        <span
+                          className="detail-kpi-value"
+                          title={fullVal || undefined}
+                        >
                           {row ? formatNum(row.value, row.unit) : '—'}
                         </span>
                         {unitTag ? (
@@ -584,10 +692,58 @@ export default function CompanyEdgarSummary() {
               </div>
               {Object.keys(kpis).length === 0 && (
                 <p className="muted">
-                  No matching facts yet. Use “Load submissions & facts from SEC” above or sync via
-                  API/CLI.
+                  No matching facts yet. Use “Load submissions &amp; facts from SEC” above or sync
+                  via API/CLI.
                 </p>
               )}
+              {Object.keys(kpis).length > 0 && (() => {
+                const margins = computeMargins(kpis)
+                const hasRatios = Object.values(margins).some((v) => v != null)
+                if (!hasRatios) return null
+                return (
+                  <div className="fa-ratios-section">
+                    <h3 className="fa-ratios-heading">Derived ratios</h3>
+                    <div className="fa-ratios-grid">
+                      {margins.grossMargin != null && (
+                        <div className="fa-ratio-card">
+                          <span className="fa-ratio-label">Gross margin</span>
+                          <span className={`fa-ratio-value ${marginClass(margins.grossMargin)}`}>
+                            {formatMargin(margins.grossMargin)}
+                          </span>
+                        </div>
+                      )}
+                      {margins.operatingMargin != null && (
+                        <div className="fa-ratio-card">
+                          <span className="fa-ratio-label">Operating margin</span>
+                          <span className={`fa-ratio-value ${marginClass(margins.operatingMargin)}`}>
+                            {formatMargin(margins.operatingMargin)}
+                          </span>
+                        </div>
+                      )}
+                      {margins.netMargin != null && (
+                        <div className="fa-ratio-card">
+                          <span className="fa-ratio-label">Net margin</span>
+                          <span className={`fa-ratio-value ${marginClass(margins.netMargin)}`}>
+                            {formatMargin(margins.netMargin)}
+                          </span>
+                        </div>
+                      )}
+                      {margins.debtToEquity != null && (
+                        <div className="fa-ratio-card">
+                          <span className="fa-ratio-label">Debt / equity</span>
+                          <span className="fa-ratio-value">
+                            {margins.debtToEquity.toFixed(2)}x
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="fa-ratios-note muted small">
+                      Derived from latest XBRL facts above. Gross and operating margins require both
+                      Revenue and the respective income concept to be present.
+                    </p>
+                  </div>
+                )
+              })()}
             </section>
 
             <section
@@ -633,22 +789,34 @@ export default function CompanyEdgarSummary() {
                         <th scope="col" className="fa-history-num">
                           Value
                         </th>
+                        <th scope="col" className="fa-history-num" title="Period-over-period change vs previous row">
+                          Change
+                        </th>
                         <th scope="col">Unit</th>
                         <th scope="col">Dimensions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {historySeries.map((pt, idx) => (
+                      {historySeries.map((pt, idx) => {
+                        const prev = historySeries[idx + 1]
+                        const change = pctChange(pt.value, prev?.value)
+                        const chClass = changeClass(pt.value, prev?.value)
+                        const fullVal = formatNumFull(pt.value, pt.unit)
+                        return (
                         <tr key={`${pt.period_end ?? ''}-${pt.period_start ?? ''}-${idx}`}>
                           <td>{pt.period_end || '—'}</td>
                           <td>{pt.period_start || '—'}</td>
-                          <td className="fa-history-num">{formatNum(pt.value, pt.unit)}</td>
+                          <td className="fa-history-num" title={fullVal || undefined}>{formatNum(pt.value, pt.unit)}</td>
+                          <td className={`fa-history-num fa-history-change ${chClass}`}>
+                            {change ?? '—'}
+                          </td>
                           <td>{formatMeasureLabel(pt.unit) || pt.unit || '—'}</td>
                           <td className="fa-history-dims">
                             {formatDimensionsShort(pt.dimensions) || '—'}
                           </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
