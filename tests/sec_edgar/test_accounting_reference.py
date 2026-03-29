@@ -6,46 +6,46 @@ from pathlib import Path
 import pytest
 
 from sec_edgar.services.accounting_reference import (
+    OVERLAY_JSON,
     accounting_map_from_path,
     merge_accounting_sources,
     sync_accounting_reference_to_disk,
 )
 
 
-def test_merge_order_later_json_overrides_csv(tmp_path: Path) -> None:
-    d = tmp_path / "data"
-    d.mkdir()
-    (d / "acct_facts.csv").write_text(
+def test_merge_order_overlay_overrides_csv(tmp_path: Path) -> None:
+    sd = tmp_path / "sources" / "accounting"
+    sd.mkdir(parents=True)
+    (sd / "acct_facts.csv").write_text(
         "us_gaap_list,acct_label,acct_description\n"
         "Foo,FromCSV,DescCSV\n",
         encoding="utf-8",
     )
-    (d / "acct_facts.json").write_text(
+    (sd / OVERLAY_JSON).write_text(
         json.dumps(
             [
                 {
                     "us_gaap_list": "Foo",
-                    "acct_label": "FromJSON",
-                    "acct_description": "DescJSON",
+                    "acct_label": "FromOverlay",
+                    "acct_description": "DescOverlay",
                 }
             ]
         ),
         encoding="utf-8",
     )
-    merged, used = merge_accounting_sources(d)
-    assert used == ["acct_facts.csv", "acct_facts.json"]
-    assert merged["Foo"]["label"] == "FromJSON"
-    assert merged["Foo"]["description"] == "DescJSON"
+    merged, used = merge_accounting_sources(sd)
+    assert used == ["acct_facts.csv", OVERLAY_JSON]
+    assert merged["Foo"]["label"] == "FromOverlay"
+    assert merged["Foo"]["description"] == "DescOverlay"
 
 
-def test_merge_updated_adds_category(tmp_path: Path) -> None:
-    d = tmp_path / "data"
-    d.mkdir()
-    (d / "acct_facts.csv").write_text(
+def test_merge_overlay_adds_category(tmp_path: Path) -> None:
+    sd = tmp_path / "sources" / "accounting"
+    sd.mkdir(parents=True)
+    (sd / "acct_facts.csv").write_text(
         "us_gaap_list,acct_label,acct_description\nFoo,CSV,DC\n", encoding="utf-8"
     )
-    (d / "acct_facts.json").write_text("[]", encoding="utf-8")
-    (d / "acct_facts_updated.json").write_text(
+    (sd / OVERLAY_JSON).write_text(
         json.dumps(
             [
                 {
@@ -58,15 +58,15 @@ def test_merge_updated_adds_category(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    merged, _ = merge_accounting_sources(d)
+    merged, _ = merge_accounting_sources(sd)
     assert merged["Foo"]["label"] == "UPD"
     assert merged["Foo"]["acct_category"] == "liability"
 
 
 def test_sync_writes_normalized_doc(tmp_path: Path) -> None:
-    d = tmp_path / "data"
-    d.mkdir()
-    (d / "acct_facts_updated.json").write_text(
+    sd = tmp_path / "sources" / "accounting"
+    sd.mkdir(parents=True)
+    (sd / OVERLAY_JSON).write_text(
         json.dumps(
             [{"us_gaap_list": "Bar", "acct_label": "L", "acct_description": "D", "acct_category": "asset"}]
         ),
@@ -74,7 +74,7 @@ def test_sync_writes_normalized_doc(tmp_path: Path) -> None:
     )
     ref = tmp_path / "reference"
     ref.mkdir()
-    out = sync_accounting_reference_to_disk(data_dir=d, reference_dir=ref)
+    out = sync_accounting_reference_to_disk(accounting_sources_dir=sd, reference_dir=ref)
     assert out.name == "us_gaap_account_map.json"
     raw = json.loads(out.read_text(encoding="utf-8"))
     assert raw["meta"]["concept_count"] == 1
@@ -96,9 +96,9 @@ def test_reference_data_load_accounting_by_concept(tmp_path: Path, monkeypatch: 
     import sec_edgar.services.accounting_reference as ar
     from sec_edgar import reference_data as rd
 
-    d = tmp_path / "data"
-    d.mkdir()
-    (d / "acct_facts_updated.json").write_text(
+    sd = tmp_path / "sources" / "accounting"
+    sd.mkdir(parents=True)
+    (sd / OVERLAY_JSON).write_text(
         json.dumps([{"us_gaap_list": "Zed", "acct_label": "ZLabel", "acct_description": ""}]),
         encoding="utf-8",
     )
@@ -106,7 +106,7 @@ def test_reference_data_load_accounting_by_concept(tmp_path: Path, monkeypatch: 
     ref.mkdir()
 
     monkeypatch.setattr(ar, "reference_dir_default", lambda: ref)
-    monkeypatch.setattr(ar, "data_dir_default", lambda: d)
+    monkeypatch.setattr(ar, "accounting_sources_dir_default", lambda: sd)
     rd.load_accounting_by_concept.cache_clear()
     m = rd.load_accounting_by_concept()
     assert m["Zed"]["label"] == "ZLabel"

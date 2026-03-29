@@ -1,73 +1,38 @@
-# React + TypeScript + Vite
+# EDGAR Analyzer — frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite UI for the Django API in the repo root.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # dev server (default http://127.0.0.1:5173)
+npm run build    # production bundle to dist/
+npm run preview  # serve dist locally
+npm run lint     # ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## API and proxy
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Local dev:** Vite proxies `/api` to the backend (default `http://127.0.0.1:8000`). Start Django from `src/` (`python manage.py runserver`) first.
+- **`VITE_API_BASE`:** Set in `.env` or `.env.local` to prefix all API URLs (e.g. `https://api.example.com`). Omit trailing slash. When unset, requests use same-origin paths like `/api/v1/...` (works with the proxy or nginx same-origin deploy).
+- **SEC `User-Agent`:** The backend must send a contact email to SEC. The UI can supply it per browser via `localStorage` or `VITE_SEC_USER_AGENT_EMAIL`; see [`src/api.ts`](src/api.ts) (`X-Sec-User-Agent-Email` header).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Copy [`frontend/.env.example`](.env.example) if you need a template.
+
+## App routes
+
+| Path | Screen |
+|------|--------|
+| `/` | Dashboard (`EdgarDashboard`) — health, facets, EDGAR search, sync shortcuts |
+| `/explore` | Company metadata table (`CompanyMetadataExplorer`) |
+| `/companies/:id` | Single company EDGAR summary (`CompanyEdgarSummary`) |
+| `/metadata` | Redirects to `/explore` |
+
+## Layout
+
+- [`src/App.tsx`](src/App.tsx) — router and nav
+- [`src/api.ts`](src/api.ts) — typed fetch helpers for `/api/v1/`
+- [`src/EdgarDashboard.tsx`](src/EdgarDashboard.tsx), [`CompanyMetadataExplorer.tsx`](src/CompanyMetadataExplorer.tsx), [`CompanyEdgarSummary.tsx`](src/CompanyEdgarSummary.tsx) — main views
+
+Project-wide docs: [../docs/README.md](../docs/README.md), [../README.md](../README.md).

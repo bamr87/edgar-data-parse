@@ -1,37 +1,29 @@
 {
   "meta": {
     "schema_version": 1,
-    "description": "How US-GAAP presentation labels from acct_facts* tie into EDGAR companyfacts concept keys and the financial_model concept_groups.",
+    "description": "How US-GAAP presentation labels from accounting sources tie into EDGAR companyfacts concept keys and the financial_model concept_groups.",
     "taxonomy": "us-gaap",
     "canonical_output": "generated/us_gaap_account_map.json",
     "sync_command": "python src/manage.py sync_accounting_reference"
   },
   "source_inputs": [
     {
-      "path": "../acct_facts.csv",
+      "path": "sources/accounting/acct_facts.csv",
       "role": "seed_list",
-      "fields": ["us_gaap_list", "acct_label", "acct_description"]
+      "fields": ["us_gaap_list", "acct_label", "acct_description", "acct_category"]
     },
     {
-      "path": "../acct_facts.json",
-      "role": "extended_concepts",
-      "fields": ["us_gaap_list", "acct_label", "acct_description"]
-    },
-    {
-      "path": "../acct_facts_updated.json",
-      "role": "extended_concepts_with_category",
+      "path": "sources/accounting/acct_facts_overlay.json",
+      "role": "full_overlay",
+      "notes": "JSON array: labels, descriptions, optional acct_category per us_gaap_list. Replaces the legacy pair acct_facts.json + acct_facts_updated.json (duplicate keys).",
       "fields": ["us_gaap_list", "acct_label", "acct_description", "acct_category"]
     }
   ],
-  "merge_order": [
-    "acct_facts.csv",
-    "acct_facts.json",
-    "acct_facts_updated.json"
-  ],
-  "merge_notes": "Later files in merge_order override the same us_gaap_list concept. Run sync after editing any source file.",
+  "merge_order": ["acct_facts.csv", "acct_facts_overlay.json"],
+  "merge_notes": "Overlay wins per us_gaap_list. Run sync after editing either file.",
   "by_concept_record": {
     "label": "Presentation title (acct_label).",
     "description": "FRT-style description (acct_description).",
-    "acct_category": "Optional coarse bucket when sourced from acct_facts_updated.json (e.g. asset, liability, expense, owners equity, revenue)."
+    "acct_category": "Optional coarse bucket (e.g. asset, liability, expense, owners equity, revenue)."
   }
 }

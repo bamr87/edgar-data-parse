@@ -5,8 +5,9 @@ import sys
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-INPUT_JSON = DATA_DIR / "erp-clients.json"
-OUTPUT_JSON = DATA_DIR / "erp-clients-clean.json"
+LOCAL_DIR = DATA_DIR / "local"
+INPUT_JSON = LOCAL_DIR / "erp-clients.json"
+OUTPUT_JSON = LOCAL_DIR / "erp-clients-clean.json"
 
 
 def clean(input_path: Path = INPUT_JSON, output_path: Path = OUTPUT_JSON):

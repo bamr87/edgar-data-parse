@@ -1,4 +1,4 @@
-"""Merge US-GAAP account / label data from data/acct_facts* into reference/generated."""
+"""Merge US-GAAP account / label data from reference/sources/accounting into generated map."""
 
 from __future__ import annotations
 
@@ -15,14 +15,16 @@ logger = logging.getLogger(__name__)
 
 ACCOUNT_MAP_FILENAME = "us_gaap_account_map.json"
 GENERATED_SUBDIR = "generated"
-
-
-def data_dir_default() -> Path:
-    return Path(settings.BASE_DIR).parent / "data"
+SOURCES_SUBDIR = Path("sources") / "accounting"
+OVERLAY_JSON = "acct_facts_overlay.json"
 
 
 def reference_dir_default() -> Path:
     return Path(settings.BASE_DIR).parent / "data" / "reference"
+
+
+def accounting_sources_dir_default() -> Path:
+    return reference_dir_default() / SOURCES_SUBDIR
 
 
 def generated_map_path(reference_dir: Path | None = None) -> Path:
@@ -42,6 +44,9 @@ def _merge_csv(path: Path, merged: dict[str, dict[str, Any]]) -> None:
                 rec["label"] = row["acct_label"].strip()
             if row.get("acct_description"):
                 rec["description"] = row["acct_description"].strip()
+            ac = row.get("acct_category")
+            if isinstance(ac, str) and ac.strip():
+                rec["acct_category"] = ac.strip()
 
 
 def _merge_json_array(items: list[Any], merged: dict[str, dict[str, Any]]) -> None:
@@ -64,29 +69,30 @@ def _merge_json_array(items: list[Any], merged: dict[str, dict[str, Any]]) -> No
             rec["acct_category"] = ac.strip()
 
 
-def merge_accounting_sources(data_dir: Path) -> tuple[dict[str, dict[str, Any]], list[str]]:
+def merge_accounting_sources(sources_dir: Path) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """
-    Merge ``acct_facts.csv`` → ``acct_facts.json`` → ``acct_facts_updated.json`` (later wins per concept).
+    Merge ``acct_facts.csv`` then ``acct_facts_overlay.json`` (overlay wins per concept).
+
+    The overlay replaces the former pair ``acct_facts.json`` + ``acct_facts_updated.json``
+    (same concept keys; overlay carries labels, descriptions, and optional ``acct_category``).
     """
     merged: dict[str, dict[str, Any]] = {}
     used: list[str] = []
 
-    csv_path = data_dir / "acct_facts.csv"
+    csv_path = sources_dir / "acct_facts.csv"
     if csv_path.is_file():
         _merge_csv(csv_path, merged)
         used.append("acct_facts.csv")
 
-    for name in ("acct_facts.json", "acct_facts_updated.json"):
-        path = data_dir / name
-        if not path.is_file():
-            continue
-        with open(path, encoding="utf-8") as f:
+    overlay_path = sources_dir / OVERLAY_JSON
+    if overlay_path.is_file():
+        with open(overlay_path, encoding="utf-8") as f:
             payload = json.load(f)
         if isinstance(payload, list):
             _merge_json_array(payload, merged)
-            used.append(name)
+            used.append(OVERLAY_JSON)
         else:
-            logger.warning("Expected JSON array in %s, got %s", path, type(payload).__name__)
+            logger.warning("Expected JSON array in %s, got %s", overlay_path, type(payload).__name__)
 
     return merged, used
 
@@ -109,12 +115,12 @@ def build_account_map_document(
 
 def sync_accounting_reference_to_disk(
     *,
-    data_dir: Path | None = None,
+    accounting_sources_dir: Path | None = None,
     reference_dir: Path | None = None,
 ) -> Path:
-    dd = data_dir or data_dir_default()
+    sd = accounting_sources_dir or accounting_sources_dir_default()
     rd = reference_dir or reference_dir_default()
-    by_concept, sources = merge_accounting_sources(dd)
+    by_concept, sources = merge_accounting_sources(sd)
     doc = build_account_map_document(by_concept, sources=sources)
     out = generated_map_path(rd)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -146,19 +152,19 @@ def accounting_map_from_path(path: Path) -> dict[str, dict[str, Any]] | None:
 
 def load_accounting_by_concept_resolved(
     *,
-    data_dir: Path | None = None,
+    accounting_sources_dir: Path | None = None,
     reference_dir: Path | None = None,
 ) -> dict[str, dict[str, Any]]:
     """
-    Prefer merged ``generated/us_gaap_account_map.json``, then fall back to source files under ``data/``.
+    Prefer merged ``generated/us_gaap_account_map.json``, then overlay JSON, then seed CSV
+    under ``reference/sources/accounting/``.
     """
-    dd = data_dir or data_dir_default()
+    sd = accounting_sources_dir or accounting_sources_dir_default()
     rd = reference_dir or reference_dir_default()
     for p in (
         generated_map_path(rd),
-        dd / "acct_facts_updated.json",
-        dd / "acct_facts.json",
-        dd / "acct_facts.csv",
+        sd / OVERLAY_JSON,
+        sd / "acct_facts.csv",
     ):
         m = accounting_map_from_path(p)
         if m:

@@ -1,3 +1,7 @@
+/**
+ * Typed fetch helpers for the Django API (`/api/v1`). When `VITE_API_BASE` is unset, paths are
+ * relative so Vite dev proxy or same-origin nginx can forward `/api` to the backend.
+ */
 const base =
   import.meta.env.VITE_API_BASE?.replace(/\/$/, '') || ''
 
@@ -334,5 +338,35 @@ export function getLatestByConcepts(
   u.set('taxonomy', taxonomy)
   return apiGet<AnalyticsLatestByConceptsResponse>(
     `/api/v1/companies/${companyId}/analytics/latest-by-concepts/?${u}`,
+  )
+}
+
+export type ConceptTimeseriesPoint = {
+  period_end: string | null
+  period_start: string | null
+  value: number | null
+  unit: string | null
+  dimensions: Record<string, unknown>
+}
+
+export type ConceptTimeseriesResponse = {
+  company: number
+  concept: string
+  taxonomy: string
+  series: ConceptTimeseriesPoint[]
+}
+
+/** Historical facts for one XBRL concept (newest first). */
+export function getConceptTimeseries(
+  companyId: number,
+  concept: string,
+  opts?: { taxonomy?: string; limit?: number },
+): Promise<ConceptTimeseriesResponse> {
+  const u = new URLSearchParams()
+  u.set('concept', concept.trim())
+  u.set('taxonomy', (opts?.taxonomy ?? 'us-gaap').trim() || 'us-gaap')
+  u.set('limit', String(Math.min(500, Math.max(1, opts?.limit ?? 80))))
+  return apiGet<ConceptTimeseriesResponse>(
+    `/api/v1/companies/${companyId}/analytics/timeseries/?${u}`,
   )
 }

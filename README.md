@@ -4,7 +4,7 @@ Django + Django REST Framework backend with a Vite/React UI for **SEC EDGAR** co
 
 ## Stack
 
-- **Backend**: Python 3.12+, Django 5, DRF, `sec_edgar` (direct SEC APIs), `public_data` (FRED)
+- **Backend**: Python 3.12+, Django 5+, DRF, `sec_edgar` (direct SEC APIs), `public_data` (FRED)
 - **Frontend**: React + TypeScript (Vite) in [`frontend/`](frontend/)
 - **Database**: SQLite by default; set `DATABASE_URL` for PostgreSQL
 
@@ -30,7 +30,7 @@ npm install
 npm run dev
 ```
 
-Vite proxies `/api` to `http://127.0.0.1:8000`. Optional: set `VITE_API_BASE` (e.g. production API URL).
+Vite proxies `/api` to `http://127.0.0.1:8000`. Optional: set `VITE_API_BASE` (e.g. production API URL). See [`frontend/README.md`](frontend/README.md).
 
 ## Environment
 
@@ -42,36 +42,24 @@ See [`src/.env.example`](src/.env.example). Important:
 
 ## Common tasks
 
-### Ingest an HTM filing
+Typical flows (from `src/`):
 
 ```bash
 cd src
 python manage.py ingest_htm --url 'https://www.sec.gov/Archives/edgar/data/.../file.htm' --ticker AAPL
-```
-
-### Sync submissions index and XBRL facts (direct SEC APIs)
-
-```bash
-cd src
 python manage.py sync_submissions --ticker AAPL
 python manage.py sync_company_facts --ticker AAPL
-```
-
-Same flows are available on the API: `POST /api/v1/companies/{id}/sync-submissions/`, `POST .../sync-facts/`.
-
-### Public macro data (FRED)
-
-```bash
-cd src
-python manage.py load_series_bundle    # registers default macro bundle
+python manage.py load_series_bundle
 python manage.py sync_series_bundle --slug macro
 ```
+
+Same sync actions are available on the API, for example `POST /api/v1/companies/{id}/sync-submissions/` and `POST /api/v1/companies/{id}/sync-facts/`. **Full command list, CRM pipeline, and bulk ZIP loaders** are documented in [`docs/api-and-cli.md`](docs/api-and-cli.md).
 
 Bundles are defined in [`src/public_data/bundles/macro.json`](src/public_data/bundles/macro.json). Observations: `GET /api/v1/series-bundles/macro/observations/`.
 
 ### Sample company list (reference data, not ingested by Django)
 
-[`data/companies-sample.csv`](data/companies-sample.csv) is a small CRM-style export checked into git. Full-size `data/companies.csv` / `companies.json` / `companies-clean.json` are gitignored when present (often tens of MB); generate them locally for experiments or tooling (see [`src/csv_to_json.py`](src/csv_to_json.py), [`src/clean_json.py`](src/clean_json.py)). SEC issuers live in the `warehouse` app after sync/ingest. If an older database still has table `erp_clients_erpclientrow`, drop it or recreate the DB; Django no longer ships that app.
+[`data/samples/companies-sample.csv`](data/samples/companies-sample.csv) is a small CRM-style export checked into git. Large exports go under **`data/local/`** (gitignored), e.g. `data/local/companies-clean.json` for `load_crm_companies_json`, or `data/local/erp-clients.csv` → `csv_to_json.py` / `clean_json.py`. Legacy flat paths under `data/*.csv` / `*.json` remain gitignored for older checkouts. SEC issuers live in the `warehouse` app after sync/ingest. If an older database still has table `erp_clients_erpclientrow`, drop it or recreate the DB; Django no longer ships that app.
 
 ### CLI (no Django DB)
 
@@ -89,6 +77,8 @@ python src/main.py --ticker AAPL --action fetch    # writes companyfacts JSON un
 - [`src/api/v1/`](src/api/v1/) — versioned REST API
 - [`tests/`](tests/) — pytest + pytest-django
 
+Data layout (reference, samples, local): [`data/README.md`](data/README.md).
+
 ## Docker Compose
 
 From the repo root, **PostgreSQL + API** (port **8000**), with `./data` mounted for reference JSON and HTM artifacts:
@@ -98,7 +88,7 @@ docker compose up -d --build
 curl -s http://127.0.0.1:8000/api/v1/health/
 ```
 
-Optional env (shell or a `.env` file next to `docker-compose.yml`): `DJANGO_SECRET_KEY`, `USER_AGENT_EMAIL`, `DJANGO_DEBUG`, `CORS_ALLOWED_ORIGINS`.
+Optional env (shell or a `.env` file next to `docker-compose.yml`): `DJANGO_SECRET_KEY`, `USER_AGENT_EMAIL`, `DJANGO_DEBUG`, `CORS_ALLOWED_ORIGINS`. Container entrypoints are summarized in [`docker/README.md`](docker/README.md).
 
 **Vite dev UI** (port **5173**), proxying `/api` to the API container:
 
@@ -133,8 +123,12 @@ docker run -p 8000:8000 -e USER_AGENT_EMAIL=you@example.com edgar-analyzer
 pytest -q
 ```
 
-GitHub Actions: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs Ruff, migration checks, `manage.py check`, pytest (SQLite and PostgreSQL), and `npm ci` + production build for the Vite frontend.
+GitHub Actions: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs Ruff, migration checks, `manage.py check`, pytest (SQLite and PostgreSQL), and `npm ci` + production build for the Vite frontend. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for matching local commands.
 
-## Docs
+## Documentation
 
-Additional SEC notes live under [`docs/`](docs/) (e.g. [`docs/edgar-api.md`](docs/edgar-api.md)).
+- **[`docs/README.md`](docs/README.md)** — Index of all technical and reference docs.
+- **[`docs/architecture.md`](docs/architecture.md)** — Apps, data flow, DB-first SEC caching.
+- **[`docs/api-and-cli.md`](docs/api-and-cli.md)** — REST routes and `manage.py` commands.
+- **[`docs/sec-reference/`](docs/sec-reference/)** — SEC API and PDS context (external behavior).
+- **[`PRD.md`](PRD.md)** — Product vision and roadmap (see banner there for scope vs code).

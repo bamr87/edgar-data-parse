@@ -61,7 +61,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--with-accounting",
             action="store_true",
-            help="After SEC refresh, run accounting merge (acct_facts* → generated/us_gaap_account_map.json).",
+            help=(
+                "After SEC refresh, run accounting merge "
+                "(reference/sources/accounting → generated/us_gaap_account_map.json)."
+            ),
         )
 
     def handle(self, *args, **options):
@@ -104,7 +107,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Updated taxonomies.json, edgar_api_schema.json, financial_model.json"))
 
         if options.get("with_accounting"):
-            data_root = Path(settings.BASE_DIR).parent / "data"
-            out = sync_accounting_reference_to_disk(data_dir=data_root, reference_dir=ref)
+            out = sync_accounting_reference_to_disk(reference_dir=ref)
             clear_reference_cache()
             self.stdout.write(self.style.SUCCESS(f"Accounting map: {out}"))

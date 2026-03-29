@@ -1,4 +1,9 @@
-"""Direct SEC data.sec.gov / www.sec.gov HTTP client with retries."""
+"""HTTP client for SEC hosts (data.sec.gov, www.sec.gov).
+
+Uses a descriptive User-Agent (see ``user_agent_string``) and ``tenacity`` retries with
+backoff on GETs. HTTP 429 raises ``RuntimeError`` so callers can back off; SEC fair-access
+guidance applies across all machines sharing the same contact identity.
+"""
 
 from __future__ import annotations
 
@@ -33,7 +38,7 @@ def default_headers(user_agent_email: str | None = None) -> dict[str, str]:
 
 
 class SecEdgarClient:
-    """Thin wrapper around SEC endpoints (hybrid plan: primary path is direct API)."""
+    """JSON and binary GETs for ticker index, submissions, companyfacts, companyconcept, and filing downloads."""
 
     BASE_DATA = "https://data.sec.gov"
     BASE_WWW = "https://www.sec.gov"

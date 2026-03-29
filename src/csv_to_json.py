@@ -6,8 +6,9 @@ import sys
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-INPUT_CSV = DATA_DIR / "erp-clients.csv"
-OUTPUT_JSON = DATA_DIR / "erp-clients.json"
+LOCAL_DIR = DATA_DIR / "local"
+INPUT_CSV = LOCAL_DIR / "erp-clients.csv"
+OUTPUT_JSON = LOCAL_DIR / "erp-clients.json"
 
 BOOLEAN_FIELDS = {
     "Controlled State",

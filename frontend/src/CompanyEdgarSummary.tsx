@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   getCompany,
+  getConceptTimeseries,
   getEdgarSyncStatus,
   getFilingsForCompany,
   getLatestByConcepts,
@@ -10,6 +11,7 @@ import {
   syncCompanySubmissions,
   type AnalyticsLatestValue,
   type CompanyRecord,
+  type ConceptTimeseriesPoint,
   type EdgarSyncStatusResponse,
   type FilingRecord,
 } from './api'
@@ -18,9 +20,29 @@ import TablePager from './components/TablePager'
 /** Latest `us-gaap` facts to show when synced (tune to your pipeline). */
 const DEFAULT_KPI_CONCEPTS = [
   'Revenues',
+  'OperatingIncomeLoss',
+  'NetIncomeLoss',
+  'CashAndCashEquivalentsAtCarryingValue',
   'Assets',
   'Liabilities',
   'StockholdersEquity',
+] as const
+
+const KPI_DISPLAY_LABELS: Record<(typeof DEFAULT_KPI_CONCEPTS)[number], string> = {
+  Revenues: 'Revenue',
+  OperatingIncomeLoss: 'Operating income',
+  NetIncomeLoss: 'Net income',
+  CashAndCashEquivalentsAtCarryingValue: 'Cash & equivalents',
+  Assets: 'Total assets',
+  Liabilities: 'Total liabilities',
+  StockholdersEquity: "Stockholders' equity",
+}
+
+const FILING_QUICK_FILTERS = [
+  { label: '10-K', value: '10-K' },
+  { label: '10-Q', value: '10-Q' },
+  { label: '8-K', value: '8-K' },
+  { label: 'DEF 14A', value: 'DEF 14A' },
 ] as const
 
 type FilingSortField = 'filing_date' | 'form_type' | 'accession_number'
@@ -34,6 +56,24 @@ function formatNum(v: number | null | undefined, unit: string | null | undefined
   return String(v)
 }
 
+/** Human-readable unit for labels (skill: state currency / measure explicitly). */
+function formatMeasureLabel(unit: string | null | undefined): string {
+  if (!unit) return ''
+  const u = unit.toLowerCase()
+  if (u === 'usd' || u.includes('usd')) return 'USD'
+  if (u === 'shares') return 'shares'
+  if (u === 'pure' || u === 'number') return ''
+  return unit
+}
+
+function periodRange(row: AnalyticsLatestValue): string | null {
+  const a = row.period_end
+  const b = row.period_start
+  if (a && b && a !== b) return `${b} → ${a}`
+  if (a) return `Period end ${a}`
+  return null
+}
+
 function formatTs(iso: string | null | undefined): string {
   if (!iso) return '—'
   try {
@@ -44,9 +84,61 @@ function formatTs(iso: string | null | undefined): string {
   }
 }
 
+/** Analyst context: how old the warehouse facts snapshot is. */
+function formatFactsStaleness(iso: string | null | undefined): string | null {
+  if (!iso) return null
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return null
+  const days = Math.floor((Date.now() - t) / 86_400_000)
+  if (days <= 0) return 'Facts sync: same day'
+  if (days === 1) return 'Facts sync: 1 day ago'
+  return `Facts sync: ${days} days ago`
+}
+
+function formatDimensionsShort(dims: Record<string, unknown> | undefined): string | null {
+  if (!dims || typeof dims !== 'object') return null
+  const keys = Object.keys(dims).filter((k) => dims[k] != null && dims[k] !== '')
+  if (!keys.length) return null
+  const parts = keys.slice(0, 4).map((k) => `${k}=${String(dims[k])}`)
+  const more = keys.length > 4 ? ` (+${keys.length - 4})` : ''
+  return parts.join(', ') + more
+}
+
+function buildKpiSnapshotTsv(
+  company: CompanyRecord,
+  taxonomy: string,
+  kpis: Record<string, AnalyticsLatestValue>,
+): string {
+  const header = ['concept', 'label', 'value', 'unit', 'period_start', 'period_end', 'dimensions_json']
+  const rows = DEFAULT_KPI_CONCEPTS.map((concept) => {
+    const row = kpis[concept]
+    const label = KPI_DISPLAY_LABELS[concept]
+    const dims =
+      row?.dimensions && Object.keys(row.dimensions).length
+        ? JSON.stringify(row.dimensions)
+        : ''
+    return [
+      concept,
+      label,
+      row?.value != null ? String(row.value) : '',
+      row?.unit ?? '',
+      row?.period_start ?? '',
+      row?.period_end ?? '',
+      dims,
+    ]
+  })
+  const pre = [
+    `# ${company.name} (${company.ticker ?? 'no ticker'}) CIK ${company.cik}`,
+    `# taxonomy=${taxonomy} source=warehouse XBRL facts — verify material figures in filed 10-K/10-Q`,
+    '',
+  ]
+  return pre.join('\n') + [header.join('\t'), ...rows.map((r) => r.join('\t'))].join('\n')
+}
+
 async function loadSyncAndKpis(id: number): Promise<{
   sync: EdgarSyncStatusResponse | null
   kpis: Record<string, AnalyticsLatestValue>
+  taxonomy: string
 }> {
   const [syncStatus, latest] = await Promise.all([
     getEdgarSyncStatus(id).catch(() => null),
@@ -59,6 +151,7 @@ async function loadSyncAndKpis(id: number): Promise<{
   return {
     sync: syncStatus,
     kpis: latest.values || {},
+    taxonomy: latest.taxonomy || 'us-gaap',
   }
 }
 
@@ -76,11 +169,18 @@ export default function CompanyEdgarSummary() {
   const [filingsSearch, setFilingsSearch] = useState('')
   const [debouncedFilingsSearch, setDebouncedFilingsSearch] = useState('')
   const [kpis, setKpis] = useState<Record<string, AnalyticsLatestValue>>({})
+  const [kpiTaxonomy, setKpiTaxonomy] = useState('us-gaap')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [syncingFromSec, setSyncingFromSec] = useState(false)
   const [syncActionErr, setSyncActionErr] = useState<string | null>(null)
   const [syncActionSummary, setSyncActionSummary] = useState<string | null>(null)
+
+  const [historyConcept, setHistoryConcept] = useState<string>('Revenues')
+  const [historySeries, setHistorySeries] = useState<ConceptTimeseriesPoint[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyErr, setHistoryErr] = useState<string | null>(null)
+  const [copyKpiStatus, setCopyKpiStatus] = useState<'idle' | 'ok' | 'err'>('idle')
 
   useEffect(() => {
     const id = window.setTimeout(() => setDebouncedFilingsSearch(filingsSearch), 350)
@@ -108,6 +208,11 @@ export default function CompanyEdgarSummary() {
     setFilingsCount(0)
     setFilingsErr(null)
     setKpis({})
+    setKpiTaxonomy('us-gaap')
+    setHistoryConcept('Revenues')
+    setHistorySeries([])
+    setHistoryErr(null)
+    setCopyKpiStatus('idle')
     setFilingsSearch('')
     setDebouncedFilingsSearch('')
     setFilingsPage(1)
@@ -123,6 +228,7 @@ export default function CompanyEdgarSummary() {
         if (cancelled) return
         setSync(slices.sync)
         setKpis(slices.kpis)
+        setKpiTaxonomy(slices.taxonomy)
       } catch (e) {
         if (cancelled) return
         const msg = e instanceof Error ? e.message : String(e)
@@ -183,6 +289,35 @@ export default function CompanyEdgarSummary() {
     debouncedFilingsSearch,
   ])
 
+  useEffect(() => {
+    const id = Number(idParam)
+    if (!Number.isFinite(id) || id < 1 || !company) return
+    const c = historyConcept.trim()
+    if (!c) return
+    let cancelled = false
+    setHistoryLoading(true)
+    setHistoryErr(null)
+    void (async () => {
+      try {
+        const data = await getConceptTimeseries(id, c, {
+          taxonomy: kpiTaxonomy,
+          limit: 24,
+        })
+        if (cancelled) return
+        setHistorySeries(Array.isArray(data.series) ? data.series : [])
+      } catch (e) {
+        if (cancelled) return
+        setHistoryErr(e instanceof Error ? e.message : String(e))
+        setHistorySeries([])
+      } finally {
+        if (!cancelled) setHistoryLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [idParam, company, historyConcept, kpiTaxonomy, sync?.facts_synced_at])
+
   const filingsTotalPages = Math.max(1, Math.ceil(filingsCount / filingsPageSize) || 1)
 
   useEffect(() => {
@@ -206,6 +341,24 @@ export default function CompanyEdgarSummary() {
     return ''
   }
 
+  const copyKpiSnapshot = async () => {
+    if (!company) return
+    const text = buildKpiSnapshotTsv(company, kpiTaxonomy, kpis)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyKpiStatus('ok')
+      window.setTimeout(() => setCopyKpiStatus('idle'), 2500)
+    } catch {
+      setCopyKpiStatus('err')
+      window.setTimeout(() => setCopyKpiStatus('idle'), 4000)
+    }
+  }
+
+  const applyFilingQuickFilter = (form: string) => {
+    setFilingsSearch(form)
+    setFilingsPage(1)
+  }
+
   const runPopulateFromSec = async () => {
     const id = Number(idParam)
     if (!Number.isFinite(id) || id < 1) return
@@ -218,6 +371,7 @@ export default function CompanyEdgarSummary() {
       const slices = await loadSyncAndKpis(id)
       setSync(slices.sync)
       setKpis(slices.kpis)
+      setKpiTaxonomy(slices.taxonomy)
       const filingsData = await getFilingsForCompany(id, {
         page: filingsPage,
         page_size: filingsPageSize,
@@ -289,11 +443,27 @@ export default function CompanyEdgarSummary() {
 
         {!loading && company && (
           <>
+            <aside className="fa-analyst-strip" role="note">
+              <p>
+                <strong>How to use this screen:</strong> figures below are{' '}
+                <strong>facts from your warehouse</strong> (XBRL-derived when synced)—not
+                investment advice. Compare period-over-period and to official 10-K/10-Q filings; treat
+                non-GAAP or adjusted metrics separately when you add them to the pipeline.
+              </p>
+            </aside>
+
             <section className="panel detail-panel" aria-labelledby="detail-sync-h">
               <h2 id="detail-sync-h">EDGAR sync</h2>
               <p className="dash-hint">
-                Pull the SEC submissions index and company facts JSON for this CIK. Requires a
-                contact email for SEC requests — set it on the{' '}
+                Pull the SEC submissions index and company facts JSON for this CIK (see{' '}
+                <a
+                  href="https://www.sec.gov/edgar/sec-api-documentation"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  SEC API documentation
+                </a>
+                ). Requires a contact email for SEC requests — set it on the{' '}
                 <Link className="nav-link" to="/">
                   dashboard
                 </Link>{' '}
@@ -329,7 +499,12 @@ export default function CompanyEdgarSummary() {
                   </div>
                   <div>
                     <dt>Facts synced</dt>
-                    <dd>{formatTs(sync.facts_synced_at)}</dd>
+                    <dd>
+                      {formatTs(sync.facts_synced_at)}
+                      {formatFactsStaleness(sync.facts_synced_at) ? (
+                        <span className="fa-sync-stale"> · {formatFactsStaleness(sync.facts_synced_at)}</span>
+                      ) : null}
+                    </dd>
                   </div>
                   {sync.last_error ? (
                     <div className="detail-sync-err">
@@ -343,35 +518,217 @@ export default function CompanyEdgarSummary() {
               )}
             </section>
 
-            <section className="panel detail-panel" aria-labelledby="detail-kpi-h">
-              <h2 id="detail-kpi-h">Key facts (latest period)</h2>
-              <p className="dash-hint">US GAAP concepts when facts have been synced into the warehouse.</p>
+            <section
+              className="panel detail-panel"
+              aria-labelledby="detail-kpi-h"
+              aria-describedby="detail-kpi-desc"
+            >
+              <h2 id="detail-kpi-h">Financial highlights (XBRL)</h2>
+              <p id="detail-kpi-desc" className="dash-hint fa-kpi-intro">
+                Latest period per concept from taxonomy <code>{kpiTaxonomy}</code> stored in the
+                warehouse. Values are <strong>not audited in this app</strong>—anchor decisions to
+                filed statements and footnotes.
+              </p>
+              <div className="fa-kpi-toolbar">
+                <button
+                  type="button"
+                  className="button button-secondary fa-kpi-copy"
+                  onClick={() => void copyKpiSnapshot()}
+                  disabled={!company}
+                >
+                  Copy TSV (spreadsheet / notes)
+                </button>
+                {copyKpiStatus === 'ok' ? (
+                  <span className="muted small fa-kpi-copy-msg" role="status">
+                    Copied with units and periods.
+                  </span>
+                ) : null}
+                {copyKpiStatus === 'err' ? (
+                  <span className="error small fa-kpi-copy-msg" role="status">
+                    Clipboard unavailable — select and copy manually.
+                  </span>
+                ) : null}
+              </div>
               <div className="detail-kpi-grid">
                 {DEFAULT_KPI_CONCEPTS.map((concept) => {
                   const row = kpis[concept]
+                  const unitTag = row ? formatMeasureLabel(row.unit) : ''
+                  const pr = row ? periodRange(row) : null
+                  const dimLine = row ? formatDimensionsShort(row.dimensions) : null
                   return (
                     <div key={concept} className="detail-kpi-card">
-                      <span className="detail-kpi-label">{concept}</span>
-                      <span className="detail-kpi-value">
-                        {row
-                          ? formatNum(row.value, row.unit)
-                          : '—'}
+                      <span className="detail-kpi-label">{KPI_DISPLAY_LABELS[concept]}</span>
+                      <span className="detail-kpi-concept" title="US-GAAP XBRL tag">
+                        {concept}
                       </span>
-                      {row?.period_end && (
-                        <span className="detail-kpi-period">Period end {row.period_end}</span>
-                      )}
+                      <div className="detail-kpi-value-row">
+                        <span className="detail-kpi-value">
+                          {row ? formatNum(row.value, row.unit) : '—'}
+                        </span>
+                        {unitTag ? (
+                          <span className="detail-kpi-unit-tag" title="Measure / currency">
+                            {unitTag}
+                          </span>
+                        ) : null}
+                      </div>
+                      {pr ? <span className="detail-kpi-period">{pr}</span> : null}
+                      {dimLine ? (
+                        <details className="fa-kpi-dims">
+                          <summary>Dimensions (context)</summary>
+                          <span className="fa-kpi-dims-body">{dimLine}</span>
+                        </details>
+                      ) : null}
                     </div>
                   )
                 })}
               </div>
               {Object.keys(kpis).length === 0 && (
-                <p className="muted">No matching facts yet. Sync company facts from the API or CLI.</p>
+                <p className="muted">
+                  No matching facts yet. Use “Load submissions & facts from SEC” above or sync via
+                  API/CLI.
+                </p>
               )}
             </section>
 
+            <section
+              className="panel detail-panel fa-history-panel"
+              aria-labelledby="detail-history-h"
+            >
+              <h2 id="detail-history-h">Period history (trend check)</h2>
+              <p className="dash-hint">
+                Newest periods first—use for period-over-period sense checks; reconcile to the filing
+                for the same period end if numbers drive a decision.
+              </p>
+              <label className="meta-field fa-history-select">
+                <span className="meta-field-label">Concept</span>
+                <select
+                  className="input"
+                  value={historyConcept}
+                  onChange={(e) => setHistoryConcept(e.target.value)}
+                  aria-label="XBRL concept for history table"
+                >
+                  {DEFAULT_KPI_CONCEPTS.map((c) => (
+                    <option key={c} value={c}>
+                      {KPI_DISPLAY_LABELS[c]} ({c})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {historyErr && <p className="error">{historyErr}</p>}
+              {historyLoading && (
+                <p className="muted" role="status">
+                  Loading history…
+                </p>
+              )}
+              {!historyLoading && !historyErr && historySeries.length === 0 && (
+                <p className="muted">No rows for this concept in the warehouse yet.</p>
+              )}
+              {!historyLoading && historySeries.length > 0 && (
+                <div className="table-wrap fa-history-table-wrap">
+                  <table className="data-table fa-history-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Period end</th>
+                        <th scope="col">Period start</th>
+                        <th scope="col" className="fa-history-num">
+                          Value
+                        </th>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Dimensions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historySeries.map((pt, idx) => (
+                        <tr key={`${pt.period_end ?? ''}-${pt.period_start ?? ''}-${idx}`}>
+                          <td>{pt.period_end || '—'}</td>
+                          <td>{pt.period_start || '—'}</td>
+                          <td className="fa-history-num">{formatNum(pt.value, pt.unit)}</td>
+                          <td>{formatMeasureLabel(pt.unit) || pt.unit || '—'}</td>
+                          <td className="fa-history-dims">
+                            {formatDimensionsShort(pt.dimensions) || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+
+            <div className="fa-analyst-two-col">
+              <section className="panel detail-panel fa-sources" aria-labelledby="detail-sources-h">
+                <h2 id="detail-sources-h">Sources</h2>
+                <ul className="fa-sources-list">
+                  <li>
+                    <a href={secBrowseUrl} target="_blank" rel="noreferrer">
+                      SEC EDGAR — company filings
+                    </a>{' '}
+                    (official forms, exhibits, MD&A)
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.sec.gov/search-filings/edgar-full-text-search"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      SEC full-text search
+                    </a>
+                  </li>
+                  <li>
+                    Warehouse data: submissions sync{' '}
+                    {sync?.submissions_synced_at ? formatTs(sync.submissions_synced_at) : '—'}, facts
+                    sync {sync?.facts_synced_at ? formatTs(sync.facts_synced_at) : '—'}.
+                  </li>
+                </ul>
+              </section>
+              <section className="panel detail-panel fa-watch" aria-labelledby="detail-watch-h">
+                <h2 id="detail-watch-h">Watch / limits</h2>
+                <ul className="fa-watch-list">
+                  <li>Stale data if sync timestamps are old—refresh from SEC when needed.</li>
+                  <li>Default KPIs are illustrative US-GAAP concepts; not every issuer reports every tag.</li>
+                  <li>
+                    Period history can show multiple rows for the same period end when dimensions
+                    (segments, axes) differ—read dimensions before comparing values.
+                  </li>
+                  <li>
+                    <strong>Not</strong> legal, tax, or personalized investment advice—use filings and
+                    professional advisors for decisions.
+                  </li>
+                </ul>
+              </section>
+            </div>
+
             <section className="panel detail-panel" aria-labelledby="detail-filings-h">
               <h2 id="detail-filings-h">Recent filings</h2>
-              <div className="table-toolbar">
+              <div className="table-toolbar fa-filing-toolbar">
+                <div className="fa-filing-quick" role="group" aria-label="Quick form filters">
+                  {FILING_QUICK_FILTERS.map((f) => (
+                    <button
+                      key={f.value}
+                      type="button"
+                      className={
+                        filingsSearch.trim() === f.value
+                          ? 'fa-chip fa-chip-active'
+                          : 'fa-chip'
+                      }
+                      onClick={() => applyFilingQuickFilter(f.value)}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                  {filingsSearch.trim() ? (
+                    <button
+                      type="button"
+                      className="fa-chip fa-chip-clear"
+                      onClick={() => {
+                        setFilingsSearch('')
+                        setFilingsPage(1)
+                      }}
+                    >
+                      Clear filter
+                    </button>
+                  ) : null}
+                </div>
                 <label className="meta-field table-toolbar-search">
                   <span className="meta-field-label">Filter</span>
                   <input
@@ -434,6 +791,7 @@ export default function CompanyEdgarSummary() {
                               Accession{filingSortIndicator('accession_number')}
                             </button>
                           </th>
+                          <th scope="col">Period of report</th>
                           <th scope="col">Link</th>
                         </tr>
                       </thead>
@@ -443,6 +801,7 @@ export default function CompanyEdgarSummary() {
                             <td>{f.form_type}</td>
                             <td>{f.filing_date || '—'}</td>
                             <td className="detail-mono">{f.accession_number}</td>
+                            <td>{f.period_of_report || '—'}</td>
                             <td>
                               {f.url ? (
                                 <a href={f.url} target="_blank" rel="noreferrer">
@@ -473,6 +832,11 @@ export default function CompanyEdgarSummary() {
                 </>
               )}
             </section>
+
+            <p className="fa-disclaimer muted small" role="note">
+              Informational use only. Interpretation belongs with you and your advisors; this UI
+              surfaces structured data and links to regulators—not recommendations.
+            </p>
 
             <section className="panel detail-panel" aria-labelledby="detail-meta-h">
               <h2 id="detail-meta-h">Profile</h2>

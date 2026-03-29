@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = (
-        "Load data/companies-clean.json (or path) into CrmCompanyRecord staging rows. "
+        "Load data/local/companies-clean.json (or path) into CrmCompanyRecord staging rows. "
         "Does not call SEC."
     )
 
     def add_arguments(self, parser):
-        default = Path(settings.BASE_DIR).parent / "data" / "companies-clean.json"
+        default = Path(settings.BASE_DIR).parent / "data" / "local" / "companies-clean.json"
         parser.add_argument(
             "json_path",
             nargs="?",

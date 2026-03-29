@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 
 
 class HealthView(APIView):
+    """Liveness probe; does not check the database."""
+
     authentication_classes = []
     permission_classes = []
 
@@ -91,6 +93,8 @@ class SicCodesReferenceView(APIView):
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
+    """CRUD for ``Company`` plus EDGAR resolution, sync, and read-only analytics helpers."""
+
     queryset = Company.objects.all().order_by("name")
     serializer_class = CompanySerializer
     filterset_fields = ["ticker", "cik", "industry", "sic_code", "hq_state"]
@@ -189,6 +193,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="suggest-schema")
     def suggest_schema(self, request, pk=None):
+        """Return static CRM-style field hints until filing-driven schema inference exists."""
         company = self.get_object()
         base_fields = [
             "industry",
@@ -438,6 +443,7 @@ class FilingViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="ingest-htm")
     def ingest_htm(self, request):
+        """Parse one HTM filing URL into ``Filing`` / related rows (same service as ``ingest_htm`` command)."""
         url = request.data.get("url")
         ticker = request.data.get("ticker")
         cik = request.data.get("cik")
@@ -535,6 +541,7 @@ class PeerGroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="analytics/peer-fact-compare")
     def analytics_peer_fact_compare(self, request, pk=None):
+        """Latest fact for ``concept`` across members of this peer group."""
         pg = self.get_object()
         concept = (request.query_params.get("concept") or "").strip()
         if not concept:
@@ -575,6 +582,7 @@ class SeriesBundleViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="observations")
     def observations(self, request, slug=None):
+        """Flatten recent observations for all series in this bundle (optional ``limit``)."""
         bundle = self.get_object()
         series_ids = list(bundle.items.values_list("series_id", flat=True))
         qs = SeriesObservation.objects.filter(series_id__in=series_ids).select_related(

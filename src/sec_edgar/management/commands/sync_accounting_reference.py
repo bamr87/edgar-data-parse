@@ -9,16 +9,19 @@ from sec_edgar.services.accounting_reference import sync_accounting_reference_to
 
 class Command(BaseCommand):
     help = (
-        "Merge data/acct_facts.csv, acct_facts.json, and acct_facts_updated.json into "
-        "data/reference/generated/us_gaap_account_map.json (later sources override per concept)."
+        "Merge data/reference/sources/accounting/acct_facts.csv and acct_facts_overlay.json "
+        "into data/reference/generated/us_gaap_account_map.json (overlay wins per concept)."
     )
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--data-dir",
+            "--accounting-sources-dir",
             type=str,
             default=None,
-            help="Directory containing acct_facts* (default: <project>/data).",
+            help=(
+                "Directory with acct_facts.csv and acct_facts_overlay.json "
+                "(default: <project>/data/reference/sources/accounting)."
+            ),
         )
         parser.add_argument(
             "--reference-dir",
@@ -28,16 +31,19 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        data_dir = (
-            Path(options["data_dir"]).expanduser().resolve()
-            if options["data_dir"]
-            else Path(settings.BASE_DIR).parent / "data"
-        )
         ref_dir = (
             Path(options["reference_dir"]).expanduser().resolve()
             if options["reference_dir"]
             else Path(settings.BASE_DIR).parent / "data" / "reference"
         )
-        out = sync_accounting_reference_to_disk(data_dir=data_dir, reference_dir=ref_dir)
+        sources_dir = (
+            Path(options["accounting_sources_dir"]).expanduser().resolve()
+            if options["accounting_sources_dir"]
+            else ref_dir / "sources" / "accounting"
+        )
+        out = sync_accounting_reference_to_disk(
+            accounting_sources_dir=sources_dir,
+            reference_dir=ref_dir,
+        )
         clear_reference_cache()
         self.stdout.write(self.style.SUCCESS(f"Wrote {out}"))

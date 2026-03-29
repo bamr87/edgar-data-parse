@@ -252,6 +252,10 @@ export default function CompanyMetadataExplorer() {
           related fields. Open a row for filings, financial highlights, and sync status. Data is
           richer after you sync submissions or enrich records from filings.
         </p>
+        <p className="fa-meta-note muted small">
+          This grid is <strong>metadata and coverage</strong>—not live market data. For financial
+          statement line items, open a company and review XBRL highlights and SEC filings.
+        </p>
         <p className="meta-header-links">
           <Link className="nav-link" to="/">
             ← Dashboard search

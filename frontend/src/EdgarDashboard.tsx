@@ -170,6 +170,13 @@ export default function EdgarDashboard() {
           Search the warehouse or SEC&apos;s issuer directory, then open a company for filings, sync
           status, and key facts. For informational use only.
         </p>
+        <aside className="fa-dash-context" role="note">
+          <p>
+            <strong>Two sources:</strong> <em>Warehouse</em> is your loaded Postgres data;{' '}
+            <em>SEC directory</em> queries the live issuer list. Financial numbers on company pages
+            come from synced XBRL facts—always verify material figures against the filed 10-K/10-Q.
+          </p>
+        </aside>
         <p className="dash-nav-links">
           <Link className="nav-link" to="/explore">
             Browse all companies

@@ -20,6 +20,8 @@ class ListedIssuer(models.Model):
 
 
 class Company(models.Model):
+    """Warehouse issuer: SEC CIK, optional ticker, CRM-enriched attributes, and JSON extras."""
+
     cik = models.CharField(max_length=10, unique=True)
     ticker = models.CharField(max_length=10, null=True, blank=True)
     name = models.CharField(max_length=255)
@@ -37,7 +39,7 @@ class Company(models.Model):
     product_types = models.JSONField(default=list, blank=True)
     size = models.CharField(max_length=255, null=True, blank=True)
     extra_attributes = models.JSONField(default=dict, blank=True)
-    # CRM import (companies-clean.json / QAD-style customer export)
+    # CRM import (data/local/companies-clean.json — QAD-style customer export)
     crm_external_key = models.CharField(
         max_length=64, null=True, blank=True, unique=True, db_index=True
     )
@@ -93,7 +95,7 @@ class EdgarEntitySyncState(models.Model):
 
 
 class CrmCompanyRecord(models.Model):
-    """Staging row from CRM JSON (e.g. companies-clean.json); SEC CIK filled after title match."""
+    """Staging row from CRM JSON (e.g. data/local/companies-clean.json); SEC CIK filled after title match."""
 
     key = models.CharField(max_length=64, unique=True, db_index=True)
     internal_object_id = models.IntegerField(null=True, blank=True)

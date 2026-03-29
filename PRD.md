@@ -1,393 +1,248 @@
-# Product Requirements Document (PRD): SEC EDGAR Data Analyzer App
+# Product Requirements Document (PRD): SEC EDGAR Data Analyzer
 
-## 1. Document Overview
+> **How to use this document:** Product vision, roadmap, and “implemented vs planned” live here. For **architecture**, **every REST route**, and **management commands**, use the technical index at [`docs/README.md`](docs/README.md) — especially [`docs/architecture.md`](docs/architecture.md) and [`docs/api-and-cli.md`](docs/api-and-cli.md). Anything labeled *future*, *roadmap*, or *aspirational* may not exist in the codebase yet.
+
+## 1. Document overview
+
 ### 1.1 Purpose
-This Product Requirements Document (PRD) outlines the vision, features, and requirements for an application called "EDGAR Analyzer." The app enables users to extract, parse, and analyze SEC EDGAR (Electronic Data Gathering, Analysis, and Retrieval) filings data using an AI agent. The core functionality involves fetching financial data based on user inputs (CIK ID, stock ticker, or company name search), parsing it into structured financial statements, trends, and industry-relevant analytical factors, and providing customizable views across time periods (e.g., quarterly or yearly).
 
-The app aims to simplify access to complex SEC data for investors, analysts, researchers, and financial professionals by leveraging AI for intelligent organization and insights.
+This PRD describes **EDGAR Analyzer** (repository: **edgar-data-parse**): a web-oriented system to extract, normalize, and explore **SEC EDGAR** company and filing data, with a path toward **AI-assisted** interpretation and summaries. The long-term vision includes LLM-driven parsing, narrative insights, and rich visualizations; the **current product** emphasizes **direct SEC APIs**, a **structured warehouse** (companies, filings, XBRL facts, derived metrics), a **versioned REST API**, and a **React** UI.
 
 ### 1.2 Scope
-- **In Scope**: Data extraction from SEC EDGAR, AI-driven parsing and analysis, user search and selection interfaces, basic visualizations, export options, and core user management.
-- **Out of Scope**: Real-time stock trading integration, advanced portfolio management, or non-SEC data sources (unless specified as future enhancements). Custom AI model training is not included; the app will use pre-trained or API-based AI models.
 
-### 1.3 Version History
-- Version 1.0: Initial draft based on app idea (August 19, 2025).
-- Future versions will incorporate feedback and iterations.
+| Area | Status |
+|------|--------|
+| **In scope (vision)** | EDGAR discovery and sync; structured financial and filing data; API and UI for search and exploration; optional macro series (FRED); future AI summaries, charts, accounts, and alerts. |
+| **In scope (shipped today)** | Django + DRF backend; `sec_edgar` (SEC client, HTM ingest, submissions/facts sync); `warehouse` models and CRM staging/match flows; `public_data` + FRED; Vite/React frontend; Docker Compose; CI (Ruff, migrations, pytest, frontend build). |
+| **Out of scope (near term)** | Real-time trading, brokerage integration, custom model training, non-SEC primary sources (except optional FRED and future third-party enrichments). |
 
-### 1.4 Stakeholders
-- Product Owner: [User/Development Team]
-- Development Team: Frontend/Backend Engineers, AI Specialists, UI/UX Designers.
-- End Users: Individual investors, financial analysts, researchers, institutional users.
-- External: SEC compliance experts (for data handling).
+### 1.3 Version history
 
-## 2. Business Goals and Objectives
-### 2.1 Goals
-- Democratize access to SEC EDGAR data by making it user-friendly and insightful through AI.
-- Provide actionable financial insights (e.g., trends, ratios) to support decision-making.
-- Achieve high user retention through intuitive features and accurate analysis.
-
-### 2.2 Success Metrics
-- User adoption: 10,000 active users in the first year.
-- Engagement: Average session time > 5 minutes; 70% of users returning weekly.
-- Accuracy: AI parsing validated against manual checks with >95% accuracy.
-- Feedback: Net Promoter Score (NPS) > 8/10.
-
-### 2.3 Market Analysis
-The financial data analysis market is growing (projected to reach $XX billion by 2030), with competitors like Alpha Vantage, Yahoo Finance, and specialized tools like EDGAR Online. This app differentiates by integrating AI for automated parsing and industry-specific insights, reducing manual effort.
-
-## 3. Target Audience and User Personas
-### 3.1 Target Audience
-- Retail Investors: Seeking quick insights into company filings.
-- Financial Analysts: Needing detailed trends and comparisons.
-- Researchers/Students: Exploring historical data for studies.
-- Institutional Users: Requiring bulk exports and advanced filters.
-
-### 3.2 User Personas
-1. **Alex the Analyst**: 35-year-old professional; needs quarterly trends and comparisons; values speed and accuracy.
-2. **Sam the Student**: 22-year-old finance major; searches by company name; wants visualizations and explanations.
-3. **Ivy the Investor**: 45-year-old retail investor; uses ticker symbols; prioritizes mobile access and alerts.
-
-## 4. Features and Functional Requirements
-The app will be built as a web application (with potential mobile extensions) using technologies like React for frontend, Node.js/Express for backend, and AI models (e.g., via OpenAI/Grok APIs) for parsing.
-
-### 4.1 Core Features
-1. **Company Search and Selection**
-   - Users can search by CIK ID, stock ticker, or company name (fuzzy search with autocomplete).
-   - Integration with SEC EDGAR API for real-time fetching of company metadata.
-   - Display search results in a list with details (e.g., company name, ticker, CIK, industry).
-
-2. **Data Extraction**
-   - Fetch various SEC EDGAR filing types: 10-K (annual), 10-Q (quarterly), 8-K (events), 13F (holdings), proxy statements, etc.
-   - Support for historical data retrieval (e.g., last 10 years).
-   - Handle large datasets with pagination and caching.
-
-3. **AI-Driven Parsing and Organization**
-   - An AI agent (e.g., LLM-based) parses raw XML/HTML filings into structured formats.
-   - Output includes:
-     - Financial Statements: Balance Sheet, Income Statement, Cash Flow Statement.
-     - Trends: Year-over-year growth, ratios (e.g., P/E, ROE), anomalies.
-     - Analytical Factors: Industry benchmarks (e.g., tech vs. finance metrics), risk assessments, sentiment analysis from MD&A sections.
-   - Customizable: Users select statement types (e.g., consolidated vs. non-consolidated) and time periods (quarterly, yearly, custom ranges).
-
-4. **Data Visualization and Analysis**
-   - Interactive charts (e.g., line graphs for revenue trends, bar charts for ratios) using libraries like Chart.js or D3.js.
-   - Comparative analysis: Side-by-side views for multiple companies.
-   - AI-generated summaries: Natural language explanations (e.g., "Revenue grew 15% YoY due to increased sales in Asia").
-
-5. **User Customization and Options**
-   - Filters: By filing type, date range, specific sections (e.g., footnotes, risks).
-   - Views: Tabular data, charts, or narrative reports.
-   - Multi-company selection: Analyze up to 5 companies simultaneously.
-
-### 4.2 Advanced Features
-1. **User Accounts and Personalization**
-   - Registration/login via email, Google, or OAuth.
-   - Save favorites: Bookmark companies for quick access.
-   - History: View past searches and analyses.
-   - Custom dashboards: User-defined widgets (e.g., trend trackers).
-
-2. **Export and Sharing**
-   - Export formats: CSV, PDF, Excel, JSON.
-   - Shareable links: Generate reports with expiration.
-   - API endpoints: For pro users to integrate with external tools.
-
-3. **Alerts and Notifications**
-   - Email/SMS/push notifications for new filings (e.g., "AAPL filed 10-Q").
-   - Custom alerts: Based on thresholds (e.g., revenue drop >10%).
-
-4. **AI Chat Interface**
-   - Conversational querying: "What are Apple's key risks in 2024?" with responses pulling from parsed data.
-   - Integration with voice input for mobile.
-
-5. **Collaboration Tools**
-   - Annotate reports: Add notes or highlights.
-   - Team sharing: For enterprise users, collaborative editing.
-
-6. **Integration Extensions**
-   - Third-party APIs: Stock prices from Yahoo Finance, news from RSS feeds.
-   - Plugins: Export to tools like Tableau or Google Sheets.
-
-### 4.3 User Flows and Use Cases
-1. **Basic Search and Analysis**
-   - User enters "AAPL" → App fetches data → AI parses → Displays statements and trends.
-
-2. **Advanced Comparison**
-   - User selects "AAPL" and "MSFT" → Chooses quarterly income statements (2020-2025) → Views comparative charts.
-
-3. **Alert Setup**
-   - User adds "TSLA" to favorites → Sets alert for 8-K filings → Receives notification on new submission.
-
-| Use Case | Preconditions | Steps | Postconditions |
-|----------|---------------|-------|----------------|
-| Search by Name | User logged in | 1. Enter company name. 2. Select from results. 3. Choose filing type and period. | Data parsed and displayed. |
-| Export Report | Analysis complete | 1. Click export. 2. Select format. | File downloaded with all data. |
-| AI Query | Data loaded | 1. Type question in chat. | AI response with citations to data. |
-
-## 5. Non-Functional Requirements
-### 5.1 Performance
-- Response time: <2 seconds for searches; <10 seconds for AI parsing of large filings.
-- Scalability: Handle 1,000 concurrent users; use cloud hosting (e.g., AWS).
-- Data limits: Cap free tier at 50 queries/day; unlimited for premium.
-
-### 5.2 Security and Compliance
-- Data encryption: HTTPS, AES for stored data.
-- Authentication: JWT tokens; MFA for sensitive actions.
-- Compliance: Adhere to SEC data usage policies; GDPR/CCPA for user data.
-- Audit logs: Track all data accesses.
-
-### 5.3 Usability
-- UI/UX: Responsive design (mobile-first); accessible (WCAG 2.1 compliant).
-- Localization: English primary; support for multiple languages in future.
-- Error Handling: Graceful failures (e.g., "No data found for that CIK") with suggestions.
-
-### 5.4 Reliability
-- Uptime: 99.9% SLA.
-- Backup: Daily data backups; redundancy for AI services.
-
-### 5.5 Technical Stack
-- Frontend: React.js, Tailwind CSS.
-- Backend: Node.js, Express; Database: PostgreSQL/MongoDB for user data.
-- AI: Integration with LLMs (e.g., Grok API) for parsing.
-- APIs: SEC EDGAR API (with rate limiting); potential caching with Redis.
-
-## 6. Assumptions and Dependencies
-### 6.1 Assumptions
-- SEC EDGAR API remains publicly accessible with no major changes.
-- AI models can accurately parse filings (validated via testing).
-- Users have basic financial knowledge.
-
-### 6.2 Dependencies
-- External APIs: SEC EDGAR, AI providers (e.g., xAI Grok).
-- Libraries: For parsing (e.g., BeautifulSoup for HTML/XML), visualization.
-- Infrastructure: Cloud provider for hosting.
-
-## 7. Risks and Mitigations
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| AI Parsing Inaccuracies | Medium | High | Manual validation dataset; user feedback loop for corrections. |
-| API Rate Limits | High | Medium | Caching mechanisms; premium tiers with higher limits. |
-| Data Privacy Breach | Low | High | Regular security audits; compliance certifications. |
-| Market Competition | Medium | Medium | Differentiate with AI insights; user testing for unique features. |
-
-## 8. Appendix
-### 8.1 Glossary
-- CIK: Central Index Key (SEC company identifier).
-- EDGAR: SEC's filing system.
-- MD&A: Management's Discussion and Analysis.
-
-### 8.2 References
-- SEC EDGAR API Documentation.
-- Standard financial ratios and statements.
-
-This PRD serves as a living document and will be updated based on development progress and user feedback.
-
-## Product Requirements Document (PRD): SEC EDGAR Data Analyzer App
-
-## 1. Document Overview
-### 1.1 Purpose
-This Product Requirements Document (PRD) outlines the vision, features, and requirements for an application called "EDGAR Analyzer." The app enables users to extract, parse, and analyze SEC EDGAR (Electronic Data Gathering, Analysis, and Retrieval) filings data using an AI agent. The core functionality involves fetching financial data based on user inputs (CIK ID, stock ticker, or company name search), parsing it into structured financial statements, trends, and industry-relevant analytical factors, and providing customizable views across time periods (e.g., quarterly or yearly).
-
-The app aims to simplify access to complex SEC data for investors, analysts, researchers, and financial professionals by leveraging AI for intelligent organization and insights.
-
-### 1.2 Scope
-- **In Scope**: Data extraction from SEC EDGAR, AI-driven parsing and analysis, user search and selection interfaces, basic visualizations, export options, and core user management.
-- **Out of Scope**: Real-time stock trading integration, advanced portfolio management, or non-SEC data sources (unless specified as future enhancements). Custom AI model training is not included; the app will use pre-trained or API-based AI models.
-
-### 1.3 Version History
-- Version 1.0: Initial draft based on app idea (August 19, 2025).
-- Version 1.1: Added user stories for refinement (August 19, 2025).
-- Future versions will incorporate feedback and iterations.
+| Version | Date | Notes |
+|---------|------|--------|
+| 1.0 | 2025-08-19 | Initial draft (AI-centric analyzer concept). |
+| 1.1 | 2025-08-19 | User stories added. |
+| 2.0 | 2026-03-28 | Aligned with implemented stack; removed duplicate sections; added implementation status and roadmap split. |
 
 ### 1.4 Stakeholders
-- Product Owner: [User/Development Team]
-- Development Team: Frontend/Backend Engineers, AI Specialists, UI/UX Designers.
-- End Users: Individual investors, financial analysts, researchers, institutional users.
-- External: SEC compliance experts (for data handling).
 
-## 2. Business Goals and Objectives
+- **Product owner / development**: Core maintainers of this repository.
+- **Engineering**: Backend (Django), frontend (React/TypeScript), data/SEC integration.
+- **End users**: Analysts, researchers, operators matching CRM data to SEC issuers, and (eventually) retail/prosumer investors.
+- **External**: SEC fair-access and `User-Agent` policy; FRED API terms when used.
+
+---
+
+## 2. Business goals and objectives
+
 ### 2.1 Goals
-- Democratize access to SEC EDGAR data by making it user-friendly and insightful through AI.
-- Provide actionable financial insights (e.g., trends, ratios) to support decision-making.
-- Achieve high user retention through intuitive features and accurate analysis.
 
-### 2.2 Success Metrics
-- User adoption: 10,000 active users in the first year.
-- Engagement: Average session time > 5 minutes; 70% of users returning weekly.
-- Accuracy: AI parsing validated against manual checks with >95% accuracy.
-- Feedback: Net Promoter Score (NPS) > 8/10.
+- Make EDGAR company metadata, filings, and XBRL facts **queryable and reproducible** via API and UI.
+- Reduce manual work to **find, sync, and join** SEC data with internal company lists (CRM).
+- Over time, add **AI-assisted** explanations and charts without sacrificing traceability to source filings.
 
-### 2.3 Market Analysis
-The financial data analysis market is growing (projected to reach $XX billion by 2030), with competitors like Alpha Vantage, Yahoo Finance, and specialized tools like EDGAR Online. This app differentiates by integrating AI for automated parsing and industry-specific insights, reducing manual effort.
+### 2.2 Success metrics (aspirational)
 
-## 3. Target Audience and User Personas
-### 3.1 Target Audience
-- Retail Investors: Seeking quick insights into company filings.
-- Financial Analysts: Needing detailed trends and comparisons.
-- Researchers/Students: Exploring historical data for studies.
-- Institutional Users: Requiring bulk exports and advanced filters.
+Targets below apply once a hosted product and user base exist; the open-source repo is primarily **engineering-quality** driven.
 
-### 3.2 User Personas
-1. **Alex the Analyst**: 35-year-old professional; needs quarterly trends and comparisons; values speed and accuracy.
-2. **Sam the Student**: 22-year-old finance major; searches by company name; wants visualizations and explanations.
-3. **Ivy the Investor**: 45-year-old retail investor; uses ticker symbols; prioritizes mobile access and alerts.
+- Adoption and engagement (session time, return rate) for a future hosted tier.
+- **Data quality**: sync idempotency, fact coverage vs. SEC companyfacts for sampled issuers.
+- **Optional AI**: when enabled, summary accuracy spot-checked against filing text.
+- Qualitative feedback (NPS-style) for hosted offerings.
 
-## 4. Features and Functional Requirements
-The app will be built as a web application (with potential mobile extensions) using technologies like React for frontend, Node.js/Express for backend, and AI models (e.g., via OpenAI/Grok APIs) for parsing.
+### 2.3 Market context
 
-### 4.1 Core Features
-1. **Company Search and Selection**
-   - Users can search by CIK ID, stock ticker, or company name (fuzzy search with autocomplete).
-   - Integration with SEC EDGAR API for real-time fetching of company metadata.
-   - Display search results in a list with details (e.g., company name, ticker, CIK, industry).
+The market for financial data and filing analysis is crowded (aggregators, terminals, EDGAR mirrors). Differentiation for this product is **transparent SEC-sourced pipelines**, **API-first design**, **CRM-to-CIK workflows**, and planned **LLM layer** on top of structured facts—not a black-box terminal.
 
-2. **Data Extraction**
-   - Fetch various SEC EDGAR filing types: 10-K (annual), 10-Q (quarterly), 8-K (events), 13F (holdings), proxy statements, etc.
-   - Support for historical data retrieval (e.g., last 10 years).
-   - Handle large datasets with pagination and caching.
+---
 
-3. **AI-Driven Parsing and Organization**
-   - An AI agent (e.g., LLM-based) parses raw XML/HTML filings into structured formats.
-   - Output includes:
-     - Financial Statements: Balance Sheet, Income Statement, Cash Flow Statement.
-     - Trends: Year-over-year growth, ratios (e.g., P/E, ROE), anomalies.
-     - Analytical Factors: Industry benchmarks (e.g., tech vs. finance metrics), risk assessments, sentiment analysis from MD&A sections.
-   - Customizable: Users select statement types (e.g., consolidated vs. non-consolidated) and time periods (quarterly, yearly, custom ranges).
+## 3. Target audience and personas
 
-4. **Data Visualization and Analysis**
-   - Interactive charts (e.g., line graphs for revenue trends, bar charts for ratios) using libraries like Chart.js or D3.js.
-   - Comparative analysis: Side-by-side views for multiple companies.
-   - AI-generated summaries: Natural language explanations (e.g., "Revenue grew 15% YoY due to increased sales in Asia").
+### 3.1 Audience
 
-5. **User Customization and Options**
-   - Filters: By filing type, date range, specific sections (e.g., footnotes, risks).
-   - Views: Tabular data, charts, or narrative reports.
-   - Multi-company selection: Analyze up to 5 companies simultaneously.
+- **Analysts / operators**: Sync issuers, filings, facts; match internal company titles to SEC entities.
+- **Researchers / students**: Explore metadata, filings, and facts via API or UI.
+- **Developers**: Integrate via REST; run Docker or local Django.
 
-### 4.2 Advanced Features
-1. **User Accounts and Personalization**
-   - Registration/login via email, Google, or OAuth.
-   - Save favorites: Bookmark companies for quick access.
-   - History: View past searches and analyses.
-   - Custom dashboards: User-defined widgets (e.g., trend trackers).
+### 3.2 Personas (unchanged themes)
 
-2. **Export and Sharing**
-   - Export formats: CSV, PDF, Excel, JSON.
-   - Shareable links: Generate reports with expiration.
-   - API endpoints: For pro users to integrate with external tools.
+1. **Alex the Analyst** — Quarterly and annual views, comparisons, accuracy and speed.
+2. **Sam the Student** — Search by name, simple exploration, export for assignments.
+3. **Ivy the Investor** — Ticker-first flows; later: alerts and mobile-friendly views.
 
-3. **Alerts and Notifications**
-   - Email/SMS/push notifications for new filings (e.g., "AAPL filed 10-Q").
-   - Custom alerts: Based on thresholds (e.g., revenue drop >10%).
+---
 
-4. **AI Chat Interface**
-   - Conversational querying: "What are Apple's key risks in 2024?" with responses pulling from parsed data.
-   - Integration with voice input for mobile.
+## 4. Features and requirements
 
-5. **Collaboration Tools**
-   - Annotate reports: Add notes or highlights.
-   - Team sharing: For enterprise users, collaborative editing.
+### 4.1 Implementation status (March 2026)
 
-6. **Integration Extensions**
-   - Third-party APIs: Stock prices from Yahoo Finance, news from RSS feeds.
-   - Plugins: Export to tools like Tableau or Google Sheets.
+**Backend (`src/`)**
 
-### 4.3 User Flows and Use Cases
-1. **Basic Search and Analysis**
-   - User enters "AAPL" → App fetches data → AI parses → Displays statements and trends.
+- **Framework**: Python 3.12+, Django 5 or 6 (see `requirements.txt`), Django REST Framework.
+- **Apps**: `warehouse` (Company, Filing, Fact, sections/tables, derived metrics, CRM staging, listed issuers, EDGAR sync state), `sec_edgar` (client, parsers, sync/ingest services, management commands), `public_data` (FRED series bundles and observations), `api` (v1 routes + legacy `/api/` alias).
+- **SEC**: Submissions and company facts sync; HTM filing ingest; reference JSON under `data/reference/` (schemas, taxonomies, financial model, SIC reference, accounting map); bulk and ZIP loaders where implemented.
+- **API surface (examples)**: `/api/v1/companies/`, filings, facts, sections, tables, derived metrics, peer groups, company metadata, SIC reference, health, series bundles and observations; actions such as sync submissions/facts and ingest HTM where exposed on viewsets.
+- **Ops**: SQLite default; PostgreSQL via `DATABASE_URL`; Docker Compose (API, Postgres, optional Vite dev, nginx static UI, CI test profile); GitHub Actions CI.
 
-2. **Advanced Comparison**
-   - User selects "AAPL" and "MSFT" → Chooses quarterly income statements (2020-2025) → Views comparative charts.
+**Frontend (`frontend/`)**
 
-3. **Alert Setup**
-   - User adds "TSLA" to favorites → Sets alert for 8-K filings → Receives notification on new submission.
+- **Stack**: React 19, TypeScript, Vite; dev proxy to Django API.
+- **UI**: Dashboard and company-oriented flows (metadata, EDGAR summary, exploration) as implemented in the app shell—not yet full charting or AI chat.
 
-| Use Case | Preconditions | Steps | Postconditions |
-|----------|---------------|-------|----------------|
-| Search by Name | User logged in | 1. Enter company name. 2. Select from results. 3. Choose filing type and period. | Data parsed and displayed. |
-| Export Report | Analysis complete | 1. Click export. 2. Select format. | File downloaded with all data. |
-| AI Query | Data loaded | 1. Type question in chat. | AI response with citations to data. |
+**Data repo (`data/`)**
 
-### 4.4 User Stories
-User stories are derived from the personas and features to refine the app idea, ensuring development aligns with user needs. They follow the format: "As a [user type], I want [feature] so that [benefit]."
+- Versioned **reference** JSON under `data/reference/`; **samples** under `data/samples/`; large proprietary exports in **`data/local/`** (gitignored; see `README.md`).
 
-#### Core Functionality Stories
-1. As Alex the Analyst, I want to search for a company by its CIK ID, stock ticker, or name so that I can quickly access the relevant SEC filings without manual navigation.
-2. As Sam the Student, I want autocomplete suggestions during company searches so that I can easily find and select companies even if I'm unsure of the exact name or ticker.
-3. As Ivy the Investor, I want to fetch specific filing types like 10-Q or 10-K for a selected company so that I can review quarterly or annual financial data efficiently.
-4. As Alex the Analyst, I want the AI to parse raw filings into structured financial statements (e.g., balance sheet, income statement) so that I can analyze data without manual extraction.
-5. As Sam the Student, I want to view trends such as year-over-year growth and financial ratios over customizable time periods so that I can understand historical performance for my studies.
-6. As Ivy the Investor, I want AI-generated analytical factors like industry benchmarks and risk assessments so that I can make informed investment decisions based on contextual insights.
+**Optional / peripheral**
 
-#### Visualization and Customization Stories
-7. As Alex the Analyst, I want interactive charts for trends and comparisons across multiple companies so that I can visually identify patterns and anomalies in financial data.
-8. As Sam the Student, I want to filter data by filing type, date range, or specific sections (e.g., MD&A) so that I can focus on relevant parts of the filings for my research.
-9. As Ivy the Investor, I want to switch between tabular, chart, and narrative views of the parsed data so that I can consume information in my preferred format on mobile devices.
-10. As Alex the Analyst, I want to compare financial statements side-by-side for up to 5 companies over selected periods so that I can perform competitive analysis quickly.
+- **CLI** (`src/main.py`): HTM processing and fetch actions without full Django DB in some paths.
+- **Experimental AI**: Optional OpenAI/LangChain path in `src/ai_summarize.py` / `main.py` summarize action—not part of the core web API or PRD MVP for the Django app.
 
-#### Advanced and Personalization Stories
-11. As Ivy the Investor, I want to create an account and bookmark favorite companies so that I can access my watched list and past analyses without re-searching.
-12. As Sam the Student, I want to export parsed data and reports in formats like CSV or PDF so that I can use them in external tools or assignments.
-13. As Alex the Analyst, I want to set up alerts for new filings or threshold-based events (e.g., revenue changes) so that I stay updated on critical updates without constant checking.
-14. As Ivy the Investor, I want an AI chat interface to ask natural language questions about the data (e.g., "What are the key risks?") so that I can get quick, targeted insights.
-15. As Alex the Analyst, I want to annotate and share reports with team members so that we can collaborate on financial reviews.
-16. As Sam the Student, I want integration with third-party APIs for additional context like stock prices so that I can correlate SEC data with market performance.
+### 4.2 Roadmap: core product (from vision, not all built)
 
-These user stories prioritize MVP (Minimum Viable Product) features (1-10) while outlining growth opportunities (11-16). They will guide sprint planning and acceptance criteria in development.
+1. **Company search and selection**  
+   Search by CIK, ticker, or name with autocomplete; results show name, ticker, CIK, industry/SIC where available. **Partially met** via API and UI patterns; polish and UX TBD.
 
-## 5. Non-Functional Requirements
+2. **Data extraction**  
+   10-K, 10-Q, 8-K, and other forms via submissions index and filing links; historical range; pagination. **Partially met** via sync and filing models; not all form types or UX filters are product-complete.
+
+3. **Parsing and structure**  
+   HTM parsing and XBRL fact ingestion into relational models; derived metrics and reference-driven KPI definitions. **Partially met**; full statement views (balance sheet / income / cash flow as polished reports) remain roadmap.
+
+4. **Visualization and analysis**  
+   Charts, multi-company compare, AI-generated summaries. **Future**; backend data supports stepping stones.
+
+5. **Customization**  
+   Filters by form type, date range, sections; tabular vs chart vs narrative views. **Future** (API filters exist in places; productized UI TBD).
+
+### 4.3 Advanced / growth features (future)
+
+- User accounts, favorites, history, dashboards.
+- Export (CSV, PDF, Excel, JSON) and shareable report links.
+- Alerts (new filings, thresholds).
+- AI chat over retrieved facts and text (with citations).
+- Collaboration (annotations, team sharing).
+- Third-party enrichments (prices, news) behind explicit scope decisions.
+
+### 4.4 User flows (representative)
+
+| Flow | Today | Target |
+|------|--------|--------|
+| Find company | API/UI search and metadata | Autocomplete + richer industry context |
+| Sync EDGAR | Commands + API actions | One-click sync from UI with progress |
+| Inspect facts | API + exploratory UI | Curated statement views and charts |
+| CRM match | Staging + match commands | Guided UI workflow |
+| Ask AI | Not in core web app | Chat grounded in facts and excerpts |
+
+### 4.5 User stories (with rough status)
+
+Format: *As a [user], I want [capability] so that [benefit].*
+
+**Core**
+
+1. **Alex** — Search by CIK, ticker, or name → **Partial** (API/backend; UI evolving).
+2. **Sam** — Autocomplete search → **Planned** (polish).
+3. **Ivy** — Fetch 10-Q / 10-K for a company → **Partial** (sync + filings; UX TBD).
+4. **Alex** — AI parses filings into statements → **Future** (structured facts today; LLM narrative later).
+5. **Sam** — Trends and ratios over time → **Partial** (facts/metrics; visualization TBD).
+6. **Ivy** — Benchmarks and risk-style insights → **Future** (AI/analytics).
+
+**Visualization and customization**
+
+7. **Alex** — Interactive multi-company charts → **Future**.
+8. **Sam** — Filter by form, date, section → **Partial** (API); **UI Planned**.
+9. **Ivy** — Tabular / chart / narrative views → **Partial** / **Future**.
+10. **Alex** — Side-by-side compare (e.g. up to 5 names) → **Future**.
+
+**Advanced**
+
+11–16. Accounts, export, alerts, AI chat, collaboration, third-party APIs → **Future** (see 4.3).
+
+---
+
+## 5. Non-functional requirements
+
 ### 5.1 Performance
-- Response time: <2 seconds for searches; <10 seconds for AI parsing of large filings.
-- Scalability: Handle 1,000 concurrent users; use cloud hosting (e.g., AWS).
-- Data limits: Cap free tier at 50 queries/day; unlimited for premium.
 
-### 5.2 Security and Compliance
-- Data encryption: HTTPS, AES for stored data.
-- Authentication: JWT tokens; MFA for sensitive actions.
-- Compliance: Adhere to SEC data usage policies; GDPR/CCPA for user data.
-- Audit logs: Track all data accesses.
+- API list/detail endpoints should stay responsive under normal single-user dev and modest concurrent load; define SLOs when a hosted tier exists.
+- Heavy sync and bulk jobs are **asynchronous-friendly** (management commands, background work TBD for production).
+- Respect **SEC rate limits** and identify callers with `User-Agent` (`USER_AGENT_EMAIL`).
+
+### 5.2 Security and compliance
+
+- HTTPS in production; strong `DJANGO_SECRET_KEY` when `DEBUG=false`.
+- No authentication on the open-source default app; **add authn/z** before any multi-tenant or public SaaS.
+- **SEC**: Follow [SEC fair access](https://www.sec.gov/os/webmaster-faq#code-support) guidance; cache politely.
+- User data (if accounts are added): GDPR/CCPA considerations; audit logging for sensitive operations.
 
 ### 5.3 Usability
-- UI/UX: Responsive design (mobile-first); accessible (WCAG 2.1 compliant).
-- Localization: English primary; support for multiple languages in future.
-- Error Handling: Graceful failures (e.g., "No data found for that CIK") with suggestions.
+
+- Responsive, accessible UI over time (WCAG 2.1 as target for customer-facing builds).
+- Clear errors (e.g. unknown CIK, sync failures) with actionable messages.
 
 ### 5.4 Reliability
-- Uptime: 99.9% SLA.
-- Backup: Daily data backups; redundancy for AI services.
 
-### 5.5 Technical Stack
-- Frontend: React.js, Tailwind CSS.
-- Backend: Node.js, Express; Database: PostgreSQL/MongoDB for user data.
-- AI: Integration with LLMs (e.g., Grok API) for parsing.
-- APIs: SEC EDGAR API (with rate limiting); potential caching with Redis.
+- Migration discipline and automated checks in CI.
+- Backups and HA for production Postgres when deployed—not prescribed for local dev defaults.
 
-## 6. Assumptions and Dependencies
+### 5.5 Technical stack (as implemented)
+
+| Layer | Technology |
+|-------|------------|
+| Backend | Django 5+, Django REST Framework, Python 3.12+ |
+| Frontend | React, TypeScript, Vite |
+| Database | SQLite (default), PostgreSQL (`DATABASE_URL`) |
+| SEC integration | Direct HTTP APIs, `sec_edgar` client and services |
+| Macro data | FRED via `public_data` (optional `FRED_API_KEY`) |
+| Quality | Ruff, pytest, pytest-django, coverage gates in CI |
+| Containers | Dockerfile(s), Docker Compose, optional nginx for static UI |
+| Optional AI | OpenAI/LangChain for experimental CLI summarize only |
+
+---
+
+## 6. Assumptions and dependencies
+
 ### 6.1 Assumptions
-- SEC EDGAR API remains publicly accessible with no major changes.
-- AI models can accurately parse filings (validated via testing).
-- Users have basic financial knowledge.
+
+- SEC continues to offer **public data APIs** and bulk resources used by this repo.
+- Maintainers can supply a valid **contact email** for `User-Agent`.
+- Users of advanced features have basic finance and EDGAR literacy.
 
 ### 6.2 Dependencies
-- External APIs: SEC EDGAR, AI providers (e.g., xAI Grok).
-- Libraries: For parsing (e.g., BeautifulSoup for HTML/XML), visualization.
-- Infrastructure: Cloud provider for hosting.
 
-## 7. Risks and Mitigations
+- **Runtime**: `requirements.txt`, `requirements-dev.txt`; Node.js for frontend build.
+- **External**: `sec.gov` (and related); `fred.stlouisfed.org` when using FRED.
+- **Reference assets**: JSON under `data/reference/` and `data/manifest.json` index.
+
+---
+
+## 7. Risks and mitigations
+
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| AI Parsing Inaccuracies | Medium | High | Manual validation dataset; user feedback loop for corrections. |
-| API Rate Limits | High | Medium | Caching mechanisms; premium tiers with higher limits. |
-| Data Privacy Breach | Low | High | Regular security audits; compliance certifications. |
-| Market Competition | Medium | Medium | Differentiate with AI insights; user testing for unique features. |
+| SEC API or policy changes | Medium | High | Abstract client; document env vars; monitor SEC developer updates. |
+| Rate limiting / blocking | Medium | Medium | Backoff, caching, single descriptive User-Agent. |
+| XBRL / form heterogeneity | High | Medium | Tests on sampled payloads; incremental parser coverage. |
+| AI hallucination (when added) | Medium | High | Ground answers in retrieved facts; citations; human review for high-stakes use. |
+| Scope creep (AI vs data platform) | Medium | Medium | Keep structured pipeline as source of truth; AI as optional layer. |
+
+---
 
 ## 8. Appendix
+
 ### 8.1 Glossary
-- CIK: Central Index Key (SEC company identifier).
-- EDGAR: SEC's filing system.
-- MD&A: Management's Discussion and Analysis.
+
+- **CIK**: Central Index Key (SEC company identifier).
+- **EDGAR**: SEC Electronic Data Gathering, Analysis, and Retrieval system.
+- **MD&A**: Management’s Discussion and Analysis.
+- **XBRL**: eXtensible Business Reporting Language (structured tagging in filings).
 
 ### 8.2 References
-- SEC EDGAR API Documentation.
-- Standard financial ratios and statements.
 
-This PRD serves as a living document and will be updated based on development progress and user feedback.
+- SEC EDGAR and [developer resources](https://www.sec.gov/edgar/sec-api-documentation).
+- Repository **README.md** for commands, env vars, and layout.
+- Additional notes under `docs/` (e.g. EDGAR API summaries).
+
+---
+
+This PRD is a **living document**. Update the **implementation status** section when major capabilities ship or pivot.

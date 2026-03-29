@@ -7,7 +7,7 @@
       "schema_doc": "accounting_model.json",
       "canonical_map": "generated/us_gaap_account_map.json",
       "sync_command": "python src/manage.py sync_accounting_reference",
-      "notes": "Merge data/acct_facts.csv, acct_facts.json, acct_facts_updated.json into the canonical map; load at runtime via sec_edgar.reference_data.load_accounting_by_concept."
+      "notes": "Merge reference/sources/accounting (acct_facts.csv + acct_facts_overlay.json) into generated/us_gaap_account_map.json; load at runtime via sec_edgar.reference_data.load_accounting_by_concept."
     }
   },
   "concept_groups": {
