@@ -16,6 +16,8 @@ import {
   type FilingRecord,
 } from './api'
 import TablePager from './components/TablePager'
+import FinancialChart from './FinancialChart'
+import FinancialStatements from './FinancialStatements'
 
 /** Latest `us-gaap` facts to show when synced (tune to your pipeline). */
 const DEFAULT_KPI_CONCEPTS = [
@@ -181,6 +183,7 @@ export default function CompanyEdgarSummary() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyErr, setHistoryErr] = useState<string | null>(null)
   const [copyKpiStatus, setCopyKpiStatus] = useState<'idle' | 'ok' | 'err'>('idle')
+  const [historyView, setHistoryView] = useState<'table' | 'chart'>('table')
 
   useEffect(() => {
     const id = window.setTimeout(() => setDebouncedFilingsSearch(filingsSearch), 350)
@@ -614,6 +617,24 @@ export default function CompanyEdgarSummary() {
                   ))}
                 </select>
               </label>
+              <div className="fa-history-viewtoggle" role="group" aria-label="History view">
+                <button
+                  type="button"
+                  className={historyView === 'table' ? 'fa-chip fa-chip-active' : 'fa-chip'}
+                  aria-pressed={historyView === 'table'}
+                  onClick={() => setHistoryView('table')}
+                >
+                  Table
+                </button>
+                <button
+                  type="button"
+                  className={historyView === 'chart' ? 'fa-chip fa-chip-active' : 'fa-chip'}
+                  aria-pressed={historyView === 'chart'}
+                  onClick={() => setHistoryView('chart')}
+                >
+                  Chart
+                </button>
+              </div>
               {historyErr && <p className="error">{historyErr}</p>}
               {historyLoading && (
                 <p className="muted" role="status">
@@ -623,7 +644,10 @@ export default function CompanyEdgarSummary() {
               {!historyLoading && !historyErr && historySeries.length === 0 && (
                 <p className="muted">No rows for this concept in the warehouse yet.</p>
               )}
-              {!historyLoading && historySeries.length > 0 && (
+              {!historyLoading && historySeries.length > 0 && historyView === 'chart' && (
+                <FinancialChart series={historySeries} label={historyConcept} />
+              )}
+              {!historyLoading && historySeries.length > 0 && historyView === 'table' && (
                 <div className="table-wrap fa-history-table-wrap">
                   <table className="data-table fa-history-table">
                     <thead>
@@ -654,6 +678,8 @@ export default function CompanyEdgarSummary() {
                 </div>
               )}
             </section>
+
+            <FinancialStatements companyId={company.id} cik={company.cik} />
 
             <div className="fa-analyst-two-col">
               <section className="panel detail-panel fa-sources" aria-labelledby="detail-sources-h">

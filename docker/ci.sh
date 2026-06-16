@@ -10,4 +10,4 @@ pytest -q \
   --cov=warehouse --cov=config --cov=sec_edgar --cov=public_data \
   --cov=api \
   --cov-report=term-missing \
-  --cov-fail-under=25
+  --cov-fail-under=50

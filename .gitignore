@@ -141,3 +141,9 @@ company-submissions-*.json
 /data/companies.csv
 /data/companies.json
 /data/companies-clean.json
+
+# Generated static site output
+/site/
+
+# Content-addressed filing artifact storage (raw + extracted text by SHA-1)
+/data/storage/

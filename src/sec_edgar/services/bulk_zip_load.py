@@ -11,6 +11,7 @@ import zipfile
 from pathlib import Path
 from typing import Any, Callable, Literal
 
+from sec_edgar.cik import normalize_cik
 from sec_edgar.client import SecEdgarClient
 from sec_edgar.services.company_facts import sync_company_facts_to_db
 from sec_edgar.services.submissions import sync_submissions_for_company
@@ -52,7 +53,7 @@ def ensure_company_for_bulk(
     kind: Literal["facts", "submissions"],
     only_existing: bool,
 ) -> Company | None:
-    cik = cik.zfill(10)
+    cik = normalize_cik(cik)
     if only_existing:
         return Company.objects.filter(cik=cik).first()
     name = _default_name_from_payload(cik, payload, kind)
@@ -87,7 +88,7 @@ def _should_process_cik(
 ) -> bool:
     if cik_allowlist is not None and cik not in cik_allowlist:
         return False
-    if start_after_cik and cik <= start_after_cik.zfill(10):
+    if start_after_cik and cik <= normalize_cik(start_after_cik):
         return False
     return True
 

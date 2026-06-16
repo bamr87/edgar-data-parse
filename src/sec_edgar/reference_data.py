@@ -33,6 +33,34 @@ def concept_group_frozensets() -> dict[str, frozenset[str]]:
 
 
 @lru_cache(maxsize=1)
+def concept_groups_ordered() -> dict[str, tuple[str, ...]]:
+    """Concept groups as ordered tuples (preference order for fact resolution)."""
+    data = load_reference_json("financial_model.json")
+    raw = data.get("concept_groups") or {}
+    return {str(k): tuple(v) for k, v in raw.items() if isinstance(v, list)}
+
+
+@lru_cache(maxsize=1)
+def derived_kpi_definitions() -> dict[str, dict[str, Any]]:
+    """Declarative KPI definitions (formula / requires / requires_any / notes)."""
+    data = load_reference_json("financial_model.json")
+    raw = data.get("derived_kpis") or {}
+    return {str(k): dict(v) for k, v in raw.items() if isinstance(v, dict)}
+
+
+@lru_cache(maxsize=1)
+def statement_schemas() -> dict[str, tuple[dict[str, str], ...]]:
+    """Ordered line items per statement type, each mapping a concept_group to a label."""
+    data = load_reference_json("financial_model.json")
+    raw = data.get("statement_schemas") or {}
+    return {
+        str(k): tuple(item for item in v if isinstance(item, dict))
+        for k, v in raw.items()
+        if isinstance(v, list)
+    }
+
+
+@lru_cache(maxsize=1)
 def load_accounting_by_concept() -> dict[str, dict[str, Any]]:
     from sec_edgar.services.accounting_reference import load_accounting_by_concept_resolved
 
@@ -42,4 +70,7 @@ def load_accounting_by_concept() -> dict[str, dict[str, Any]]:
 def clear_reference_cache() -> None:
     load_reference_json.cache_clear()
     concept_group_frozensets.cache_clear()
+    concept_groups_ordered.cache_clear()
+    derived_kpi_definitions.cache_clear()
+    statement_schemas.cache_clear()
     load_accounting_by_concept.cache_clear()

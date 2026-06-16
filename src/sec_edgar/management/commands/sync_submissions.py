@@ -3,6 +3,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 from config.job_logging import ingest_job_context
+from sec_edgar.cik import normalize_cik
 from sec_edgar.services.submissions import sync_submissions_for_company
 from warehouse.models import Company
 
@@ -33,7 +34,7 @@ class Command(BaseCommand):
                 name = info["name"]
                 ticker = options["ticker"].upper()
             else:
-                cik = str(options["cik"]).zfill(10)
+                cik = normalize_cik(options["cik"])
                 name = cik
                 ticker = None
 

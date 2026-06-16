@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.db import transaction
 from django.utils import timezone
@@ -15,7 +15,7 @@ from public_data.providers.fred import FredProvider
 def upsert_series_observations(
     series: ExternalSeries,
     *,
-    observation_start=None,
+    observation_start: date | None = None,
 ) -> int:
     if series.provider == "fred":
         provider = FredProvider()

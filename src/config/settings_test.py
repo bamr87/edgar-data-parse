@@ -6,5 +6,18 @@ from .settings import *  # noqa: F403
 DEBUG = True
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
+# Run Celery tasks inline (no broker needed in tests).
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+
 # Tests must not call SEC/FRED unless explicitly mocked; keys may still be set in env.
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["testserver", "localhost", "127.0.0.1"]
+
+# Neutralize throttling in tests so the global + per-action throttle classes never
+# cause flaky 429s. Rates are set to None (unlimited) for every scope so even
+# explicitly-attached action throttles (e.g. the 'sec' scope) become no-ops.
+REST_FRAMEWORK = {  # noqa: F405
+    **REST_FRAMEWORK,  # noqa: F405
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {"anon": None, "user": None, "sec": None},
+}

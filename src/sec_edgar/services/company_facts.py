@@ -11,6 +11,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from sec_edgar.adapters.direct import DirectEdgarAdapter
+from sec_edgar.cik import normalize_cik
 from sec_edgar.services.edgar_sec_payload import get_company_facts_payload, save_edgar_sec_payload
 from warehouse.models import Company, EdgarEntitySyncState, EdgarSecPayload, Fact
 
@@ -51,7 +52,7 @@ def sync_company_facts_to_db(
     force_refresh: bool = False,
 ) -> int:
     """Replace facts for company from SEC companyfacts payload."""
-    cik = company.cik.zfill(10)
+    cik = normalize_cik(company.cik)
     if facts_payload is None:
         facts_payload = get_company_facts_payload(
             cik, user_agent_email=user_agent_email, force_refresh=force_refresh

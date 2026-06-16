@@ -45,6 +45,15 @@ Registered with `DefaultRouter` (list/create/detail patterns apply where the vie
 | GET | `/api/v1/companies/{id}/edgar-sync-status/` | Last sync timestamps and error snippet. |
 | GET | `/api/v1/companies/{id}/analytics/latest-by-concepts/?concepts=&taxonomy=` | Latest fact per concept. |
 | GET | `/api/v1/companies/{id}/analytics/timeseries/?concept=&taxonomy=&limit=` | Time series for one concept. |
+| GET | `/api/v1/companies/{id}/statements/?statement_type=&taxonomy=` | Curated statement view (balance/income/cash-flow) from Facts. |
+| POST | `/api/v1/companies/{id}/compute-metrics/` | Compute/refresh `DerivedMetric` rows from Facts (admin only). |
+| GET | `/api/v1/companies/{id}/profile/` | Consolidated Company-360 view (identity, financials, filings, documents, CRM) with provenance. |
+| GET | `/api/v1/companies/{id}/leadership/` | Officers/directors/owners extracted from SEC Forms 3/4/5 (titles, roles, tenure, insider shares). |
+| GET | `/api/v1/companies/{id}/stakeholder-assessment/` | Transparent people-vs-profits orientation index + decomposed signals + caveats. See [leadership-methodology.md](leadership-methodology.md). |
+| POST | `/api/v1/companies/{id}/analyze-leadership/` | Run the gated LLM narrative analysis (initiatives/quotes/direction), grounded in SEC filing text (admin only; off unless `ENABLE_AI_ANALYSIS`). |
+| GET | `/api/v1/companies/{id}/leadership-analysis/` | Latest stored LLM leadership analysis (summary, initiatives, verbatim quotes, cited sources, caveats). |
+| GET | `/api/v1/companies/compare/?group_by=&concept=` | Cohort compare of a concept across an industry/region group. |
+| GET | `/api/v1/companies/leadership-compare/?cik=&cik=` | Compare leadership footprint + stakeholder orientation across companies. |
 
 ### Other custom actions
 
@@ -52,13 +61,16 @@ Registered with `DefaultRouter` (list/create/detail patterns apply where the vie
 |--------|------|-------------|
 | GET | `/api/v1/company-metadata/facets/` | Aggregates: SIC, state, industry, coverage counts. |
 | POST | `/api/v1/filings/ingest-htm/` | Body: `url`, and `ticker` or `cik` — ingest one HTM filing. |
+| POST | `/api/v1/filings/ingest-submission/` | Body: `url`, and `ticker` or `cik` — decompose a full submission `.txt` into `FilingDocument` rows (admin). |
+| GET | `/api/v1/filings/search/?q=&form_type=&cik=` | Full-text search across ingested filing-document text (Postgres FTS; SQLite substring fallback). |
+| GET | `/api/v1/tasks/{task_id}/` | Celery task state for an async sync job. |
 | GET | `/api/v1/facts/facets/?company=` | Per-company fact aggregates (taxonomy, top concepts, years). |
 | GET | `/api/v1/peer-groups/{id}/analytics/peer-fact-compare/?concept=&taxonomy=` | Compare concept across peer group. |
 | GET | `/api/v1/series-bundles/{slug}/observations/?limit=` | Bundle observations snapshot. |
 
 Interactive exploration: open `/api/v1/` in a browser with Django staff session if browsable API is enabled.
 
-**OpenAPI:** Not configured. This document is the route inventory.
+**OpenAPI:** Served by `drf-spectacular` at `/api/v1/schema/` (OpenAPI 3) with Swagger UI at `/api/v1/docs/`. This document remains a human-readable route inventory.
 
 ---
 
@@ -76,6 +88,7 @@ python manage.py <command> [options]
 | Command | Purpose |
 |---------|---------|
 | `ingest_htm` | Ingest one HTM filing (`--url`, optional `--ticker` / `--cik`). |
+| `ingest_submission` | Decompose a full submission `.txt` into `FilingDocument` rows (`--url`, `--ticker`/`--cik`, `--no-extract`). |
 | `sync_submissions` | Pull SEC submissions index into `Filing` for a company (`--ticker` / `--cik`). |
 | `sync_company_facts` | Load companyfacts into `Fact` (`--ticker` / `--cik`). |
 | `sync_listed_issuers` | Refresh `ListedIssuer` from `company_tickers.json`. |
@@ -93,6 +106,11 @@ python manage.py <command> [options]
 | `load_crm_companies_json` | Load CRM JSON into `CrmCompanyRecord`. |
 | `match_crm_sec_titles` | Match CRM names to SEC issuers. |
 | `sync_crm_matched_edgar` | Sync submissions/facts for matched CRM rows (rate-limit friendly). |
+| `sync_derived_metrics` | Compute `DerivedMetric` rows from existing Facts (`--ticker` / `--cik` / `--all`); also the backfill path. |
+| `generate_static_site` | Render a static HTML site of company financials (`--ticker`/`--cik`/`--all`, `--output`, `--limit`) with per-company copy/download CSV+JSON. |
+| `sync_leadership` | Extract officers/directors/owners from SEC Forms 3/4/5 (`--ticker`/`--cik`, `--limit`). |
+| `compute_stakeholder_assessment` | Compute the transparent people-vs-profits orientation index (`--ticker`/`--cik`/`--all`). |
+| `analyze_leadership` | Gated LLM narrative analysis of leadership from SEC filing text (`--ticker`/`--cik`/`--all`, `--no-persist`; needs `ENABLE_AI_ANALYSIS` + `requirements-ai.txt`). |
 
 ### `public_data`
 

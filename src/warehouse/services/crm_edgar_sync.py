@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from typing import Any
 
 from django.db import transaction
 
+from sec_edgar.cik import normalize_cik
+from sec_edgar.exceptions import EdgarRateLimitError
 from sec_edgar.services.company_facts import sync_company_facts_to_db
 from sec_edgar.services.submissions import sync_submissions_for_company
 from warehouse.models import Company, CrmCompanyRecord
@@ -15,16 +18,13 @@ from warehouse.models import Company, CrmCompanyRecord
 logger = logging.getLogger(__name__)
 
 
-def _call_sec_with_backoff(fn, /, *args, **kwargs):
+def _call_sec_with_backoff(fn: Callable[..., int], /, *args: Any, **kwargs: Any) -> int:
     try:
         return fn(*args, **kwargs)
-    except RuntimeError as e:
-        err = str(e).lower()
-        if "429" in err or "rate limit" in err:
-            logger.warning("SEC rate signal (%s); sleeping 65s then retry once", e)
-            time.sleep(65)
-            return fn(*args, **kwargs)
-        raise
+    except EdgarRateLimitError as e:
+        logger.warning("SEC rate signal (%s); sleeping 65s then retry once", e)
+        time.sleep(65)
+        return fn(*args, **kwargs)
 
 
 def _apply_crm_metadata(company: Company, crm: CrmCompanyRecord) -> None:
@@ -52,7 +52,7 @@ def _apply_crm_metadata(company: Company, crm: CrmCompanyRecord) -> None:
 def upsert_company_for_crm(crm: CrmCompanyRecord) -> Company:
     if not crm.sec_cik:
         raise ValueError("CRM row has no sec_cik")
-    cik = str(crm.sec_cik).zfill(10)
+    cik = normalize_cik(crm.sec_cik)
     company, _ = Company.objects.get_or_create(
         cik=cik,
         defaults={

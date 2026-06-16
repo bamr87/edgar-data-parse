@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 
 from .views import (
@@ -16,6 +17,7 @@ from .views import (
     SeriesObservationViewSet,
     SicCodesReferenceView,
     TableViewSet,
+    TaskStatusView,
 )
 
 router = DefaultRouter()
@@ -35,5 +37,8 @@ urlpatterns = [
     path("health/", HealthView.as_view(), name="health"),
     path("health/ready/", HealthReadyView.as_view(), name="health-ready"),
     path("reference/sic-codes/", SicCodesReferenceView.as_view(), name="reference-sic-codes"),
+    path("tasks/<str:task_id>/", TaskStatusView.as_view(), name="task-status"),
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
     path("", include(router.urls)),
 ]

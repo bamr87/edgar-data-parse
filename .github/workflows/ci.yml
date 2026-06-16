@@ -15,10 +15,12 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install and build
+      - name: Install, lint, test and build
         working-directory: frontend
         run: |
           npm ci
+          npm run lint
+          npm run test
           npm run build
 
   lint:
@@ -34,6 +36,41 @@ jobs:
             requirements-dev.txt
       - run: pip install ruff
       - run: ruff check src tests
+
+  typecheck:
+    runs-on: ubuntu-latest
+    continue-on-error: true   # advisory until the codebase is fully typed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Mypy (advisory)
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          DJANGO_SETTINGS_MODULE: config.settings_test
+        run: mypy src
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true   # non-blocking advisory scan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: pip-audit (advisory)
+        run: pip-audit
 
   django-migrations:
     runs-on: ubuntu-latest
@@ -52,6 +89,29 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/src
           DJANGO_SETTINGS_MODULE: config.settings
         run: python src/manage.py makemigrations --check --dry-run
+
+  deploy-check:
+    runs-on: ubuntu-latest
+    needs: [lint, django-migrations]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: manage.py check --deploy (production settings)
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_DEBUG: "false"
+          # A 50+ char key so security.W009 does not warn; not a real secret.
+          DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-0123456789-abcdefghij"
+          DJANGO_ALLOWED_HOSTS: "example.com"
+        run: python src/manage.py check --deploy --fail-level WARNING
 
   test-sqlite:
     runs-on: ubuntu-latest
@@ -81,7 +141,7 @@ jobs:
             --cov=api \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=25
+            --cov-fail-under=50
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -124,4 +184,4 @@ jobs:
           pytest -q \
             --cov=warehouse --cov=config --cov=sec_edgar --cov=public_data \
             --cov=api \
-            --cov-fail-under=25
+            --cov-fail-under=50

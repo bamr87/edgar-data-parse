@@ -1,0 +1,5 @@
+# Optional AI narrative analysis (leadership initiatives/quotes from filing text).
+# NOT part of the core runtime — install only when ENABLE_AI_ANALYSIS=true.
+#   pip install -r requirements-ai.txt
+# Also requires ANTHROPIC_API_KEY in the environment. See docs/leadership-methodology.md.
+anthropic>=0.40

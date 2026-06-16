@@ -7,15 +7,26 @@ from typing import Any
 from django.utils import timezone
 
 from sec_edgar.adapters.direct import DirectEdgarAdapter
+from sec_edgar.cik import normalize_cik
+from sec_edgar.exceptions import EdgarResolutionError
 from sec_edgar.services.bulk_company_tickers import sync_companies_from_sec_company_tickers
 from sec_edgar.services.company_facts import sync_company_facts_to_db
+from sec_edgar.services.company_tickers_catalog import search_company_tickers
+from sec_edgar.services.ingest_htm import ingest_htm_filing
 from sec_edgar.services.submissions import sync_submissions_for_company
-from warehouse.models import Company, ListedIssuer
+from warehouse.models import Company, Filing, ListedIssuer
 from warehouse.services.edgar.listed_issuers import sync_listed_issuers_from_remote
 
 
 class EdgarSyncService:
-    """Application entry points for EDGAR-backed warehouse operations."""
+    """Domain-orchestration facade for EDGAR operations.
+
+    This is the single entry point the API and management commands should use for
+    EDGAR work. It composes the lower ``sec_edgar.services.*`` I/O tier (SEC HTTP +
+    payload caching) into warehouse-aware operations. Callers outside this package
+    should import from here rather than reaching into ``sec_edgar.services`` directly
+    (the one documented exception is reference-data lookups such as SIC codes).
+    """
 
     @staticmethod
     def resolve_edgar_identity(
@@ -39,12 +50,12 @@ class EdgarSyncService:
             li = ListedIssuer.objects.filter(ticker=t_upper).first()
         norm: str | None = None
         if li is None and cik_raw is not None:
-            cik_try = str(cik_raw).zfill(10)
             try:
-                norm = str(int(cik_try)).zfill(10)
+                norm = normalize_cik(cik_raw)
             except ValueError:
-                norm = cik_try
-            li = ListedIssuer.objects.filter(cik=norm).first()
+                norm = None
+            if norm is not None:
+                li = ListedIssuer.objects.filter(cik=norm).first()
 
         if li is None:
             sync_listed_issuers_from_remote(user_agent_email=user_agent_email)
@@ -69,7 +80,7 @@ class EdgarSyncService:
             return cik, name, t_upper
 
         if li is None:
-            raise ValueError("Could not resolve issuer from EDGAR directory")
+            raise EdgarResolutionError("Could not resolve issuer from EDGAR directory")
 
         name = (name_override or li.name)[:255]
         return li.cik, name, li.ticker or t_upper
@@ -118,6 +129,35 @@ class EdgarSyncService:
         )
 
     @staticmethod
+    def search_edgar_directory(
+        query: str,
+        *,
+        user_agent_email: str | None,
+        limit: int = 50,
+        force_refresh: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Search the cached SEC ticker directory (DB-first, optional refresh)."""
+        return search_company_tickers(
+            query,
+            user_agent_email=user_agent_email,
+            limit=limit,
+            force_refresh=force_refresh,
+        )
+
+    @staticmethod
+    def ingest_htm(
+        *,
+        url: str,
+        ticker: str | None,
+        cik: str | None,
+        user_agent_email: str | None,
+    ) -> Filing:
+        """Download and parse one HTM filing into Filing/Section/Table rows."""
+        return ingest_htm_filing(
+            url=url, ticker=ticker, cik=cik, user_agent_email=user_agent_email
+        )
+
+    @staticmethod
     def sync_submissions(
         company: Company,
         *,
@@ -139,10 +179,18 @@ class EdgarSyncService:
         user_agent_email: str | None,
         facts_payload: dict[str, Any] | None = None,
         force_refresh: bool = False,
+        compute_metrics: bool = False,
     ) -> int:
-        return sync_company_facts_to_db(
+        n = sync_company_facts_to_db(
             company,
             facts_payload,
             user_agent_email=user_agent_email,
             force_refresh=force_refresh,
         )
+        if compute_metrics:
+            # Runs in its OWN transaction, after the facts sync has committed — a
+            # metric failure must never roll back freshly-synced facts.
+            from warehouse.services.edgar.metrics import compute_derived_metrics
+
+            compute_derived_metrics(company)
+        return n

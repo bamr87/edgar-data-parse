@@ -9,6 +9,7 @@ from typing import Any
 from django.db import transaction
 from django.utils import timezone
 
+from sec_edgar.cik import normalize_cik
 from sec_edgar.services.edgar_sec_payload import get_submissions_payload, save_edgar_sec_payload
 from sec_edgar.services.sic_reference import industry_title_for_code
 from warehouse.models import Company, EdgarEntitySyncState, EdgarSecPayload, Filing
@@ -40,7 +41,7 @@ def sync_submissions_for_company(
     user_agent_email: str | None = None,
     force_refresh: bool = False,
 ) -> int:
-    cik = company.cik.zfill(10)
+    cik = normalize_cik(company.cik)
     if payload is None:
         payload = get_submissions_payload(
             cik, user_agent_email=user_agent_email, force_refresh=force_refresh
