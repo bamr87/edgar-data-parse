@@ -94,6 +94,8 @@ def resolve_group_facts_by_period(
     # (concept, period_end) -> (chosen Fact, duration_days); keep the longest duration.
     chosen: dict[tuple[str, date], tuple[Fact, int]] = {}
     for f in facts:
+        if f.period_end is None:  # filtered out in the query; narrows for the key below
+            continue
         duration = (f.period_end - f.period_start).days if f.period_start else -1
         key = (f.concept, f.period_end)
         prev = chosen.get(key)

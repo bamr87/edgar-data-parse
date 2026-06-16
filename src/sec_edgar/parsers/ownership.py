@@ -23,7 +23,9 @@ def _text(el, path: str) -> str | None:
 
 def _flag(rel, tag: str) -> bool:
     v = _text(rel, tag)
-    return bool(v) and v.lower() in _TRUE
+    if not v:
+        return False
+    return v.lower() in _TRUE
 
 
 def parse_ownership(xml_text: str) -> dict:

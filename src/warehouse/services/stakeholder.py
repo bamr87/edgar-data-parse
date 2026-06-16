@@ -53,6 +53,8 @@ def _latest_annual(company: Company, concepts: list[str], taxonomy: str):
                 period_end__isnull=False, period_start__isnull=False, value__isnull=False,
             ).order_by("-period_end")
         ):
+            if f.period_end is None or f.period_start is None or f.value is None:
+                continue  # excluded by the query filters; narrows the types below
             if (f.period_end - f.period_start).days >= 300:
                 return float(f.value), f.period_end, concept
     return None, None, None

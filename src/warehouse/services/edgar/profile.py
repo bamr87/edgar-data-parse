@@ -132,7 +132,9 @@ def cohort_compare(
         .order_by("company_id", "-period_end", "-id")
         .values("company_id", "value")
     ):
-        latest.setdefault(f["company_id"], float(f["value"]))
+        fact_value = f["value"]
+        if fact_value is not None:  # value__isnull=False already excludes None
+            latest.setdefault(f["company_id"], float(fact_value))
 
     buckets: dict[str, list[float]] = defaultdict(list)
     for company_id, value in latest.items():
@@ -140,7 +142,7 @@ def cohort_compare(
         if group:
             buckets[group].append(value)
 
-    rows = [
+    rows: list[dict[str, Any]] = [
         {
             "group": group,
             "company_count": len(values),

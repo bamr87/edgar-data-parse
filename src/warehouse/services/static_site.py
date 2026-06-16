@@ -13,7 +13,7 @@ import datetime
 import io
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, cast
 
 from django.template.loader import render_to_string
 
@@ -166,11 +166,12 @@ def build_company_context(company: Company) -> dict[str, Any]:
             }
         )
 
-    filings = list(
-        Filing.objects.filter(company=company)
+    filings = [
+        cast("dict[str, Any]", f)
+        for f in Filing.objects.filter(company=company)
         .order_by("-filing_date")
         .values("form_type", "filing_date", "accession_number", "period_of_report")[:50]
-    )
+    ]
     for f in filings:
         f["filing_date"] = str(f["filing_date"]) if f["filing_date"] else ""
         f["period_of_report"] = str(f["period_of_report"]) if f["period_of_report"] else ""
@@ -188,13 +189,14 @@ def build_company_context(company: Company) -> dict[str, Any]:
         )[:25]
     ]
 
-    fact_preview = list(
-        Fact.objects.filter(company=company)
+    fact_preview = [
+        cast("dict[str, Any]", fct)
+        for fct in Fact.objects.filter(company=company)
         .order_by("-period_end", "concept")
         .values("concept", "taxonomy", "period_start", "period_end", "unit", "value")[
             :FACT_PREVIEW_LIMIT
         ]
-    )
+    ]
     for fct in fact_preview:
         fct["period_start"] = str(fct["period_start"]) if fct["period_start"] else ""
         fct["period_end"] = str(fct["period_end"]) if fct["period_end"] else ""
