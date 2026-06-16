@@ -14,7 +14,20 @@ source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
 cp src/.env.example src/.env
 # Set USER_AGENT_EMAIL for any command that calls SEC.
+# src/.env is loaded automatically by config/settings.py (python-dotenv);
+# real environment variables already set take precedence.
 ```
+
+### Dependencies
+
+Runtime deps are managed with [pip-tools](https://github.com/jazzband/pip-tools): edit [`requirements.in`](requirements.in) (bounded ranges) and regenerate the pinned lock:
+
+```bash
+pip-compile requirements.in            # rewrites requirements.txt
+pip-compile --upgrade-package django requirements.in   # bump one package
+```
+
+Common tasks are wrapped in the [`Makefile`](Makefile): `make lint`, `make test`, `make typecheck`, `make migrations`, `make all`.
 
 Run Django from `src/`:
 
@@ -24,7 +37,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-`PYTHONPATH` and `DJANGO_SETTINGS_MODULE` are set automatically when using `cd src` and the project layout; tests use `config.settings_test` via `pytest.ini` / `pyproject.toml`.
+`PYTHONPATH` and `DJANGO_SETTINGS_MODULE` are set automatically when using `cd src` and the project layout; tests use `config.settings_test` via [`pyproject.toml`](pyproject.toml) `[tool.pytest.ini_options]`.
 
 ## Lint and tests
 

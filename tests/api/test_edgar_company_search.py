@@ -59,9 +59,9 @@ def test_edgar_search_by_cik_digits(api_client) -> None:
 
 @pytest.mark.django_db
 @responses.activate
-def test_from_edgar_creates_company(api_client) -> None:
+def test_from_edgar_creates_company(admin_client) -> None:
     responses.add(responses.GET, SEC_TICKERS_URL, json=MOCK_TICKERS, status=200)
-    r = api_client.post(
+    r = admin_client.post(
         "/api/v1/companies/from-edgar/",
         {"ticker": "NVDA"},
         format="json",
@@ -75,10 +75,10 @@ def test_from_edgar_creates_company(api_client) -> None:
 
 @pytest.mark.django_db
 @responses.activate
-def test_from_edgar_existing_returns_200(api_client) -> None:
+def test_from_edgar_existing_returns_200(admin_client) -> None:
     responses.add(responses.GET, SEC_TICKERS_URL, json=MOCK_TICKERS, status=200)
     Company.objects.create(cik="0000320193", ticker="AAPL", name="Apple Inc.")
-    r = api_client.post(
+    r = admin_client.post(
         "/api/v1/companies/from-edgar/",
         {"cik": "0000320193"},
         format="json",

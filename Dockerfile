@@ -19,7 +19,7 @@ COPY requirements-dev.txt /app/requirements-dev.txt
 RUN pip install --no-cache-dir -r /app/requirements-dev.txt
 
 COPY tests/ /app/tests/
-COPY pyproject.toml pytest.ini /app/
+COPY pyproject.toml /app/
 
 # Reference JSON used by sec_edgar.reference_data (tests and runtime)
 COPY data/reference /app/data/reference
@@ -40,8 +40,17 @@ COPY data/reference /app/data/reference
 COPY docker/entrypoint-web.sh /entrypoint-web.sh
 RUN chmod +x /entrypoint-web.sh
 
+# Run as a non-root user (uid 1000); ensure the data dir is writable for HTM downloads.
+RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
+    && mkdir -p /app/data \
+    && chown -R appuser:appuser /app
+USER appuser
+
+# Worker count is tunable via GUNICORN_WORKERS (see entrypoint -> WEB_CONCURRENCY).
+ENV GUNICORN_WORKERS=2
+
 WORKDIR /app/src
 
 EXPOSE 8000
 ENTRYPOINT ["/entrypoint-web.sh"]
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]

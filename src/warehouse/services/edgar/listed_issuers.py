@@ -30,9 +30,9 @@ def bulk_upsert_listed_issuers(records: list[dict[str, object]]) -> int:
     now = timezone.now()
     objs = [
         ListedIssuer(
-            cik=r["cik"],
-            ticker=r.get("ticker"),
-            name=(r["name"] or f"CIK {r['cik']}")[:255],
+            cik=str(r["cik"]),
+            ticker=str(r["ticker"]) if r.get("ticker") else None,
+            name=(str(r["name"]) if r.get("name") else f"CIK {r['cik']}")[:255],
             synced_at=now,
         )
         for r in records

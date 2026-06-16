@@ -1,8 +1,9 @@
 """HTTP client for SEC hosts (data.sec.gov, www.sec.gov).
 
 Uses a descriptive User-Agent (see ``user_agent_string``) and ``tenacity`` retries with
-backoff on GETs. HTTP 429 raises ``RuntimeError`` so callers can back off; SEC fair-access
-guidance applies across all machines sharing the same contact identity.
+backoff on GETs. HTTP 429 raises :class:`~sec_edgar.exceptions.EdgarRateLimitError` so
+callers can back off; SEC fair-access guidance applies across all machines sharing the
+same contact identity.
 """
 
 from __future__ import annotations
@@ -15,6 +16,9 @@ from urllib.parse import quote
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+from sec_edgar.cik import normalize_cik
+from sec_edgar.exceptions import EdgarRateLimitError, EdgarResolutionError
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +60,7 @@ class SecEdgarClient:
     def get_json(self, url: str) -> dict[str, Any]:
         r = self.session.get(url, timeout=60)
         if r.status_code == 429:
-            raise RuntimeError("SEC rate limit (429)")
+            raise EdgarRateLimitError("SEC rate limit (429)")
         r.raise_for_status()
         return r.json()
 
@@ -64,7 +68,7 @@ class SecEdgarClient:
     def get_text(self, url: str) -> str:
         r = self.session.get(url, timeout=120)
         if r.status_code == 429:
-            raise RuntimeError("SEC rate limit (429)")
+            raise EdgarRateLimitError("SEC rate limit (429)")
         r.raise_for_status()
         return r.text
 
@@ -81,7 +85,7 @@ class SecEdgarClient:
         """Stream a binary response (e.g. nightly EDGAR ZIP) to disk."""
         r = self.session.get(url, stream=True, timeout=600)
         if r.status_code == 429:
-            raise RuntimeError("SEC rate limit (429)")
+            raise EdgarRateLimitError("SEC rate limit (429)")
         r.raise_for_status()
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("wb") as out:
@@ -99,22 +103,22 @@ class SecEdgarClient:
         for row in data.values():
             if row.get("ticker") == ticker:
                 return {
-                    "cik": str(row["cik_str"]).zfill(10),
+                    "cik": normalize_cik(row["cik_str"]),
                     "name": str(row["title"]),
                 }
-        raise ValueError(f"Ticker {ticker} not found")
+        raise EdgarResolutionError(f"Ticker {ticker} not found")
 
     def submissions(self, cik_padded: str) -> dict[str, Any]:
-        cik = cik_padded.zfill(10)
+        cik = normalize_cik(cik_padded)
         return self.get_json(f"{self.BASE_DATA}/submissions/CIK{cik}.json")
 
     def company_facts(self, cik_padded: str) -> dict[str, Any]:
-        cik = cik_padded.zfill(10)
+        cik = normalize_cik(cik_padded)
         return self.get_json(f"{self.BASE_DATA}/api/xbrl/companyfacts/CIK{cik}.json")
 
     def company_concept(self, cik_padded: str, taxonomy: str, tag: str) -> dict[str, Any]:
         """Single concept series for one issuer (label, description, units) — SEC companyconcept API."""
-        cik = cik_padded.zfill(10)
+        cik = normalize_cik(cik_padded)
         safe_tag = quote(tag, safe="")
         return self.get_json(
             f"{self.BASE_DATA}/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{safe_tag}.json"

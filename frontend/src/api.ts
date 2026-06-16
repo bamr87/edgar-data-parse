@@ -27,8 +27,36 @@ function secHeaders(): Record<string, string> {
   return { 'X-Sec-User-Agent-Email': email }
 }
 
+/** localStorage key for the DRF auth token (write/sync actions require admin auth). */
+export const AUTH_TOKEN_STORAGE_KEY = 'edgarAuthToken'
+
+export function getAuthToken(): string {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)?.trim() || ''
+  } catch {
+    return ''
+  }
+}
+
+export function setAuthToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token)
+    else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+  } catch {
+    /* private mode */
+  }
+}
+
+/** `Authorization: Token <token>` (cross-origin SPA auth; no CSRF). */
+function authHeaders(): Record<string, string> {
+  const token = getAuthToken()
+  return token ? { Authorization: `Token ${token}` } : {}
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const r = await fetch(`${base}${path}`, { headers: { ...secHeaders() } })
+  const r = await fetch(`${base}${path}`, {
+    headers: { ...secHeaders(), ...authHeaders() },
+  })
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`)
   return r.json() as Promise<T>
 }
@@ -36,7 +64,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 export async function apiPost<T>(path: string, body?: object): Promise<T> {
   const r = await fetch(`${base}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...secHeaders() },
+    headers: { 'Content-Type': 'application/json', ...secHeaders(), ...authHeaders() },
     body: body ? JSON.stringify(body) : '{}',
   })
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`)
@@ -369,4 +397,75 @@ export function getConceptTimeseries(
   return apiGet<ConceptTimeseriesResponse>(
     `/api/v1/companies/${companyId}/analytics/timeseries/?${u}`,
   )
+}
+
+// --- Financial statements & derived metrics (Phase 5 computation tier) ---
+
+export type StatementLineItem = {
+  key: string
+  label: string
+  value: number | null
+  unit: string | null
+  accession: string | null
+}
+
+export type FinancialStatement = {
+  company: number
+  statement_type: string
+  taxonomy: string
+  period_end: string | null
+  line_items: StatementLineItem[]
+}
+
+export type StatementType =
+  | 'income_statement'
+  | 'balance_sheet'
+  | 'cash_flow_statement'
+
+/** Curated statement view (latest period) from `GET /companies/:id/statements/`. */
+export function getStatements(
+  companyId: number,
+  statementType: StatementType,
+  taxonomy = 'us-gaap',
+): Promise<FinancialStatement> {
+  const u = new URLSearchParams()
+  u.set('statement_type', statementType)
+  u.set('taxonomy', taxonomy)
+  return apiGet<FinancialStatement>(`/api/v1/companies/${companyId}/statements/?${u}`)
+}
+
+export type DerivedMetricRecord = {
+  id: number
+  company: number
+  key: string
+  period_end: string | null
+  value: string | null // DecimalField serializes as string
+  unit: string
+  extra: Record<string, unknown>
+  computed_at: string
+}
+
+export type DerivedMetricListResponse = {
+  count: number
+  next: string | null
+  previous: string | null
+  results: DerivedMetricRecord[]
+}
+
+/** Computed KPI rows for a company from `GET /derived-metrics/`. */
+export function getDerivedMetrics(
+  companyId: number,
+  opts?: { key?: string },
+): Promise<DerivedMetricListResponse> {
+  const u = new URLSearchParams()
+  u.set('company', String(companyId))
+  if (opts?.key) u.set('key', opts.key)
+  return apiGet<DerivedMetricListResponse>(`/api/v1/derived-metrics/?${u}`)
+}
+
+export type ComputeMetricsResponse = { company: number; metrics_written: number }
+
+/** POST: compute/refresh DerivedMetric rows (admin token required). */
+export function computeMetrics(companyId: number): Promise<ComputeMetricsResponse> {
+  return apiPost<ComputeMetricsResponse>(`/api/v1/companies/${companyId}/compute-metrics/`)
 }

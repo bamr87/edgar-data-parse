@@ -49,9 +49,13 @@ cd src
 python manage.py ingest_htm --url 'https://www.sec.gov/Archives/edgar/data/.../file.htm' --ticker AAPL
 python manage.py sync_submissions --ticker AAPL
 python manage.py sync_company_facts --ticker AAPL
+python manage.py sync_derived_metrics --ticker AAPL
+python manage.py generate_static_site --ticker AAPL --output ../site   # static "Wikipedia" site
 python manage.py load_series_bundle
 python manage.py sync_series_bundle --slug macro
 ```
+
+The static site (`generate_static_site`) renders offline HTML — one page per company with financial statements, derived metrics, filings, and a 23k-row facts table, each with copy-to-clipboard and CSV/JSON downloads. Serve `site/` from any static host (GitHub Pages, S3, nginx).
 
 Same sync actions are available on the API, for example `POST /api/v1/companies/{id}/sync-submissions/` and `POST /api/v1/companies/{id}/sync-facts/`. **Full command list, CRM pipeline, and bulk ZIP loaders** are documented in [`docs/api-and-cli.md`](docs/api-and-cli.md).
 
@@ -59,13 +63,15 @@ Bundles are defined in [`src/public_data/bundles/macro.json`](src/public_data/bu
 
 ### Sample company list (reference data, not ingested by Django)
 
-[`data/samples/companies-sample.csv`](data/samples/companies-sample.csv) is a small CRM-style export checked into git. Large exports go under **`data/local/`** (gitignored), e.g. `data/local/companies-clean.json` for `load_crm_companies_json`, or `data/local/erp-clients.csv` → `csv_to_json.py` / `clean_json.py`. Legacy flat paths under `data/*.csv` / `*.json` remain gitignored for older checkouts. SEC issuers live in the `warehouse` app after sync/ingest. If an older database still has table `erp_clients_erpclientrow`, drop it or recreate the DB; Django no longer ships that app.
+[`data/samples/companies-sample.csv`](data/samples/companies-sample.csv) is a small CRM-style export checked into git. Large exports go under **`data/local/`** (gitignored), e.g. `data/local/companies-clean.json` for `load_crm_companies_json`. SEC issuers live in the `warehouse` app after sync/ingest. If an older database still has table `erp_clients_erpclientrow`, drop it or recreate the DB; Django no longer ships that app.
 
-### CLI (no Django DB)
+### HTM ingest
+
+The standalone pre-Django scripts have been removed; the Django management commands are the canonical CLI. To ingest one HTM filing:
 
 ```bash
-python src/main.py --action process_htm --url 'https://www.sec.gov/Archives/.../file.htm'
-python src/main.py --ticker AAPL --action fetch    # writes companyfacts JSON under data/
+cd src
+python manage.py ingest_htm --url 'https://www.sec.gov/Archives/.../file.htm' --ticker AAPL
 ```
 
 ## Project layout

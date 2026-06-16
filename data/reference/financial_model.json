@@ -72,5 +72,20 @@
       "description": "Duration; aligns with reporting period.",
       "typical_unit": "USD"
     }
+  },
+  "statement_schemas": {
+    "income_statement": [
+      { "key": "revenue", "label": "Revenue" },
+      { "key": "cost_of_revenue", "label": "Cost of Revenue" }
+    ],
+    "balance_sheet": [
+      { "key": "accounts_receivable_current", "label": "Accounts Receivable, Current" },
+      { "key": "inventory", "label": "Inventory" },
+      { "key": "property_plant_equipment_net", "label": "Property, Plant & Equipment, Net" },
+      { "key": "accounts_payable_current", "label": "Accounts Payable, Current" }
+    ],
+    "cash_flow_statement": [
+      { "key": "capex", "label": "Capital Expenditures" }
+    ]
   }
 }

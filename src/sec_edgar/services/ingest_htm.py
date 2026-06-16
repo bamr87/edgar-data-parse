@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 
+from sec_edgar.cik import normalize_cik
 from sec_edgar.parsers.htm import parse_sec_htm
 from warehouse.models import Company, Filing, Section, Table
 
@@ -48,7 +49,7 @@ def ingest_htm_filing(
         cik = info["cik"]
         name = info["name"]
     elif cik:
-        cik = str(cik).zfill(10)
+        cik = normalize_cik(cik)
         name = ticker or cik
     else:
         raise ValueError("ticker or cik required")

@@ -1,0 +1,234 @@
+{% extends "staticsite/base.html" %}
+{% block title %}{{ company.name }} ({{ company.ticker }}) — Financials{% endblock %}
+{% block home %}../../index.html{% endblock %}
+{% block content %}
+
+<p class="small"><a href="../../index.html">← All companies</a></p>
+
+<aside class="infobox">
+  <h2>{{ company.name }}</h2>
+  <dl>
+    {% if company.ticker %}<dt>Ticker</dt><dd><strong>{{ company.ticker }}</strong></dd>{% endif %}
+    <dt>CIK</dt><dd>{{ company.cik }}</dd>
+    {% if company.sic_description %}<dt>Industry</dt><dd>{{ company.sic_description }}</dd>{% endif %}
+    {% if company.sic_code %}<dt>SIC</dt><dd>{{ company.sic_code }}</dd>{% endif %}
+    {% if company.hq %}<dt>HQ</dt><dd>{{ company.hq }}</dd>{% endif %}
+    <dt>Filings</dt><dd>{{ counts.filings }}</dd>
+    <dt>XBRL facts</dt><dd>{{ counts.facts }}</dd>
+    {% if facts_as_of %}<dt>Data as of</dt><dd>{{ facts_as_of }}</dd>{% endif %}
+  </dl>
+  <p style="text-align:center;margin:.8em 0 0">
+    <a class="btn" href="{{ company.sec_url }}" target="_blank" rel="noreferrer">SEC EDGAR ↗</a>
+  </p>
+</aside>
+
+<h1>{{ company.name }}</h1>
+<p class="sub">
+  {% if company.ticker %}<strong>{{ company.ticker }}</strong> · {% endif %}CIK {{ company.cik }}
+  {% if company.sic_description %} · {{ company.sic_description }}{% endif %}
+</p>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#snapshot">Financial snapshot</a></li>
+    <li><a href="#statements">Financial statements</a></li>
+    <li><a href="#metrics">Derived metrics</a></li>
+    {% if leadership %}<li><a href="#leadership">Leadership</a></li>{% endif %}
+    {% if stakeholder %}<li><a href="#stakeholder">Stakeholder orientation</a></li>{% endif %}
+    {% if leadership_analysis %}<li><a href="#leadership-ai">Leadership analysis (AI)</a></li>{% endif %}
+    <li><a href="#filings">Filings</a></li>
+    {% if documents %}<li><a href="#documents">Filing documents</a></li>{% endif %}
+    <li><a href="#facts">XBRL facts</a></li>
+    <li><a href="#downloads">Download data</a></li>
+  </ol>
+</nav>
+
+<h2 id="snapshot">Financial snapshot</h2>
+{% if headline %}
+<div class="grid">
+  {% for h in headline %}
+  <div class="card">
+    <div class="k" title="{{ h.concept }}">{{ h.label }}</div>
+    <div class="v">{{ h.value_display }}</div>
+    <div class="p">{% if h.unit %}{{ h.unit|upper }} · {% endif %}{{ h.period_end }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}<p class="muted">No headline facts available yet.</p>{% endif %}
+
+<h2 id="statements">Financial statements</h2>
+{% for s in statements %}
+<h3>{{ s.title }} <span class="muted small">— period ending {{ s.period_end|default:"—" }}</span></h3>
+<div class="toolbar">
+  <button class="btn" data-copy-for="stmt-{{ s.type }}" onclick="copyTable('stmt-{{ s.type }}')">⧉ Copy</button>
+</div>
+<table id="stmt-{{ s.type }}">
+  <thead><tr><th>Line item</th><th class="num">Value (USD)</th><th>Source filing</th></tr></thead>
+  <tbody>
+    {% for r in s.rows %}
+    <tr>
+      <td>{{ r.label }}</td>
+      <td class="num" data-copy="{{ r.value|default:"" }}">{{ r.value_display }}</td>
+      <td>{% if r.accession_url %}<a href="{{ r.accession_url }}" target="_blank" rel="noreferrer">{{ r.accession }}</a>{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
+
+<h2 id="metrics">Derived metrics</h2>
+{% if metrics %}
+<div class="toolbar">
+  <button class="btn" data-copy-for="metrics" onclick="copyTable('metrics')">⧉ Copy</button>
+  <a class="btn" href="metrics.csv" download>Download CSV</a>
+</div>
+<table id="metrics">
+  <thead><tr><th>Metric</th><th class="num">Value</th><th>Unit</th><th>Period end</th></tr></thead>
+  <tbody>
+    {% for m in metrics %}
+    <tr>
+      <td>{{ m.key }}</td>
+      <td class="num" data-copy="{{ m.value }}">{{ m.value_display }}</td>
+      <td>{{ m.unit }}</td>
+      <td>{{ m.period_end }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No derived metrics computed yet.</p>{% endif %}
+
+{% if leadership %}
+<h2 id="leadership">Leadership <span class="muted small">(from SEC Forms 3/4/5)</span></h2>
+<p class="dash-hint muted small">Officers, directors, and ≥10% owners extracted from public SEC ownership
+  filings. Tenure shown is a filing-date range (a proxy, not an official appointment record).</p>
+<div class="toolbar">
+  <button class="btn" data-copy-for="leadership" onclick="copyTable('leadership')">⧉ Copy</button>
+</div>
+<table id="leadership">
+  <thead><tr><th>Name</th><th>Title</th><th>Roles</th><th>First seen</th><th>Last seen</th><th class="num">Net insider shares</th></tr></thead>
+  <tbody>
+    {% for p in leadership %}
+    <tr>
+      <td>{{ p.name }}</td><td>{{ p.title }}</td><td class="small">{{ p.roles }}</td>
+      <td>{{ p.first_seen }}</td><td>{{ p.last_seen }}</td>
+      <td class="num" data-copy="{{ p.net_insider_shares }}">{{ p.net_insider_shares|floatformat:"0" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if stakeholder %}
+<h2 id="stakeholder">Stakeholder orientation <span class="muted small">— people vs. profits (heuristic)</span></h2>
+<p class="dash-hint" style="border-left:3px solid var(--accent);padding-left:10px">
+  <strong>Index: {{ stakeholder.orientation_index|default:"—" }}</strong>
+  — <strong>{{ stakeholder.label }}</strong>. Scale −1 (payout / shareholder-tilted) to +1
+  (reinvestment / stakeholder-tilted){% if stakeholder.period_end %}, period ending {{ stakeholder.period_end }}{% endif %}.
+</p>
+{% if stakeholder.signals %}
+<table id="stakeholder-signals">
+  <thead><tr><th>Signal</th><th class="num">Value</th><th class="num">Score</th><th class="num">Weight</th><th>Basis</th></tr></thead>
+  <tbody>
+    {% for s in stakeholder.signals %}
+    <tr>
+      <td>{{ s.label }}</td>
+      <td class="num">{{ s.value }}</td>
+      <td class="num">{{ s.score }}</td>
+      <td class="num">{{ s.weight }}</td>
+      <td class="small muted">{{ s.note }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+<p class="muted small"><strong>Methodology &amp; caveats:</strong> {{ stakeholder.caveats }}</p>
+{% endif %}
+
+{% if leadership_analysis %}
+<h2 id="leadership-ai">Leadership analysis <span class="muted small">(AI · grounded in SEC filings)</span></h2>
+{% if leadership_analysis.summary %}<p>{{ leadership_analysis.summary }}</p>{% endif %}
+{% if leadership_analysis.direction %}
+<p><strong>Stated direction:</strong> {{ leadership_analysis.direction }}</p>
+{% endif %}
+{% if leadership_analysis.initiatives %}
+<h3>Initiatives</h3>
+<ul>
+  {% for it in leadership_analysis.initiatives %}
+  <li><strong>{{ it.title }}</strong> — {{ it.description }} <span class="muted small">[{{ it.source }}]</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% if leadership_analysis.quotes %}
+<h3>Quotes <span class="muted small">(verbatim from filings)</span></h3>
+<ul>
+  {% for q in leadership_analysis.quotes %}
+  <li>“{{ q.text }}”{% if q.speaker %} — {{ q.speaker }}{% endif %} <span class="muted small">[{{ q.source }}]</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
+<p class="muted small">
+  <strong>AI note:</strong> Narrative extracted by an LLM strictly from this company's SEC
+  filing excerpts (model: {{ leadership_analysis.model_name|default:"—" }}). Not an approval
+  rating or a judgment of any individual. Verify against the cited filings.
+</p>
+{% endif %}
+
+<h2 id="filings">Filings <span class="muted small">(latest {{ filings|length }})</span></h2>
+{% if filings %}
+<div class="toolbar">
+  <button class="btn" data-copy-for="filings" onclick="copyTable('filings')">⧉ Copy</button>
+  <a class="btn" href="filings.csv" download>Download CSV</a>
+</div>
+<table id="filings">
+  <thead><tr><th>Form</th><th>Filing date</th><th>Period</th><th>Accession</th></tr></thead>
+  <tbody>
+    {% for f in filings %}
+    <tr>
+      <td>{{ f.form_type }}</td>
+      <td>{{ f.filing_date }}</td>
+      <td>{{ f.period_of_report }}</td>
+      <td><a href="{{ f.url }}" target="_blank" rel="noreferrer">{{ f.accession_number }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No filings stored.</p>{% endif %}
+
+{% if documents %}
+<h2 id="documents">Filing documents <span class="muted small">(corpus)</span></h2>
+<table id="documents">
+  <thead><tr><th>Type</th><th>File</th><th>Excerpt</th></tr></thead>
+  <tbody>
+    {% for d in documents %}
+    <tr><td>{{ d.type }}</td><td class="small">{{ d.file_name }}</td><td class="small muted">{{ d.snippet }}…</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2 id="facts">XBRL facts <span class="muted small">(showing {{ fact_preview|length }} of {{ counts.facts }})</span></h2>
+{% if fact_preview %}
+<div class="toolbar">
+  <button class="btn" data-copy-for="facts" onclick="copyTable('facts')">⧉ Copy shown</button>
+  <a class="btn" href="facts.csv" download>Download all {{ counts.facts }} facts (CSV)</a>
+</div>
+<table id="facts">
+  <thead><tr><th>Concept</th><th>Taxonomy</th><th>Period start</th><th>Period end</th><th>Unit</th><th class="num">Value</th></tr></thead>
+  <tbody>
+    {% for x in fact_preview %}
+    <tr>
+      <td>{{ x.concept }}</td><td>{{ x.taxonomy }}</td>
+      <td>{{ x.period_start }}</td><td>{{ x.period_end }}</td><td>{{ x.unit }}</td>
+      <td class="num" data-copy="{{ x.value }}">{{ x.value_display }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No XBRL facts synced.</p>{% endif %}
+
+<h2 id="downloads">Download data</h2>
+<p class="downloads">
+  {% for d in downloads %}<a class="btn" href="{{ d.href }}" download>{{ d.label }}</a>{% endfor %}
+</p>
+{% endblock %}

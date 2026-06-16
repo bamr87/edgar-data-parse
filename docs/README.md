@@ -6,6 +6,7 @@ Start with the [root README](../README.md) for environment setup, Docker, and te
 
 - **[architecture.md](architecture.md)** — Django apps, data flow from SEC to the warehouse, DB-first JSON caching. For backend developers and operators.
 - **[api-and-cli.md](api-and-cli.md)** — REST base paths, main resources and custom actions, and all Django management commands with short examples. For integrators and maintainers.
+- **[leadership-methodology.md](leadership-methodology.md)** — How leadership is extracted (SEC Forms 3/4/5) and how the transparent "stakeholder orientation" (people-vs-profits) index is computed, with limitations and responsible-use notes. **Read before relying on those outputs.**
 
 ## SEC reference (external behavior)
 
@@ -28,4 +29,4 @@ Material that describes SEC systems and APIs (not specific to this repo’s code
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** — Local dev, tests, lint, and CI-style checks.
 - **[../docker/README.md](../docker/README.md)** — Scripts used by Docker and Compose (entrypoint, CI container).
 
-OpenAPI / Swagger is not enabled in this project; use the DRF browsable API at `/api/v1/` when logged in as staff, or see [api-and-cli.md](api-and-cli.md) for route lists.
+OpenAPI 3 schema is served at `/api/v1/schema/` with Swagger UI at `/api/v1/docs/` (via `drf-spectacular`). See [api-and-cli.md](api-and-cli.md) for a human-readable route inventory.

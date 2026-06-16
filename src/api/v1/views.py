@@ -11,15 +11,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from public_data.models import ExternalSeries, SeriesBundle, SeriesObservation
-from sec_edgar.services.company_tickers_catalog import search_company_tickers
-from sec_edgar.services.ingest_htm import ingest_htm_filing
-from sec_edgar.services.sic_reference import search_sic_codes
+from sec_edgar.exceptions import EdgarRateLimitError, EdgarResolutionError
+from sec_edgar.services.sic_reference import (
+    search_sic_codes,  # reference-data tier (not EDGAR sync)
+)
 from warehouse.models import (
     Company,
     DerivedMetric,
     EdgarEntitySyncState,
     Fact,
     Filing,
+    FilingDocument,
+    LeadershipPosition,
     PeerGroup,
     Section,
     Table,
@@ -42,15 +45,31 @@ from ..serializers import (
     SeriesObservationSerializer,
     TableSerializer,
 )
+from ..throttles import SecActionThrottle
 
 logger = logging.getLogger(__name__)
+
+# Responsible-use note attached to every LLM leadership-analysis response.
+LEADERSHIP_AI_CAVEAT = (
+    "LLM-extracted narrative, grounded only in the company's SEC filing excerpts. "
+    "Quotes are verbatim from those filings; initiatives cite their source passage. "
+    "This is NOT an approval rating or a character/competence judgment of any "
+    "individual. Verify against the cited filings. See docs/leadership-methodology.md."
+)
+
+
+def _wants_async(request) -> bool:
+    """True if the caller requested background processing (``?async=true``)."""
+    raw = request.query_params.get("async") or request.data.get("async") or ""
+    return str(raw).strip().lower() in ("1", "true", "yes", "on")
 
 
 class HealthView(APIView):
     """Liveness probe; does not check the database."""
 
-    authentication_classes = []
-    permission_classes = []
+    authentication_classes: list = []
+    permission_classes: list = []
+    throttle_classes: list = []  # liveness must never be throttled
 
     def get(self, request):
         return Response({"status": "ok"})
@@ -59,8 +78,9 @@ class HealthView(APIView):
 class HealthReadyView(APIView):
     """Readiness: verifies app can reach the default database."""
 
-    authentication_classes = []
-    permission_classes = []
+    authentication_classes: list = []
+    permission_classes: list = []
+    throttle_classes: list = []  # readiness must never be throttled
 
     def get(self, request):
         try:
@@ -73,11 +93,30 @@ class HealthReadyView(APIView):
         return Response({"status": "ok", "checks": {"database": True}})
 
 
+class TaskStatusView(APIView):
+    """Celery task state for an async job dispatched by a sync action."""
+
+    def get(self, request, task_id):
+        from celery.result import AsyncResult
+
+        res = AsyncResult(task_id)
+        ready = res.ready()
+        payload: dict = {"task_id": task_id, "status": res.status, "ready": ready}
+        if ready and res.successful():
+            result = res.result
+            payload["result"] = (
+                result if isinstance(result, (int, float, str, dict, list)) else str(result)
+            )
+        elif ready:
+            payload["error"] = str(res.result)
+        return Response(payload)
+
+
 class SicCodesReferenceView(APIView):
     """SEC SIC master list (from ``data/reference/sic_codes.json``) for lookup and autocomplete."""
 
-    authentication_classes = []
-    permission_classes = []
+    authentication_classes: list = []
+    permission_classes: list = []
 
     def get(self, request):
         qp = request.query_params
@@ -121,11 +160,16 @@ class CompanyViewSet(viewsets.ModelViewSet):
         )
         ua = sec_user_agent_email_from_request(request)
         try:
-            matches = search_company_tickers(
+            matches = EdgarSyncService.search_edgar_directory(
                 q,
                 user_agent_email=ua,
                 limit=lim,
                 force_refresh=force_refresh,
+            )
+        except EdgarRateLimitError:
+            return Response(
+                {"detail": "SEC rate limit reached; try again shortly."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
         except Exception:
             logger.exception("edgar_search failed")
@@ -138,7 +182,12 @@ class CompanyViewSet(viewsets.ModelViewSet):
         results = [{**m, "in_warehouse": m["cik"] in existing} for m in matches]
         return Response({"count": len(results), "results": results})
 
-    @action(detail=False, methods=["post"], url_path="from-edgar")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="from-edgar",
+        throttle_classes=[SecActionThrottle],
+    )
     def from_edgar(self, request):
         """Create or return a warehouse Company from EDGAR directory (DB first, then SEC)."""
         ticker = (request.data.get("ticker") or "").strip().upper() or None
@@ -157,8 +206,15 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 name_override=name_override,
                 user_agent_email=ua,
             )
-        except ValueError as e:
+        except EdgarResolutionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except EdgarRateLimitError:
+            return Response(
+                {"detail": "SEC rate limit reached; try again shortly."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             logger.exception("from_edgar failed")
             return Response(
@@ -171,7 +227,12 @@ class CompanyViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )
 
-    @action(detail=False, methods=["post"], url_path="bulk-from-edgar-tickers")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="bulk-from-edgar-tickers",
+        throttle_classes=[SecActionThrottle],
+    )
     def bulk_from_edgar_tickers(self, request):
         """Insert missing ``Company`` rows from SEC company_tickers.json (bulk, no per-CIK API)."""
         update_existing = bool(request.data.get("update_existing"))
@@ -182,6 +243,11 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 user_agent_email=ua,
                 update_existing=update_existing,
                 refresh_sec_json=refresh_sec_json,
+            )
+        except EdgarRateLimitError:
+            return Response(
+                {"detail": "SEC rate limit reached; try again shortly."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
         except Exception:
             logger.exception("bulk_from_edgar_tickers failed")
@@ -219,17 +285,43 @@ class CompanyViewSet(viewsets.ModelViewSet):
         }
         return Response({"company": company.id, "suggested_schema": suggested})
 
-    @action(detail=True, methods=["post"], url_path="sync-submissions")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="sync-submissions",
+        throttle_classes=[SecActionThrottle],
+    )
     def sync_submissions(self, request, pk=None):
         company = self.get_object()
         ua = sec_user_agent_email_from_request(request)
+        if _wants_async(request):
+            from warehouse.tasks import sync_submissions_task
+
+            res = sync_submissions_task.delay(company.id, ua)
+            return Response(
+                {"company": company.id, "task_id": res.id, "status": "queued"},
+                status=status.HTTP_202_ACCEPTED,
+            )
         n = EdgarSyncService.sync_submissions(company, user_agent_email=ua)
         return Response({"company": company.id, "filings_processed": n})
 
-    @action(detail=True, methods=["post"], url_path="sync-facts")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="sync-facts",
+        throttle_classes=[SecActionThrottle],
+    )
     def sync_facts(self, request, pk=None):
         company = self.get_object()
         ua = sec_user_agent_email_from_request(request)
+        if _wants_async(request):
+            from warehouse.tasks import sync_facts_task
+
+            res = sync_facts_task.delay(company.id, ua)
+            return Response(
+                {"company": company.id, "task_id": res.id, "status": "queued"},
+                status=status.HTTP_202_ACCEPTED,
+            )
         count = EdgarSyncService.sync_facts(company, user_agent_email=ua)
         return Response({"company": company.id, "facts_loaded": count})
 
@@ -280,6 +372,208 @@ class CompanyViewSet(viewsets.ModelViewSet):
         )
         return Response(
             {"company": company.id, "concept": concept, "taxonomy": taxonomy, "series": series}
+        )
+
+    @action(detail=True, methods=["get"], url_path="statements")
+    def statements(self, request, pk=None):
+        """Curated financial-statement view (balance/income/cash-flow) from Facts."""
+        from warehouse.services.edgar.statements import (
+            available_statement_types,
+            build_financial_statement,
+        )
+
+        company = self.get_object()
+        st = (request.query_params.get("statement_type") or "").strip()
+        taxonomy = (request.query_params.get("taxonomy") or "us-gaap").strip() or "us-gaap"
+        if not st:
+            return Response(
+                {
+                    "detail": "statement_type query parameter is required.",
+                    "available": available_statement_types(),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            data = build_financial_statement(company, st, taxonomy=taxonomy)
+        except KeyError:
+            return Response(
+                {
+                    "detail": f"Unknown statement_type '{st}'.",
+                    "available": available_statement_types(),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(data)
+
+    @action(detail=True, methods=["post"], url_path="compute-metrics")
+    def compute_metrics(self, request, pk=None):
+        """Compute/refresh DerivedMetric rows from this company's Facts (admin only)."""
+        from warehouse.services.edgar.metrics import compute_derived_metrics
+
+        company = self.get_object()
+        written = compute_derived_metrics(company)
+        return Response({"company": company.id, "metrics_written": written})
+
+    @action(detail=True, methods=["get"], url_path="profile")
+    def profile(self, request, pk=None):
+        """Consolidated Company-360 view: identity, financials, filings, documents, CRM."""
+        from warehouse.services.edgar.profile import build_company_profile
+
+        company = self.get_object()
+        return Response(build_company_profile(company))
+
+    @action(detail=False, methods=["get"], url_path="compare")
+    def compare(self, request):
+        """Compare a concept across a cohort grouped by industry/region/size."""
+        from warehouse.services.edgar.profile import (
+            COHORT_GROUP_FIELDS,
+            cohort_compare,
+        )
+
+        group_by = (request.query_params.get("group_by") or "sic_code").strip()
+        concept = (request.query_params.get("concept") or "").strip()
+        if not concept:
+            return Response(
+                {"detail": "concept query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        taxonomy = (request.query_params.get("taxonomy") or "us-gaap").strip() or "us-gaap"
+        try:
+            data = cohort_compare(group_by=group_by, concept=concept, taxonomy=taxonomy)
+        except ValueError as e:
+            return Response(
+                {"detail": str(e), "allowed_group_by": sorted(COHORT_GROUP_FIELDS)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(data)
+
+    @action(detail=True, methods=["get"], url_path="leadership")
+    def leadership(self, request, pk=None):
+        """Officers/directors extracted from this company's SEC ownership filings."""
+        company = self.get_object()
+        positions = (
+            LeadershipPosition.objects.filter(company=company)
+            .select_related("person")
+            .order_by("-last_seen")
+        )
+        people = [
+            {
+                "name": p.person.full_name,
+                "person_cik": p.person.cik,
+                "title": p.title,
+                "is_director": p.is_director,
+                "is_officer": p.is_officer,
+                "is_ten_percent_owner": p.is_ten_percent_owner,
+                "first_seen": p.first_seen.isoformat() if p.first_seen else None,
+                "last_seen": p.last_seen.isoformat() if p.last_seen else None,
+                "filings_count": p.filings_count,
+                "net_insider_shares": float(p.net_insider_shares),
+                "source": p.source,
+            }
+            for p in positions
+        ]
+        return Response({"company": company.id, "count": len(people), "leadership": people})
+
+    @action(detail=True, methods=["get"], url_path="stakeholder-assessment")
+    def stakeholder_assessment(self, request, pk=None):
+        """Transparent people-vs-profits orientation index (heuristic; see caveats)."""
+        from warehouse.services.stakeholder import compute_stakeholder_assessment
+
+        company = self.get_object()
+        return Response(compute_stakeholder_assessment(company, persist=False))
+
+    @action(detail=False, methods=["get"], url_path="leadership-compare")
+    def leadership_compare(self, request):
+        """Compare leadership footprint + stakeholder orientation across companies (by CIK)."""
+        from sec_edgar.cik import normalize_cik
+        from warehouse.services.stakeholder import CAVEATS, compute_stakeholder_assessment
+
+        raw = request.query_params.getlist("cik") or [
+            c for c in (request.query_params.get("ciks") or "").split(",") if c.strip()
+        ]
+        ciks = []
+        for c in raw:
+            try:
+                ciks.append(normalize_cik(c))
+            except ValueError:
+                continue
+        if not ciks:
+            return Response(
+                {"detail": "Provide cik query params (e.g. ?cik=...&cik=...)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        rows = []
+        for company in Company.objects.filter(cik__in=ciks):
+            assessment = compute_stakeholder_assessment(company, persist=False)
+            top = (
+                LeadershipPosition.objects.filter(company=company)
+                .select_related("person")
+                .order_by("-filings_count")[:5]
+            )
+            rows.append(
+                {
+                    "cik": company.cik,
+                    "name": company.name,
+                    "ticker": company.ticker,
+                    "leadership_count": LeadershipPosition.objects.filter(company=company).count(),
+                    "key_people": [
+                        {"name": p.person.full_name, "title": p.title} for p in top
+                    ],
+                    "orientation_index": assessment["orientation_index"],
+                    "orientation_label": assessment["label"],
+                }
+            )
+        return Response({"count": len(rows), "results": rows, "caveats": CAVEATS})
+
+    @action(detail=True, methods=["post"], url_path="analyze-leadership")
+    def analyze_leadership(self, request, pk=None):
+        """Run the optional LLM narrative analysis of leadership (admin only).
+
+        Strictly grounded in this company's ingested SEC filing text; gated behind
+        ``ENABLE_AI_ANALYSIS``. Returns a disabled-shaped payload when off. See
+        ``docs/leadership-methodology.md`` for the responsible-use boundary.
+        """
+        from warehouse.services.leadership_ai import analyze_company_leadership
+
+        company = self.get_object()
+        result = analyze_company_leadership(company, persist=True)
+        result["caveats"] = LEADERSHIP_AI_CAVEAT
+        return Response(result)
+
+    @action(detail=True, methods=["get"], url_path="leadership-analysis")
+    def leadership_analysis(self, request, pk=None):
+        """Most recent stored LLM leadership analysis for this company (if any)."""
+        from warehouse.models import LeadershipAnalysis
+
+        company = self.get_object()
+        latest = (
+            LeadershipAnalysis.objects.filter(company=company).order_by("-created_at").first()
+        )
+        if latest is None:
+            return Response(
+                {
+                    "company": company.id,
+                    "available": False,
+                    "detail": "No analysis yet. POST to analyze-leadership/ to generate one.",
+                    "caveats": LEADERSHIP_AI_CAVEAT,
+                }
+            )
+        return Response(
+            {
+                "company": company.id,
+                "available": True,
+                "enabled": latest.enabled,
+                "backend": latest.backend,
+                "model_name": latest.model_name,
+                "summary": latest.summary,
+                "initiatives": latest.initiatives,
+                "quotes": latest.quotes,
+                "direction": latest.direction,
+                "used_sources": latest.used_sources,
+                "error": latest.error,
+                "created_at": latest.created_at.isoformat(),
+                "caveats": LEADERSHIP_AI_CAVEAT,
+            }
         )
 
 
@@ -421,7 +715,9 @@ class CompanyMetadataViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class FilingViewSet(viewsets.ModelViewSet):
+class FilingViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only filing data; writes happen via sync/ingest (admin-gated actions)."""
+
     queryset = Filing.objects.all().order_by("-filing_date")
     serializer_class = FilingSerializer
     pagination_class = FilingPagination
@@ -441,7 +737,12 @@ class FilingViewSet(viewsets.ModelViewSet):
     ]
     ordering = ["-filing_date"]
 
-    @action(detail=False, methods=["post"], url_path="ingest-htm")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="ingest-htm",
+        throttle_classes=[SecActionThrottle],
+    )
     def ingest_htm(self, request):
         """Parse one HTM filing URL into ``Filing`` / related rows (same service as ``ingest_htm`` command)."""
         url = request.data.get("url")
@@ -454,26 +755,134 @@ class FilingViewSet(viewsets.ModelViewSet):
             )
         try:
             ua = sec_user_agent_email_from_request(request)
-            filing = ingest_htm_filing(url=url, ticker=ticker, cik=cik, user_agent_email=ua)
+            filing = EdgarSyncService.ingest_htm(url=url, ticker=ticker, cik=cik, user_agent_email=ua)
+        except EdgarRateLimitError:
+            return Response(
+                {"detail": "SEC rate limit reached; try again shortly."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.exception("ingest_htm failed")
             return Response({"detail": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
         return Response(FilingSerializer(filing).data, status=status.HTTP_201_CREATED)
 
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="ingest-submission",
+        throttle_classes=[SecActionThrottle],
+    )
+    def ingest_submission(self, request):
+        """Ingest a full SEC submission (.txt) into Filing + FilingDocument rows."""
+        from sec_edgar.services.ingest_submission import (
+            ingest_submission as ingest_submission_service,
+        )
 
-class SectionViewSet(viewsets.ModelViewSet):
+        url = request.data.get("url")
+        ticker = request.data.get("ticker")
+        cik = request.data.get("cik")
+        if not url or (not ticker and not cik):
+            return Response(
+                {"detail": "url and ticker or cik are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            ua = sec_user_agent_email_from_request(request)
+            filing, n = ingest_submission_service(
+                url=url, ticker=ticker, cik=cik, user_agent_email=ua
+            )
+        except EdgarRateLimitError:
+            return Response(
+                {"detail": "SEC rate limit reached; try again shortly."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception("ingest_submission failed")
+            return Response({"detail": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response(
+            {"filing": filing.id, "documents_ingested": n},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=["get"], url_path="search")
+    def search_documents(self, request):
+        """Full-text search across ingested FilingDocument text.
+
+        Postgres uses ``SearchVector``/``SearchRank``; other backends fall back to
+        a case-insensitive substring match.
+        """
+        from django.db import connection
+
+        q = (request.query_params.get("q") or "").strip()
+        if len(q) < 2:
+            return Response(
+                {"detail": "q must be at least 2 characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        qs = FilingDocument.objects.select_related("filing", "filing__company")
+        form_type = (request.query_params.get("form_type") or "").strip()
+        if form_type:
+            qs = qs.filter(filing__form_type=form_type)
+        cik = (request.query_params.get("cik") or "").strip()
+        if cik:
+            from sec_edgar.cik import normalize_cik
+
+            try:
+                qs = qs.filter(filing__company__cik=normalize_cik(cik))
+            except ValueError:
+                pass
+
+        if connection.vendor == "postgresql":
+            from django.contrib.postgres.search import (
+                SearchQuery,
+                SearchRank,
+                SearchVector,
+            )
+
+            search_query = SearchQuery(q, config="english")
+            qs = (
+                qs.annotate(rank=SearchRank(SearchVector("text", config="english"), search_query))
+                .filter(text__search=search_query)
+                .order_by("-rank")
+            )
+        else:
+            qs = qs.filter(text__icontains=q).order_by("-filing__filing_date")
+
+        rows = list(qs[:50])
+        results = [
+            {
+                "id": d.id,
+                "filing": d.filing_id,
+                "company": d.filing.company_id,
+                "cik": d.filing.company.cik,
+                "form_type": d.filing.form_type,
+                "type": d.type,
+                "sequence": d.sequence,
+                "file_name": d.file_name,
+                "snippet": (d.text or "")[:280],
+            }
+            for d in rows
+        ]
+        return Response({"count": len(results), "query": q, "results": results})
+
+
+class SectionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
     filterset_fields = ["filing", "name"]
 
 
-class TableViewSet(viewsets.ModelViewSet):
+class TableViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Table.objects.all()
     serializer_class = TableSerializer
     filterset_fields = ["filing"]
 
 
-class FactViewSet(viewsets.ModelViewSet):
+class FactViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Fact.objects.all().order_by("-period_end", "concept")
     serializer_class = FactSerializer
     filterset_class = FactFilterSet

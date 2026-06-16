@@ -35,28 +35,21 @@ For full details, refer to the original `pds_dissemination_spec.pdf` in this dir
 
 ## Incorporation into This Repository
 
-This repo focuses on parsing EDGAR data via public APIs. To incorporate PDS specs for real-time capabilities:
+This repo focuses on parsing EDGAR data via the public `data.sec.gov` APIs. To incorporate PDS specs for real-time capabilities, build on the current Django architecture (the pre-Django `src/*.py` scripts have been removed):
 
-### 1. **Enhance Fetch Module (`src/fetch.py`)**
-   - Add PDS-specific functions: E.g., subscribe to real-time feeds using WebSocket libraries (e.g., `websocket-client`).
-   - Example: Implement a `subscribe_to_pds_feed()` function that authenticates and streams filings, respecting rate limits with `tenacity` retries.
-   - Handle ZIP extraction and XBRL parsing inline with existing `get_facts()` logic.
+### 1. **SEC client (`src/sec_edgar/client.py`)**
+   - Add PDS-specific methods alongside the existing submissions/companyfacts calls: e.g. subscribe to real-time feeds, respecting rate limits with the existing `tenacity` retry decorator.
 
-### 2. **Update Parsing Module (`src/parse.py`)**
-   - Extend `facts_DF()` to process PDS-disseminated XBRL directly (e.g., using `xml.etree.ElementTree` for XML parsing).
-   - Add real-time parsing: Trigger AI summaries on new filings arrival.
+### 2. **Ingest/sync services (`src/sec_edgar/services/`)**
+   - Extend the submissions/facts sync services to process PDS-disseminated XBRL, persisting into the `warehouse` models (`Filing`, `Fact`).
+   - Trigger downstream processing (statements, derived metrics) on new-filing arrival — ideally as Celery tasks (see the async-processing phase of the roadmap).
 
-### 3. **AI Integration (`src/ai_summarize.py`)**
-   - Use PDS for timely data: E.g., agent prompts like "Summarize the latest 8-K filing for urgent financial analysis."
-   - Ensure summaries comply with PDS usage rules (e.g., no unauthorized redistribution).
+### 3. **Management commands (`src/sec_edgar/management/commands/`)**
+   - Add a command (e.g. `stream_pds`) to enable PDS streaming, mirroring the existing `sync_submissions` / `sync_company_facts` commands.
 
-### 4. **Main App and CLI (`src/main.py`)**
-   - Add CLI flags: `--real-time` to enable PDS streaming.
-   - Example: `python src/main.py --ticker AAPL --real-time --summarize`
+### 4. **Compliance Notes**
+   - Update `README.md` and `src/.env.example` with PDS-specific setup (e.g. obtaining SEC credentials).
+   - Add structured logging for PDS interactions to monitor compliance.
+   - Add any new dependencies to `requirements.in` and recompile the pinned `requirements.txt` with `pip-compile`.
 
-### 5. **Compliance Notes**
-   - Update `README.md` with PDS-specific setup (e.g., obtaining SEC credentials).
-   - Add logging for PDS interactions to monitor compliance.
-   - Dependencies: Add `websocket-client` and `xmltodict` to `requirements.txt` for PDS handling.
-
-By integrating PDS, this app evolves from batch parsing to a real-time EDGAR monitoring tool, enhancing its utility for financial analysis and industry reviews. Future work: Implement full PDS subscription logic.
+By integrating PDS, this app could evolve from batch parsing to a real-time EDGAR monitoring tool. Future work: implement full PDS subscription logic.

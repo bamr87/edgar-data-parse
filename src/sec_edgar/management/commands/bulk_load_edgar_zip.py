@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from config.job_logging import ingest_job_context
+from sec_edgar.cik import normalize_cik
 from sec_edgar.services.bulk_zip_load import (
     URL_COMPANYFACTS_ZIP,
     URL_SUBMISSIONS_ZIP,
@@ -115,7 +116,7 @@ class Command(BaseCommand):
         cik_allowlist = None
         raw_ciks = options["cik"] or []
         if raw_ciks:
-            cik_allowlist = {c.zfill(10) for c in raw_ciks}
+            cik_allowlist = {normalize_cik(c) for c in raw_ciks}
 
         cache_dir = Path(options["cache_dir"]) if options["cache_dir"] else None
         submissions_zip = (

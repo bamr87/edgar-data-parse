@@ -2,9 +2,10 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: edgar
-      POSTGRES_PASSWORD: edgar
-      POSTGRES_DB: edgar_parse
+      POSTGRES_USER: ${POSTGRES_USER:-edgar}
+      # Override in production via a .env next to this file or the shell environment.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edgar}
+      POSTGRES_DB: ${POSTGRES_DB:-edgar_parse}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,7 +22,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://edgar:edgar@db:5432/edgar_parse
+      DATABASE_URL: postgresql://${POSTGRES_USER:-edgar}:${POSTGRES_PASSWORD:-edgar}@db:5432/${POSTGRES_DB:-edgar_parse}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-key}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
@@ -29,10 +30,15 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,http://localhost:8080,http://127.0.0.1:8080}
       USER_AGENT_EMAIL: ${USER_AGENT_EMAIL:-}
       EDGAR_DATA_DIR: /app/data
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      ENABLE_TIKA: ${ENABLE_TIKA:-false}
+      TIKA_SERVER_ENDPOINT: ${TIKA_SERVER_ENDPOINT:-http://tika:9998}
     volumes:
       - ./data:/app/data
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test:
@@ -47,6 +53,46 @@ services:
       retries: 5
       start_period: 40s
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    # Override the web entrypoint (which migrates) — the web service owns migrations.
+    entrypoint: ["celery", "-A", "config", "worker", "-l", "info"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-edgar}:${POSTGRES_PASSWORD:-edgar}@db:5432/${POSTGRES_DB:-edgar_parse}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-secret-key}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      USER_AGENT_EMAIL: ${USER_AGENT_EMAIL:-}
+      EDGAR_DATA_DIR: /app/data
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      ENABLE_TIKA: ${ENABLE_TIKA:-false}
+      TIKA_SERVER_ENDPOINT: ${TIKA_SERVER_ENDPOINT:-http://tika:9998}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Apache Tika content extraction (PDF/other). Start with: docker compose --profile tika up
+  tika:
+    profiles:
+      - tika
+    image: apache/tika:2.9.2.1
+    ports:
+      - "9998:9998"
+
   test:
     profiles:
       - ci
@@ -55,7 +101,7 @@ services:
       dockerfile: Dockerfile
       target: test
     environment:
-      DATABASE_URL: postgresql://edgar:edgar@db:5432/edgar_parse
+      DATABASE_URL: postgresql://${POSTGRES_USER:-edgar}:${POSTGRES_PASSWORD:-edgar}@db:5432/${POSTGRES_DB:-edgar_parse}
       PYTHONPATH: /app/src
       DJANGO_SETTINGS_MODULE: config.settings_test
     volumes:

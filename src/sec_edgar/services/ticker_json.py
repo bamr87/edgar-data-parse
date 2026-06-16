@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from sec_edgar.cik import normalize_cik
+
 CACHE_KEY = "sec_edgar:company_tickers_json:v1"
 CACHE_TTL_SECONDS = 6 * 60 * 60  # 6 hours
 
@@ -21,7 +23,7 @@ def row_to_flat(row: dict[str, Any]) -> dict[str, Any] | None:
     if cik_str is None:
         return None
     try:
-        cik = str(int(str(cik_str))).zfill(10)
+        cik = normalize_cik(cik_str)
     except (TypeError, ValueError):
         return None
     ticker = row.get("ticker")

@@ -31,7 +31,7 @@ def parse_sec_htm(file_path: str | Path) -> dict:
                     st = sib.get_text(separator=" ", strip=True) if hasattr(sib, "get_text") else ""
                     if st and _ITEM_HEADING.match(st):
                         break
-                    if sib.name not in ("script", "style") and st:
+                    if getattr(sib, "name", None) not in ("script", "style") and st:
                         buf.append(st)
                 sib = getattr(sib, "next_sibling", None)
             if buf:

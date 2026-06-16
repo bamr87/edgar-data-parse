@@ -8,6 +8,7 @@ from typing import Any
 from django.utils import timezone
 
 from sec_edgar.adapters.direct import DirectEdgarAdapter
+from sec_edgar.cik import normalize_cik
 from warehouse.models import EdgarSecPayload
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def save_edgar_sec_payload(cik: str, kind: str, payload: dict[str, Any]) -> None:
     """Store or replace JSON from bulk ZIP or after a live fetch."""
-    cik = cik.zfill(10)
+    cik = normalize_cik(cik)
     EdgarSecPayload.objects.update_or_create(
         cik=cik,
         kind=kind,
@@ -30,7 +31,7 @@ def get_submissions_payload(
     force_refresh: bool = False,
 ) -> dict[str, Any]:
     """Return SEC submissions JSON: Postgres row if present, else data.sec.gov, then save."""
-    cik = cik.zfill(10)
+    cik = normalize_cik(cik)
     if not force_refresh:
         row = EdgarSecPayload.objects.filter(
             cik=cik, kind=EdgarSecPayload.Kind.SUBMISSIONS
@@ -50,7 +51,7 @@ def get_company_facts_payload(
     force_refresh: bool = False,
 ) -> dict[str, Any]:
     """Return SEC companyfacts JSON: Postgres first, else SEC API, then save."""
-    cik = cik.zfill(10)
+    cik = normalize_cik(cik)
     if not force_refresh:
         row = EdgarSecPayload.objects.filter(
             cik=cik, kind=EdgarSecPayload.Kind.COMPANY_FACTS
