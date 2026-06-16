@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Registers the Postgres full-text `__search` lookup used by /filings/search/
+    # (no models, so it adds no migrations; the icontains fallback covers SQLite).
+    'django.contrib.postgres',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
