@@ -1,0 +1,266 @@
+{
+  "slug": "core",
+  "name": "Core macro",
+  "description": "Headline indicators every analyst tracks: GDP, inflation (CPI/PCE), jobs, the policy rate, the 10Y, and recession risk.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "GDPC1",
+      "note": "The headline inflation-adjusted output measure and the single broadest gauge of whether the economy is expanding or contracting.",
+      "frequency": "Q",
+      "industries": [
+        "Broad equity market",
+        "Cyclicals",
+        "Industrials (CAT, DE)",
+        "Financials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "A191RL1Q225SBEA",
+      "note": "The annualized real GDP growth rate is the number markets actually trade on each release and frames the macro narrative.",
+      "frequency": "Q",
+      "industries": [
+        "Broad equity market",
+        "Macro/rates desks",
+        "Cyclicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCEC96",
+      "note": "Consumer spending is ~70% of GDP, so this is the cleanest monthly read on end demand across the economy.",
+      "frequency": "M",
+      "industries": [
+        "Consumer discretionary (AMZN, HD)",
+        "Consumer staples (PG, KO)",
+        "Retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "GPDIC1",
+      "note": "Captures business and residential investment, the most cyclical and rate-sensitive GDP component and a key capex-cycle signal.",
+      "frequency": "Q",
+      "industries": [
+        "Industrials",
+        "Construction",
+        "Capital goods (CAT, DE)",
+        "Semis equipment"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CPIAUCSL",
+      "note": "The headline inflation benchmark that drives Fed expectations, real-yield math, and COLA/contract pricing.",
+      "frequency": "M",
+      "industries": [
+        "Broad market",
+        "Rate-sensitive sectors",
+        "TIPS/fixed income",
+        "Consumer staples"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CPILFESL",
+      "note": "Core CPI strips volatile food/energy to reveal the underlying inflation trend the Fed actually targets policy against.",
+      "frequency": "M",
+      "industries": [
+        "Financials/banks",
+        "Rate-sensitive equities",
+        "Bond proxies (utilities, REITs)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCEPI",
+      "note": "The Fed's preferred headline inflation gauge, so it carries more weight for rate-path expectations than CPI.",
+      "frequency": "M",
+      "industries": [
+        "Macro/rates",
+        "Broad market",
+        "Financials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCEPILFE",
+      "note": "Core PCE is the explicit 2% Fed target metric and the most policy-relevant inflation series in the dashboard.",
+      "frequency": "M",
+      "industries": [
+        "Banks (JPM, BAC)",
+        "Rate-sensitive equities",
+        "Fixed income"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "UNRATE",
+      "note": "The headline labor-slack measure feeding the Fed's dual mandate and a primary recession/cycle indicator.",
+      "frequency": "M",
+      "industries": [
+        "Consumer discretionary",
+        "Financials",
+        "Staffing (RHI, MAN)",
+        "Broad market"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PAYEMS",
+      "note": "The single most market-moving monthly data point, measuring net job creation and the pace of labor demand.",
+      "frequency": "M",
+      "industries": [
+        "Broad market",
+        "Consumer",
+        "Financials",
+        "Rates"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ICSA",
+      "note": "The highest-frequency labor signal, giving an early weekly read on layoffs before the monthly payroll print.",
+      "frequency": "W",
+      "industries": [
+        "Consumer discretionary",
+        "Financials",
+        "Staffing",
+        "Macro desks"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "FEDFUNDS",
+      "note": "The Fed's primary policy rate that anchors the entire short end of the curve and bank funding costs.",
+      "frequency": "M",
+      "industries": [
+        "Banks (JPM, WFC)",
+        "REITs",
+        "Rate-sensitive growth",
+        "Autos"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGS10",
+      "note": "The global risk-free benchmark that drives discount rates, mortgage pricing, and equity valuation multiples.",
+      "frequency": "D",
+      "industries": [
+        "Tech/growth (long-duration)",
+        "REITs",
+        "Utilities",
+        "Homebuilders",
+        "Banks"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T10Y2Y",
+      "note": "The classic yield-curve recession signal; inversion has preceded every modern recession and pressures bank net interest margins.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Financials",
+        "Broad cyclicals",
+        "Macro/credit"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T10YIE",
+      "note": "Market-implied expected inflation that separates real-yield from inflation-premium moves in nominal rates.",
+      "frequency": "D",
+      "industries": [
+        "TIPS/fixed income",
+        "Commodities",
+        "Gold (GLD)",
+        "Rate-sensitive equities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BAMLH0A0HYM2",
+      "note": "The premier daily credit-risk and financial-stress gauge; widening spreads signal tightening conditions and risk-off.",
+      "frequency": "D",
+      "industries": [
+        "High-yield credit",
+        "Banks",
+        "Leveraged equities",
+        "Private credit (BDCs)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RECPROUSM156N",
+      "note": "A model-based monthly probability the economy is in recession, useful for cycle positioning and risk overlays.",
+      "frequency": "M",
+      "industries": [
+        "Broad market",
+        "Cyclicals",
+        "Defensive rotation",
+        "Asset allocation"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USSLIND",
+      "note": "State-aggregated leading index forecasting six-month-ahead growth, a forward-looking complement to coincident data.",
+      "frequency": "M",
+      "industries": [
+        "Cyclicals",
+        "Industrials",
+        "Consumer discretionary",
+        "Macro allocation"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "UMCSENT",
+      "note": "A leading read on household confidence and willingness to spend, with inflation-expectation subcomponents the Fed watches.",
+      "frequency": "M",
+      "industries": [
+        "Consumer discretionary (retail, autos, travel)",
+        "Restaurants",
+        "Housing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "INDPRO",
+      "note": "Measures real output of factories, mines, and utilities, a core gauge of the goods economy and manufacturing cycle.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Materials",
+        "Energy",
+        "Transports (UNP, FDX)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "HOUST",
+      "note": "Housing starts lead the construction cycle and signal demand for building materials, appliances, and mortgage credit.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders (DHI, LEN)",
+        "Building products (SHW, MAS)",
+        "Banks (mortgage)",
+        "Home improvement (HD, LOW)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "M2SL",
+      "note": "Broad money supply that frames liquidity conditions and longer-run inflation, closely watched after the post-2020 surge and contraction.",
+      "frequency": "M",
+      "industries": [
+        "Banks",
+        "Gold/commodities",
+        "Broad market liquidity",
+        "Crypto-adjacent"
+      ]
+    }
+  ]
+}

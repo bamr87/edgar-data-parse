@@ -355,23 +355,30 @@ class CompanyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="analytics/timeseries")
     def analytics_timeseries(self, request, pk=None):
         company = self.get_object()
+        # `concepts` (comma-separated priority chain) resolves a continuous series
+        # across XBRL tag migrations; `concept` is the single-tag legacy form.
+        raw_concepts = (request.query_params.get("concepts") or "").strip()
+        concepts = [c.strip() for c in raw_concepts.split(",") if c.strip()]
         concept = (request.query_params.get("concept") or "").strip()
-        if not concept:
+        if not concepts and concept:
+            concepts = [concept]
+        if not concepts:
             return Response(
-                {"detail": "concept query parameter is required."},
+                {"detail": "concept or concepts query parameter is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         taxonomy = (request.query_params.get("taxonomy") or "us-gaap").strip() or "us-gaap"
+        annual = (request.query_params.get("annual") or "").strip().lower() in ("1", "true", "yes", "on")
         try:
             lim = int(request.query_params.get("limit", 80))
         except ValueError:
             lim = 80
         lim = max(1, min(lim, 500))
-        series = EdgarAnalyticsService.timeseries_for_concept(
-            company, concept, taxonomy=taxonomy, limit=lim
+        series = EdgarAnalyticsService.timeseries_for_concepts(
+            company, concepts, taxonomy=taxonomy, limit=lim, annual_only=annual
         )
         return Response(
-            {"company": company.id, "concept": concept, "taxonomy": taxonomy, "series": series}
+            {"company": company.id, "concept": concepts[0], "concepts": concepts, "taxonomy": taxonomy, "series": series}
         )
 
     @action(detail=True, methods=["get"], url_path="statements")
@@ -991,22 +998,52 @@ class SeriesBundleViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="observations")
     def observations(self, request, slug=None):
-        """Flatten recent observations for all series in this bundle (optional ``limit``)."""
+        """Recent observations + series metadata for every series in this bundle.
+
+        Limit is applied *per series* (``per_series``) so high-frequency (daily)
+        series aren't truncated by lower-frequency ones sharing the bundle.
+        """
         bundle = self.get_object()
-        series_ids = list(bundle.items.values_list("series_id", flat=True))
-        qs = SeriesObservation.objects.filter(series_id__in=series_ids).select_related(
-            "series"
-        )
-        lim = int(request.query_params.get("limit", 5000))
-        qs = qs.order_by("series_id", "-observation_date")[:lim]
-        data = [
+        try:
+            per = int(request.query_params.get("per_series") or request.query_params.get("limit") or 1500)
+        except ValueError:
+            per = 1500
+        per = max(1, min(per, 8000))
+
+        items = list(bundle.items.select_related("series").order_by("sort_order"))
+        series_meta: list[dict] = []
+        data: list[dict] = []
+        for item in items:
+            s = item.series
+            meta = s.metadata or {}
+            series_meta.append(
+                {
+                    "external_id": s.external_id,
+                    "title": s.title,
+                    "units": s.units,
+                    "frequency": s.frequency,
+                    "note": meta.get("note", ""),
+                    "industries": meta.get("industries", []),
+                }
+            )
+            for o in (
+                SeriesObservation.objects.filter(series=s).order_by("-observation_date")[:per]
+            ):
+                data.append(
+                    {
+                        "series": s.external_id,
+                        "provider": s.provider,
+                        "date": o.observation_date.isoformat(),
+                        "value": str(o.value),
+                    }
+                )
+        return Response(
             {
-                "series": o.series.external_id,
-                "provider": o.series.provider,
-                "date": o.observation_date.isoformat(),
-                "value": str(o.value),
-                "source_url": o.source_url,
+                "bundle": bundle.slug,
+                "name": bundle.name,
+                "description": bundle.description,
+                "count": len(data),
+                "series": series_meta,
+                "observations": data,
             }
-            for o in qs
-        ]
-        return Response({"bundle": bundle.slug, "count": len(data), "observations": data})
+        )

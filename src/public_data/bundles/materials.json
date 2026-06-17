@@ -1,0 +1,232 @@
+{
+  "slug": "materials",
+  "name": "Metals & materials",
+  "description": "Steel, aluminum, copper, lumber, chemicals, and other input prices for materials and construction.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "WPU101",
+      "note": "Benchmark domestic mill price gauge for iron and steel, the single biggest cost input for steelmakers and steel-intensive manufacturers and a direct read on their selling-price realization.",
+      "frequency": "M",
+      "industries": [
+        "Steel (NUE, STLD, CLF, X)",
+        "Autos",
+        "Machinery",
+        "Construction"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU102",
+      "note": "Tracks domestic producer prices for aluminum, copper and other nonferrous metals, signaling input costs and pricing power for nonferrous miners, smelters and downstream fabricators.",
+      "frequency": "M",
+      "industries": [
+        "Aluminum (AA, CENX)",
+        "Copper (FCX, SCCO)",
+        "Electrical equipment",
+        "Aerospace"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU10250105",
+      "note": "Isolates primary aluminum producer prices, a clean margin and cost signal for aluminum smelters and aluminum-intensive packaging and transport buyers.",
+      "frequency": "M",
+      "industries": [
+        "Aluminum (AA, CENX, KALU)",
+        "Packaging (BALL)",
+        "Autos",
+        "Aerospace"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PALUMUSDM",
+      "note": "IMF global aluminum price (USD/metric ton) sets world-reference revenue for aluminum producers and input cost for transport, packaging and building-products firms.",
+      "frequency": "M",
+      "industries": [
+        "Aluminum (AA, NHYDY, CENX)",
+        "Autos",
+        "Packaging",
+        "Aerospace"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PIORECRUSDM",
+      "note": "IMF global iron ore price (USD/dry metric ton) is the primary revenue lever for iron ore miners and a leading input cost for integrated steelmakers.",
+      "frequency": "M",
+      "industries": [
+        "Iron ore/diversified miners (VALE, RIO, BHP)",
+        "Steel",
+        "Mining equipment"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PNICKUSDM",
+      "note": "IMF global nickel price (USD/metric ton) drives revenue for nickel miners and is a critical input cost for stainless steel and EV battery cathode makers.",
+      "frequency": "M",
+      "industries": [
+        "Nickel/diversified miners (VALE, BHP)",
+        "Stainless steel",
+        "EV batteries"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PZINCUSDM",
+      "note": "IMF global zinc price (USD/metric ton) is a key revenue input for base-metal miners and a cost signal for galvanized-steel and die-cast producers.",
+      "frequency": "M",
+      "industries": [
+        "Base-metal miners (TECK, HBM)",
+        "Galvanized steel",
+        "Construction"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PLEADUSDM",
+      "note": "IMF global lead price (USD/metric ton) signals revenue for polymetallic miners and input costs for lead-acid battery manufacturers.",
+      "frequency": "M",
+      "industries": [
+        "Base-metal miners",
+        "Lead-acid batteries (ENS)",
+        "Industrial"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PTINUSDM",
+      "note": "IMF global tin price (USD/metric ton) reflects solder and electronics demand and is a niche revenue/cost signal for tin producers and electronics assemblers.",
+      "frequency": "M",
+      "industries": [
+        "Tin/base-metal miners",
+        "Electronics",
+        "Solder/packaging"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PMETAINDEXM",
+      "note": "IMF base-metals composite index aggregates industrial metal prices into one trend line, useful for sector-wide metals-cycle timing and miner revenue forecasting.",
+      "frequency": "M",
+      "industries": [
+        "Metals & mining (XME)",
+        "Diversified miners (BHP, RIO, GLEN)",
+        "Steel"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0613",
+      "note": "Tracks producer prices for bulk industrial chemicals, a direct read on revenue realization for commodity chemical makers and input costs for downstream manufacturers.",
+      "frequency": "M",
+      "industries": [
+        "Commodity chemicals (DOW, LYB, WLK, CE)",
+        "Plastics",
+        "Coatings"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU066",
+      "note": "Plastic resins and materials PPI is a core selling-price and margin gauge for petrochemical/resin producers and a key input cost for packaging and consumer-goods firms.",
+      "frequency": "M",
+      "industries": [
+        "Petrochemicals/resins (LYB, DOW, WLK)",
+        "Packaging (BERY, SEE)",
+        "Consumer goods"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU065",
+      "note": "Producer-price trend for drugs and pharmaceuticals, informing pricing power and input-cost dynamics across pharma and specialty chemical supply chains.",
+      "frequency": "M",
+      "industries": [
+        "Pharmaceuticals",
+        "Specialty chemicals",
+        "Healthcare"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0652",
+      "note": "Paints and coatings PPI signals pricing power for coatings makers and is sensitive to titanium-dioxide and resin input costs.",
+      "frequency": "M",
+      "industries": [
+        "Coatings (SHW, PPG, AXTA)",
+        "TiO2 (CC, TROX)",
+        "Construction"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0621",
+      "note": "Nitrogen fertilizer producer prices are the dominant revenue and margin driver for nitrogen fertilizer makers and a key cost for farmers, closely tied to natural-gas feedstock.",
+      "frequency": "M",
+      "industries": [
+        "Fertilizers (CF, NTR, MOS)",
+        "Agriculture",
+        "Ag chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU061",
+      "note": "Broad basic industrial-chemicals PPI captures the upstream chemical-price cycle that flows through to the entire chemicals and plastics value chain.",
+      "frequency": "M",
+      "industries": [
+        "Diversified chemicals (DOW, DD, EMN)",
+        "Plastics",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU081",
+      "note": "Lumber PPI is the primary price signal for sawmills and a leading housing-input cost, directly tied to homebuilder margins and renovation demand.",
+      "frequency": "M",
+      "industries": [
+        "Lumber/forest products (WY, PCH, RYN)",
+        "Homebuilders (DHI, LEN)",
+        "Building products"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU13",
+      "note": "Nonmetallic mineral products PPI covers cement, concrete, glass and aggregates, the core cost basket for construction-materials suppliers and infrastructure projects.",
+      "frequency": "M",
+      "industries": [
+        "Cement/aggregates (VMC, MLM, EXP)",
+        "Construction materials",
+        "Infrastructure"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU101707",
+      "note": "Narrow steel-mill-products PPI is the cleanest available proxy for finished-steel transaction prices, central to steelmaker margin and contract-pricing analysis.",
+      "frequency": "M",
+      "industries": [
+        "Steel (NUE, STLD, X, CLF)",
+        "Autos",
+        "Appliances",
+        "Construction"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU3251803251801",
+      "note": "NAICS-based industry PPI for plastics-material and resin manufacturing gives a producer-side revenue and margin gauge complementary to the commodity resin index.",
+      "frequency": "M",
+      "industries": [
+        "Resins/petrochemicals (LYB, DOW, WLK)",
+        "Packaging",
+        "Automotive plastics"
+      ]
+    }
+  ]
+}

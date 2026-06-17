@@ -1,0 +1,213 @@
+{
+  "slug": "financials",
+  "name": "Financials & banking",
+  "description": "Bank credit, loans, delinquencies, money supply, financial conditions, and volatility for banks and insurers.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "TOTBKCR",
+      "note": "Aggregate loans plus securities held by U.S. commercial banks (H.8), the broadest gauge of bank balance-sheet expansion and credit supply to the economy.",
+      "frequency": "W",
+      "industries": [
+        "Banks (JPM, BAC, WFC, C)",
+        "Regional banks (KRE)",
+        "Financials (XLF)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BUSLOANS",
+      "note": "C&I loan balances are the core barometer of business borrowing demand and bank lending appetite, leading capex and corporate-credit cycles.",
+      "frequency": "M",
+      "industries": [
+        "Banks (JPM, BAC, USB)",
+        "Regional banks (KRE)",
+        "Business-credit / leasing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TOTCI",
+      "note": "Higher-frequency weekly C&I loan series (H.8) for near-real-time tracking of corporate borrowing momentum and credit tightening.",
+      "frequency": "W",
+      "industries": [
+        "Banks (JPM, C, USB)",
+        "Regional banks",
+        "Fintech lenders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "REALLN",
+      "note": "Bank real-estate lending (residential + CRE) drives a large share of loan books and is the front line of CRE-stress and mortgage-cycle risk.",
+      "frequency": "M",
+      "industries": [
+        "Banks (WFC, PNC, TFC)",
+        "Regional banks (KRE)",
+        "REITs",
+        "Mortgage finance"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CONSUMER",
+      "note": "Bank-held consumer credit balances signal household borrowing demand and consumer-lending growth across cards, auto, and personal loans.",
+      "frequency": "M",
+      "industries": [
+        "Card issuers (COF, SYF, DFS)",
+        "Consumer banks",
+        "Fintech (SOFI)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DPSACBW027SBOG",
+      "note": "Total deposit base is banks' primary low-cost funding; deposit growth or flight directly drives funding costs, liquidity, and net interest margin.",
+      "frequency": "W",
+      "industries": [
+        "Banks (JPM, BAC, FRC-type regionals)",
+        "Regional banks (KRE)",
+        "Money-market funds"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TOTLL",
+      "note": "Total loans-and-leases (ex-securities) isolates pure lending activity, the revenue engine and credit-risk core of bank balance sheets.",
+      "frequency": "W",
+      "industries": [
+        "Banks",
+        "Regional banks (KRE)",
+        "Financials (XLF)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DRBLACBS",
+      "note": "Business-loan (C&I) delinquencies track deteriorating corporate credit quality, driving commercial provisioning and recession risk premia.",
+      "frequency": "Q",
+      "industries": [
+        "Banks (JPM, BAC, USB)",
+        "Regional banks",
+        "BDCs / direct lenders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DRSREACBS",
+      "note": "Residential mortgage delinquencies gauge housing-credit stress and loss content in bank mortgage and RMBS exposure.",
+      "frequency": "Q",
+      "industries": [
+        "Mortgage banks (WFC, PNC)",
+        "Mortgage insurers (MTG, ESNT)",
+        "Servicers",
+        "RMBS holders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CORCCACBS",
+      "note": "Net charge-off rate is the realized-loss figure that directly hits card-issuer earnings and reserve adequacy, complementing delinquency leads.",
+      "frequency": "Q",
+      "industries": [
+        "Card issuers (COF, SYF, DFS, AXP)",
+        "Consumer banks",
+        "ABS investors"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CORBLACBS",
+      "note": "Realized C&I loan losses quantify corporate-credit damage and drive commercial-bank provisioning through the cycle.",
+      "frequency": "Q",
+      "industries": [
+        "Banks (JPM, C, USB)",
+        "Regional banks",
+        "BDCs"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USNIM",
+      "note": "Aggregate NIM is the cleanest proxy for bank spread profitability, capturing the joint effect of rate levels, curve shape, and funding costs.",
+      "frequency": "Q",
+      "industries": [
+        "Banks (JPM, BAC, WFC)",
+        "Regional banks (KRE)",
+        "Thrifts"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WRESBAL",
+      "note": "Bank reserves measure systemic liquidity created/drained by QE/QT; falling reserves tighten funding markets and pressure short-rate plumbing.",
+      "frequency": "W",
+      "industries": [
+        "Banks",
+        "Money-market funds",
+        "Repo / securities dealers",
+        "Asset managers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "NFCI",
+      "note": "Comprehensive 100+ indicator gauge of financial-system tightness; positive = tighter-than-average conditions, a leading risk/credit-stress signal.",
+      "frequency": "W",
+      "industries": [
+        "Banks",
+        "Insurers",
+        "Asset managers (BLK)",
+        "Broad financials (XLF)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ANFCI",
+      "note": "NFCI stripped of the economic cycle, isolating financial conditions that are unusually loose/tight given growth and inflation.",
+      "frequency": "W",
+      "industries": [
+        "Banks",
+        "Insurers",
+        "Asset managers",
+        "Macro/credit strategists"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "STLFSI4",
+      "note": "Composite of 18 yield/spread/volatility series; spikes flag systemic financial stress and risk-off regimes for the financial complex.",
+      "frequency": "W",
+      "industries": [
+        "Banks",
+        "Insurers",
+        "Asset managers",
+        "Broad financials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "VIXCLS",
+      "note": "Equity-market implied volatility is the benchmark risk-appetite/fear gauge driving trading revenue, AUM flows, and credit-spread direction.",
+      "frequency": "D",
+      "industries": [
+        "Brokers/exchanges (CME, ICE)",
+        "Asset managers (BLK, TROW)",
+        "Insurers (variable annuities)",
+        "Investment banks (GS, MS)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DCPF3M",
+      "note": "Short-term financial CP funding rate reveals money-market stress and the marginal cost of wholesale funding for banks and finance companies.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Finance companies",
+        "Money-market funds",
+        "Broker-dealers"
+      ]
+    }
+  ]
+}
