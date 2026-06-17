@@ -101,7 +101,7 @@ else:
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'edgar-data-parse',
+        'LOCATION': 'fredgar-ai',
     }
 }
 
@@ -160,7 +160,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'EDGAR Data API',
+    'TITLE': 'Fredgar AI API',
     'DESCRIPTION': 'SEC EDGAR company data, filings, XBRL facts, derived metrics, '
     'financial statements, and macro series.',
     'VERSION': '1.0.0',

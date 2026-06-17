@@ -1,4 +1,4 @@
-# EDGAR Analyzer — frontend
+# Fredgar AI — frontend
 
 React 19 + TypeScript + Vite UI for the Django API in the repo root.
 

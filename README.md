@@ -1,6 +1,6 @@
-# EDGAR data parse
+# Fredgar AI
 
-Django + Django REST Framework backend with a Vite/React UI for **SEC EDGAR** company data and optional **FRED** macro series.
+**Fredgar AI** (FRED + EDGAR, with AI) is a Django + Django REST Framework backend with a Vite/React UI for **SEC EDGAR** company data and optional **FRED** macro series, with AI-assisted interpretation and summaries.
 
 ## Stack
 

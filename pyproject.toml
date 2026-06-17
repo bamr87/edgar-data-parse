@@ -1,7 +1,7 @@
 [project]
-name = "edgar-data-parse"
+name = "fredgar-ai"
 version = "0.1.0"
-description = "Django + DRF backend for SEC EDGAR company data with a Vite/React UI"
+description = "Fredgar AI (FRED + EDGAR, with AI) — Django + DRF backend for SEC EDGAR company data and FRED macro series with a Vite/React UI"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
