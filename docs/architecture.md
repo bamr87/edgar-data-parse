@@ -1,10 +1,12 @@
 # Architecture
 
+**Fredgar AI** (FRED + EDGAR, with AI) is a Django + DRF backend and Vite/React UI for SEC EDGAR company data (filings, XBRL facts) and FRED macro series, with AI-assisted analysis. The repository slug is `fredgar-ai` ([github.com/bamr87/fredgar-ai](https://github.com/bamr87/fredgar-ai)).
+
 ## Stack
 
-- **Backend:** Python 3.12+, Django 5+, Django REST Framework, PostgreSQL or SQLite (`DATABASE_URL`).
+- **Backend:** Python 3.12+, Django 5+, Django REST Framework, PostgreSQL or SQLite (`DATABASE_URL`). PostgreSQL defaults to user/password/db `fredgar`.
 - **Frontend:** React, TypeScript, Vite ([`frontend/`](../frontend/)).
-- **External APIs:** SEC `data.sec.gov` / `www.sec.gov` (no API key; `User-Agent` must identify the client). Optional FRED for macro series (`FRED_API_KEY`).
+- **External APIs:** SEC `data.sec.gov` / `www.sec.gov` (no API key; `User-Agent` must identify the client — Fredgar AI sends `fredgar-ai/1.0` plus a contact email). Optional FRED for macro series (`FRED_API_KEY`).
 
 ## Django apps
 

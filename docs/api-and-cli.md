@@ -1,5 +1,7 @@
 # API and CLI
 
+The REST API and management commands for **Fredgar AI** (FRED + EDGAR, with AI) — the backend serving SEC EDGAR company data and FRED macro series with AI-assisted analysis.
+
 All paths below are relative to the API host (e.g. `http://127.0.0.1:8000`). Authenticated vs anonymous behavior follows DRF defaults in settings; many endpoints are open for local development.
 
 ## REST API
@@ -70,7 +72,7 @@ Registered with `DefaultRouter` (list/create/detail patterns apply where the vie
 
 Interactive exploration: open `/api/v1/` in a browser with Django staff session if browsable API is enabled.
 
-**OpenAPI:** Served by `drf-spectacular` at `/api/v1/schema/` (OpenAPI 3) with Swagger UI at `/api/v1/docs/`. This document remains a human-readable route inventory.
+**OpenAPI:** Served by `drf-spectacular` at `/api/v1/schema/` (OpenAPI 3, titled "Fredgar AI API") with Swagger UI at `/api/v1/docs/`. This document remains a human-readable route inventory.
 
 ---
 
@@ -106,6 +108,7 @@ python manage.py <command> [options]
 | `load_crm_companies_json` | Load CRM JSON into `CrmCompanyRecord`. |
 | `match_crm_sec_titles` | Match CRM names to SEC issuers. |
 | `sync_crm_matched_edgar` | Sync submissions/facts for matched CRM rows (rate-limit friendly). |
+| `sync_all_companies` | Rate-limited, resumable bulk sync of EDGAR datasets for every company (`--delay`, `--limit`, `--offset`, `--with-ticker-only`, `--leadership-limit`, `--force`, `--user-agent-email`). |
 | `sync_derived_metrics` | Compute `DerivedMetric` rows from existing Facts (`--ticker` / `--cik` / `--all`); also the backfill path. |
 | `generate_static_site` | Render a static HTML site of company financials (`--ticker`/`--cik`/`--all`, `--output`, `--limit`) with per-company copy/download CSV+JSON. |
 | `sync_leadership` | Extract officers/directors/owners from SEC Forms 3/4/5 (`--ticker`/`--cik`, `--limit`). |
@@ -116,7 +119,8 @@ python manage.py <command> [options]
 
 | Command | Purpose |
 |---------|---------|
-| `load_series_bundle` | Register a bundle JSON (default macro bundle). |
-| `sync_series_bundle` | Pull observations for a named bundle (FRED needs `FRED_API_KEY`). |
+| `load_series_bundle` | Register a single bundle JSON via `--file` (e.g. `src/public_data/bundles/core.json`). |
+| `sync_series_bundle` | Pull observations for a named bundle, e.g. `--slug core` (FRED needs `FRED_API_KEY`). |
+| `refresh_series_bundles` | Register **and** FRED-sync every bundle JSON in the bundles dir — the easiest way to load all macro series (`--dir`, `--no-sync`, `--delay`, `--days-back`). |
 
 Use `python manage.py help <command>` for full arguments.

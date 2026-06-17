@@ -101,7 +101,7 @@ else:
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'edgar-data-parse',
+        'LOCATION': 'fredgar-ai',
     }
 }
 
@@ -160,7 +160,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'EDGAR Data API',
+    'TITLE': 'Fredgar AI API',
     'DESCRIPTION': 'SEC EDGAR company data, filings, XBRL facts, derived metrics, '
     'financial statements, and macro series.',
     'VERSION': '1.0.0',
@@ -217,12 +217,20 @@ TIKA_SERVER_ENDPOINT = os.getenv('TIKA_SERVER_ENDPOINT', 'http://localhost:9998'
 ENABLE_EMBEDDINGS = _env_bool('ENABLE_EMBEDDINGS', False)
 EMBEDDINGS_BACKEND = os.getenv('EMBEDDINGS_BACKEND', 'none')  # none | local | api
 
-# AI narrative analysis (leadership initiatives/quotes from filing text). Off by
-# default; requires `pip install anthropic` (see requirements-ai.txt) + ANTHROPIC_API_KEY.
-# Output is grounded in provided SEC filing excerpts only (no ungrounded claims).
-ENABLE_AI_ANALYSIS = _env_bool('ENABLE_AI_ANALYSIS', False)
+# AI narrative analysis (leadership initiatives/quotes from filing text). Enabled by
+# default with Claude as the provider; it degrades to a no-op unless the optional
+# `anthropic` SDK (requirements-ai.txt) AND a credential are present, so it is never
+# required for the core runtime. Output is grounded in SEC filing excerpts only.
+ENABLE_AI_ANALYSIS = _env_bool('ENABLE_AI_ANALYSIS', True)
 AI_ANALYSIS_BACKEND = os.getenv('AI_ANALYSIS_BACKEND', 'anthropic')  # anthropic | none
 AI_ANALYSIS_MODEL = os.getenv('AI_ANALYSIS_MODEL', 'claude-opus-4-8')
+# Credential, token-first: a Claude Code OAuth token (`claude setup-token`) is preferred and
+# sent as a Bearer auth token with the oauth beta header; ANTHROPIC_API_KEY is the fallback.
+# Set only ONE — if both a token and an API key are present the Anthropic API returns 401.
+AI_ANALYSIS_AUTH_TOKEN = (
+    os.getenv('CLAUDE_CODE_OAUTH_TOKEN') or os.getenv('ANTHROPIC_AUTH_TOKEN') or ''
+).strip()
+AI_ANALYSIS_API_KEY = os.getenv('ANTHROPIC_API_KEY', '').strip()
 
 LOGGING = {
     'version': 1,

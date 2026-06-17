@@ -30,7 +30,7 @@ def _resolve_contact_email(user_agent_email: str | None) -> str:
 
 
 def user_agent_string(user_agent_email: str | None = None) -> str:
-    return f"edgar-data-parse/1.0 ({_resolve_contact_email(user_agent_email)})"
+    return f"fredgar-ai/1.0 ({_resolve_contact_email(user_agent_email)})"
 
 
 def default_headers(user_agent_email: str | None = None) -> dict[str, str]:

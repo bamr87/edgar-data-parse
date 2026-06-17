@@ -50,6 +50,6 @@ Place large or proprietary exports here (not committed). Examples:
 
 - `companies-clean.json` — default path for `load_crm_companies_json`
 - `companies.csv` / `companies.json` — full CRM/ERP exports
-- `erp-clients.csv` — input for `src/csv_to_json.py` (writes `local/erp-clients.json`)
+- `erp-clients.csv` / `erp-clients.json` — CRM/ERP export staging
 
 The repo root `.gitignore` keeps `data/local/*` ignored except `data/local/.gitkeep`.
