@@ -21,4 +21,9 @@ describe('toCsv', () => {
   it('returns empty string for no rows', () => {
     expect(toCsv([])).toBe('')
   })
+  it('neutralizes formula injection in text cells but leaves numbers intact', () => {
+    // =/+/@/- leading text cells get a guard apostrophe; the numeric -5 does not.
+    const csv = toCsv([{ name: '=cmd()', note: '+1', amt: -5 }])
+    expect(csv).toBe("name,note,amt\n'=cmd(),'+1,-5")
+  })
 })

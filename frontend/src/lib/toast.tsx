@@ -38,7 +38,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="toaster" role="status" aria-live="polite">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.kind}`} onClick={() => remove(t.id)}>
+          <div
+            key={t.id}
+            className={`toast toast-${t.kind}`}
+            role="button"
+            tabIndex={0}
+            aria-label={`Dismiss notification: ${t.message}`}
+            onClick={() => remove(t.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                remove(t.id)
+              }
+            }}
+          >
             <span className="dot" />
             <span className="grow">{t.message}</span>
           </div>

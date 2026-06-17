@@ -145,7 +145,21 @@ function MarketSnapshot({ onOpen }: { onOpen: () => void }) {
               const headline = cfg.mode === 'yoy' ? (chg.pct != null ? `${chg.pct >= 0 ? '+' : ''}${chg.pct.toFixed(1)}%` : '—') : compact(last.value)
               const sub = cfg.mode === 'yoy' ? `${compact(last.value)} index` : (chg.abs != null ? `${signed(chg.abs, (n) => n.toFixed(2))} 1Y` : '')
               return (
-                <div key={cfg.id} className="col gap-1" style={{ padding: 'var(--sp-2)' }} onClick={onOpen}>
+                <div
+                  key={cfg.id}
+                  className="col gap-1"
+                  style={{ padding: 'var(--sp-2)', cursor: 'pointer' }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${cfg.label}: open in Macro Series`}
+                  onClick={onOpen}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onOpen()
+                    }
+                  }}
+                >
                   <div className="stat-label">{cfg.label}</div>
                   <div className="row between" style={{ alignItems: 'flex-end' }}>
                     <div>

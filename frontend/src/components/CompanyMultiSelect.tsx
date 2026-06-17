@@ -58,13 +58,19 @@ export function CompanyMultiSelect({ selected, onChange, placeholder = 'Add a co
               <div className="combo-empty">No more matches for “{debounced}”.</div>
             ) : (
               results.map((c) => (
-                <div key={c.id} className={cx('combo-item')} onClick={() => add(c)}>
+                <button
+                  key={c.id}
+                  type="button"
+                  className={cx('combo-item')}
+                  style={{ width: '100%', font: 'inherit', color: 'inherit', background: 'transparent', border: 'none', textAlign: 'left' }}
+                  onClick={() => add(c)}
+                >
                   <IconPlus width={14} height={14} />
                   <div className="grow">
                     <div className="truncate" style={{ fontWeight: 600 }}>{c.name}</div>
                     <div className="caption">{c.ticker ? `${c.ticker} · ` : ''}CIK {c.cik}</div>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>

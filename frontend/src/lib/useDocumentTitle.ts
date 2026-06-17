@@ -1,12 +1,17 @@
 import { useEffect } from 'react'
 
-/** Sets document.title to "<title> · EDGAR Explorer" while the component is mounted. */
+const BASE = 'Fredgar AI'
+
+/** Sets document.title to "<title> · Fredgar AI" while the component is mounted,
+ *  restoring whatever title was there before on unmount. Capturing the previous
+ *  value (rather than always resetting to BASE) avoids clobbering a title set by
+ *  another mounted setter and prevents flicker under StrictMode double-invoke. */
 export function useDocumentTitle(title: string | null | undefined) {
   useEffect(() => {
-    const base = 'EDGAR Explorer'
-    document.title = title ? `${title} · ${base}` : base
+    const prev = document.title
+    document.title = title ? `${title} · ${BASE}` : BASE
     return () => {
-      document.title = base
+      document.title = prev
     }
   }, [title])
 }

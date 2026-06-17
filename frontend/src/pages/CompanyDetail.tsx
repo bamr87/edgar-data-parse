@@ -27,12 +27,16 @@ import { FilingsTab } from './company/FilingsTab'
 import { LeadershipTab } from './company/LeadershipTab'
 import { FactsTab } from './company/FactsTab'
 
+const TAB_KEYS = ['overview', 'financials', 'filings', 'leadership', 'facts']
+
 export function CompanyDetail() {
   const { id } = useParams()
   const companyId = Number(id)
   const company = useCompany(Number.isFinite(companyId) ? companyId : null)
   const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') || 'overview'
+  // Fall back to 'overview' for unknown/garbage ?tab= values so the content area never blanks.
+  const rawTab = params.get('tab') || 'overview'
+  const tab = TAB_KEYS.includes(rawTab) ? rawTab : 'overview'
   const setTab = (t: string) => setParams((p) => { p.set('tab', t); return p }, { replace: true })
   useDocumentTitle(company.data?.name)
 

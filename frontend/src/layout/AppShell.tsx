@@ -59,10 +59,13 @@ export function AppShell() {
   const { isAdmin } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Cmd/Ctrl+K focuses the global company search.
+  // Cmd/Ctrl+K focuses the global company search — unless the user is already
+  // typing in a field, so the shortcut never steals focus mid-edit.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        const el = document.activeElement as HTMLElement | null
+        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
         e.preventDefault()
         document.querySelector<HTMLInputElement>('.topbar input')?.focus()
       }
