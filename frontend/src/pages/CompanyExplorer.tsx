@@ -1,7 +1,7 @@
 /** Browse & filter the company warehouse. URL-driven so any view can deep-link a
  *  filtered list (e.g. /companies?sic_code=3711 from a dashboard industry click). */
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useFacets, useMetadata } from '../lib/queries'
+import { useFacets, useMetadata, usePrefetchCompany } from '../lib/queries'
 import { useDebounce } from '../lib/useDebounce'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { downloadCsv } from '../lib/csv'
@@ -37,6 +37,7 @@ const FILTER_CHIPS: { key: string; label: string }[] = [
 export function CompanyExplorer() {
   useDocumentTitle('Companies')
   const navigate = useNavigate()
+  const prefetch = usePrefetchCompany()
   const facets = useFacets()
   const [params, setParams] = useSearchParams()
 
@@ -135,6 +136,7 @@ export function CompanyExplorer() {
                   rows={d.results}
                   rowKey={(r) => r.id}
                   onRowClick={(r) => navigate(`/companies/${r.id}`)}
+                  onRowHover={(r) => prefetch(r.id)}
                   columns={[
                     {
                       key: 'name', header: 'Company',
