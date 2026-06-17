@@ -2,12 +2,15 @@
 import { useState } from 'react'
 import { useDerivedMetrics, useStatement, useTimeseries } from '../../lib/queries'
 import { byUnit, date, humanize, money, secFilingUrl } from '../../lib/format'
+import { downloadCsv } from '../../lib/csv'
 import type { StatementType } from '../../lib/types'
 import { useCompany } from '../../lib/queries'
 import {
+  Button,
   Card,
   CardHeader,
   EmptyState,
+  IconDownload,
   Query,
   Segmented,
 } from '../../components/ui'
@@ -41,6 +44,15 @@ export function FinancialsTab({ id }: { id: number }) {
   const metrics = useDerivedMetrics(id)
   const trend = useTimeseries(id, trendConcept.concepts, trendConcept.annual)
   const cik = company.data?.cik || ''
+  const ticker = company.data?.ticker || cik
+
+  const exportStatement = () => {
+    if (!statement.data) return
+    downloadCsv(
+      `${ticker}-${stmt}.csv`,
+      statement.data.line_items.map((li) => ({ line_item: li.label, value: li.value, unit: li.unit, accession: li.accession })),
+    )
+  }
 
   return (
     <div className="col gap-4">
@@ -69,7 +81,15 @@ export function FinancialsTab({ id }: { id: number }) {
       <div className="grid grid-2">
         {/* Statement */}
         <Card>
-          <CardHeader title="Financial statement" actions={<Segmented value={stmt} options={STATEMENTS} onChange={setStmt} />} />
+          <CardHeader
+            title="Financial statement"
+            actions={
+              <div className="row gap-2">
+                <Segmented value={stmt} options={STATEMENTS} onChange={setStmt} />
+                <Button size="sm" variant="ghost" disabled={!statement.data} onClick={exportStatement} title="Download CSV"><IconDownload width={14} height={14} /></Button>
+              </div>
+            }
+          />
           <Query q={statement} isEmpty={(s) => s.line_items.every((li) => li.value === null)} empty={<EmptyState title="No statement data" message="Sync facts to build statements." />}>
             {(s) => (
               <>

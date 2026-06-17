@@ -2,13 +2,16 @@
 import { useState } from 'react'
 import { useFacts, useFactsFacets } from '../../lib/queries'
 import { byUnit, date, fullNum } from '../../lib/format'
+import { downloadCsv } from '../../lib/csv'
 import { useDebounce } from '../../lib/useDebounce'
 import { Pager } from '../../components/Pager'
 import {
+  Button,
   Card,
   CardHeader,
   DataTable,
   EmptyState,
+  IconDownload,
   IconSearch,
   Query,
 } from '../../components/ui'
@@ -72,9 +75,18 @@ export function FactsTab({ id }: { id: number }) {
         <CardHeader
           title="XBRL facts"
           actions={
-            <div className="search-box" style={{ width: 260 }}>
-              <IconSearch width={16} height={16} className="ico" />
-              <input className="input" placeholder="Filter by concept…" value={concept} onChange={(e) => { setConcept(e.target.value); setPage(1) }} />
+            <div className="row gap-2">
+              <div className="search-box" style={{ width: 220 }}>
+                <IconSearch width={16} height={16} className="ico" />
+                <input className="input" placeholder="Filter by concept…" value={concept} onChange={(e) => { setConcept(e.target.value); setPage(1) }} />
+              </div>
+              <Button
+                size="sm" variant="ghost" title="Download this page (CSV)"
+                disabled={!facts.data?.results.length}
+                onClick={() => facts.data && downloadCsv(`facts-p${page}.csv`, facts.data.results.map((r) => ({ concept: r.concept, taxonomy: r.taxonomy, period_start: r.period_start, period_end: r.period_end, unit: r.unit, value: r.value })))}
+              >
+                <IconDownload width={14} height={14} />
+              </Button>
             </div>
           }
         />
