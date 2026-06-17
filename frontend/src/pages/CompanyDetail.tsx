@@ -57,9 +57,13 @@ export function CompanyDetail() {
             </div>
             <div className="row gap-3 wrap caption mt-2">
               <span className="mono">CIK {cik10(c.cik)}</span>
-              {c.sic_description && <span>{c.sic_description}</span>}
+              {c.sic_description && (
+                <Link to={`/companies?sic_code=${encodeURIComponent(c.sic_code || '')}`} title="View companies in this industry">{c.sic_description} ›</Link>
+              )}
               {(c.hq_city || c.hq_state || c.hq_country) && (
-                <span>{[c.hq_city, c.hq_state, c.hq_country].filter(Boolean).join(', ')}</span>
+                c.hq_state
+                  ? <Link to={`/companies?hq_state=${encodeURIComponent(c.hq_state)}`} title="View companies in this state">{[c.hq_city, c.hq_state, c.hq_country].filter(Boolean).join(', ')} ›</Link>
+                  : <span>{[c.hq_city, c.hq_state, c.hq_country].filter(Boolean).join(', ')}</span>
               )}
               <a href={secCompanyUrl(c.cik)} target="_blank" rel="noreferrer" className="row gap-1">
                 SEC EDGAR <IconExternal width={12} height={12} />

@@ -19,22 +19,27 @@ const STATEMENTS: { value: StatementType; label: string }[] = [
   { value: 'cash_flow_statement', label: 'Cash Flow' },
 ]
 
+// Each option resolves across a priority chain of XBRL tags so the series stays
+// continuous across tag migrations (e.g. Revenues → ASC 606 revenue). `annual`
+// keeps one full-year value per fiscal year for durational concepts.
 const TREND_CONCEPTS = [
-  { value: 'Revenues', label: 'Revenue' },
-  { value: 'NetIncomeLoss', label: 'Net Income' },
-  { value: 'Assets', label: 'Total Assets' },
-  { value: 'StockholdersEquity', label: "Stockholders' Equity" },
-  { value: 'CashAndCashEquivalentsAtCarryingValue', label: 'Cash & Equivalents' },
-  { value: 'ResearchAndDevelopmentExpense', label: 'R&D Expense' },
+  { key: 'revenue', label: 'Revenue', concepts: ['RevenueFromContractWithCustomerExcludingAssessedTax', 'Revenues', 'SalesRevenueNet', 'RevenueFromContractWithCustomerIncludingAssessedTax'], annual: true },
+  { key: 'net_income', label: 'Net Income', concepts: ['NetIncomeLoss'], annual: true },
+  { key: 'op_income', label: 'Operating Income', concepts: ['OperatingIncomeLoss'], annual: true },
+  { key: 'assets', label: 'Total Assets', concepts: ['Assets'], annual: false },
+  { key: 'equity', label: "Stockholders' Equity", concepts: ['StockholdersEquity'], annual: false },
+  { key: 'cash', label: 'Cash & Equivalents', concepts: ['CashAndCashEquivalentsAtCarryingValue'], annual: false },
+  { key: 'rnd', label: 'R&D Expense', concepts: ['ResearchAndDevelopmentExpense'], annual: true },
 ]
 
 export function FinancialsTab({ id }: { id: number }) {
   const [stmt, setStmt] = useState<StatementType>('income_statement')
-  const [concept, setConcept] = useState('Revenues')
+  const [conceptKey, setConceptKey] = useState('revenue')
+  const trendConcept = TREND_CONCEPTS.find((c) => c.key === conceptKey) ?? TREND_CONCEPTS[0]
   const company = useCompany(id)
   const statement = useStatement(id, stmt)
   const metrics = useDerivedMetrics(id)
-  const trend = useTimeseries(id, concept)
+  const trend = useTimeseries(id, trendConcept.concepts, trendConcept.annual)
   const cik = company.data?.cik || ''
 
   return (
@@ -44,8 +49,8 @@ export function FinancialsTab({ id }: { id: number }) {
         <CardHeader
           title="Trend"
           actions={
-            <select className="select" style={{ width: 'auto' }} value={concept} onChange={(e) => setConcept(e.target.value)}>
-              {TREND_CONCEPTS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            <select className="select" style={{ width: 'auto' }} value={conceptKey} onChange={(e) => setConceptKey(e.target.value)}>
+              {TREND_CONCEPTS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
             </select>
           }
         />

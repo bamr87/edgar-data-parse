@@ -1,5 +1,6 @@
 /** Cross-company analytics: cohort metric benchmarking + leadership orientation compare. */
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { leadershipCompare } from '../lib/api'
 import { useCohortCompare } from '../lib/queries'
@@ -45,9 +46,13 @@ export function Compare() {
 }
 
 function CohortCompare() {
+  const navigate = useNavigate()
   const [concept, setConcept] = useState('Revenues')
   const [groupBy, setGroupBy] = useState('sic_description')
   const q = useCohortCompare({ concept, group_by: groupBy })
+
+  /** Drill into the company list filtered to a cohort group. */
+  const drill = (group: string) => group && navigate(`/companies?${groupBy}=${encodeURIComponent(group)}`)
 
   return (
     <div className="col gap-4">
@@ -76,7 +81,8 @@ function CohortCompare() {
               <Card>
                 <CardHeader title={`Average ${CONCEPTS.find((c) => c.value === concept)?.label ?? concept} by ${GROUP_BY.find((g) => g.value === groupBy)?.label}`} />
                 <div className="card-body">
-                  <BarsChart height={300} data={top.map((g) => ({ x: g.group || '—', y: g.avg }))} fmt={(v) => money(v)} colorBy={(_p, i) => `var(--viz-${(i % 6) + 1})`} />
+                  <div className="caption" style={{ marginBottom: 4 }}>Click a bar or row to view the companies in that group.</div>
+                  <BarsChart height={300} data={top.map((g) => ({ x: g.group || '—', y: g.avg }))} fmt={(v) => money(v)} colorBy={(_p, i) => `var(--viz-${(i % 6) + 1})`} onBarClick={(p) => drill(p.x)} />
                 </div>
               </Card>
               <Card>
@@ -85,8 +91,9 @@ function CohortCompare() {
                   rows={d.groups}
                   rowKey={(r) => r.group || 'na'}
                   initialSort={{ key: 'count', dir: 'desc' }}
+                  onRowClick={(r) => drill(r.group)}
                   columns={[
-                    { key: 'group', header: 'Group', render: (r) => r.group || '—', sortable: true, sortValue: (r) => r.group || '' },
+                    { key: 'group', header: 'Group', render: (r) => <span className="link-btn">{r.group || '—'} ›</span>, sortable: true, sortValue: (r) => r.group || '' },
                     { key: 'count', header: 'Companies', align: 'right', render: (r) => fullNum(r.company_count), sortable: true, sortValue: (r) => r.company_count },
                     { key: 'avg', header: 'Average', align: 'right', render: (r) => money(r.avg), sortable: true, sortValue: (r) => r.avg },
                     { key: 'min', header: 'Min', align: 'right', render: (r) => compact(r.min) },

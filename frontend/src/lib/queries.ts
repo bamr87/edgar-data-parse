@@ -31,8 +31,13 @@ export const useStatement = (id: number | null, type: StatementType) =>
 export const useDerivedMetrics = (id: number | null) =>
   useQuery({ queryKey: ['metrics', id], queryFn: () => api.listDerivedMetrics({ company: id as number }), enabled: id != null, staleTime: FIVE_MIN })
 
-export const useTimeseries = (id: number | null, concept: string) =>
-  useQuery({ queryKey: ['timeseries', id, concept], queryFn: () => api.getTimeseries(id as number, concept), enabled: id != null && !!concept, staleTime: FIVE_MIN })
+export const useTimeseries = (id: number | null, concepts: string[], annual = false) =>
+  useQuery({
+    queryKey: ['timeseries', id, concepts, annual],
+    queryFn: () => api.getTimeseries(id as number, concepts, { annual }),
+    enabled: id != null && concepts.length > 0,
+    staleTime: FIVE_MIN,
+  })
 
 export const useLatestByConcepts = (id: number | null, concepts: string[]) =>
   useQuery({ queryKey: ['latest', id, concepts], queryFn: () => api.getLatestByConcepts(id as number, concepts), enabled: id != null && concepts.length > 0, staleTime: FIVE_MIN })

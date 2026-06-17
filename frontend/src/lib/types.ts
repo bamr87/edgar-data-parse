@@ -132,9 +132,10 @@ export type TimeseriesPoint = {
   period_start: string | null
   value: number | null
   unit: string | null
+  concept?: string
   dimensions: Record<string, unknown>
 }
-export type Timeseries = { company: number; concept: string; taxonomy: string; series: TimeseriesPoint[] }
+export type Timeseries = { company: number; concept: string; concepts?: string[]; taxonomy: string; series: TimeseriesPoint[] }
 
 // ---- Statements & metrics ----
 export type StatementLineItem = { key: string; label: string; value: number | null; unit: string | null; accession: string | null }
@@ -301,10 +302,21 @@ export type SeriesObservation = {
   retrieved_at: string
 }
 export type SeriesBundle = { id: number; slug: string; name: string; description: string }
+export type BundleSeriesMeta = {
+  external_id: string
+  title: string
+  units: string
+  frequency: string
+  note: string
+  industries: string[]
+}
 export type BundleObservations = {
   bundle: string
+  name?: string
+  description?: string
   count: number
-  observations: { series: string; provider: string; date: string; value: string; source_url?: string | null }[]
+  series: BundleSeriesMeta[]
+  observations: { series: string; provider: string; date: string; value: string }[]
 }
 
 // ---- Async tasks ----

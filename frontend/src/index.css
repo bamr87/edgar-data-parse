@@ -401,6 +401,30 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
 /* Tooltip-ish caption */
 .caption { font-size: var(--fs-xs); color: var(--c-text-subtle); line-height: 1.5; }
 
+/* Drill-down row (clickable list item linking to a filtered view) */
+.drill-row { cursor: pointer; border-radius: var(--radius-sm); padding: 2px 4px; margin: 0 -4px; transition: background 0.12s; }
+.drill-row:hover { background: var(--c-surface-2); }
+.drill-row:hover .drill-label { color: var(--c-accent-text); }
+
+/* Drawer (right-side detail panel) */
+.drawer-root { position: fixed; inset: 0; z-index: 80; }
+.drawer-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.45); animation: fade 0.15s ease; }
+.drawer-panel { position: absolute; top: 0; right: 0; height: 100vh; max-width: 100vw; background: var(--c-surface); border-left: 1px solid var(--c-border); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; animation: slidein 0.18s ease; }
+.drawer-head { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4); border-bottom: 1px solid var(--c-border); }
+.drawer-body { padding: var(--sp-4); overflow-y: auto; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slidein { from { transform: translateX(20px); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+
+/* Macro workspace: category rail */
+.macro-grid { display: grid; grid-template-columns: 210px 1fr; gap: var(--sp-4); align-items: start; }
+@media (max-width: 860px) { .macro-grid { grid-template-columns: 1fr; } }
+.cat-rail { display: flex; flex-direction: column; gap: 1px; position: sticky; top: calc(var(--topbar-h) + var(--sp-4)); }
+.cat-item { text-align: left; border: none; background: none; color: var(--c-text-muted); font: inherit; font-size: var(--fs-sm); font-weight: 500; padding: 7px 10px; border-radius: var(--radius-sm); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+.cat-item:hover { background: var(--c-surface-2); color: var(--c-text); }
+.cat-item.active { background: var(--c-accent-soft); color: var(--c-accent-text); font-weight: 600; }
+.cat-item .cat-count { font-size: var(--fs-xs); color: var(--c-text-subtle); }
+.cat-item.active .cat-count { color: var(--c-accent-text); }
+
 /* Command palette / global search dropdown */
 .combo { position: relative; }
 .combo-panel { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); box-shadow: var(--shadow-lg); z-index: 50; max-height: 60vh; overflow-y: auto; padding: 6px; }

@@ -85,9 +85,14 @@ export const getProfile = (id: number) => httpGet<CompanyProfile>(`${V}/companie
 export const getLatestByConcepts = (id: number, concepts: string[], taxonomy = 'us-gaap') =>
   httpGet<LatestByConcepts>(`${V}/companies/${id}/analytics/latest-by-concepts/${qs({ concepts: concepts.join(','), taxonomy })}`)
 
-export const getTimeseries = (id: number, concept: string, opts?: { taxonomy?: string; limit?: number }) =>
+export const getTimeseries = (id: number, concepts: string[], opts?: { taxonomy?: string; limit?: number; annual?: boolean }) =>
   httpGet<Timeseries>(
-    `${V}/companies/${id}/analytics/timeseries/${qs({ concept, taxonomy: opts?.taxonomy ?? 'us-gaap', limit: opts?.limit ?? 80 })}`,
+    `${V}/companies/${id}/analytics/timeseries/${qs({
+      concepts: concepts.join(','),
+      taxonomy: opts?.taxonomy ?? 'us-gaap',
+      limit: opts?.limit ?? 80,
+      annual: opts?.annual ? 'true' : undefined,
+    })}`,
   )
 
 export const getStatement = (id: number, statementType: StatementType, taxonomy = 'us-gaap') =>
@@ -138,6 +143,7 @@ export const listMetadata = (p: {
   hq_state?: string
   hq_country?: string
   sic_code?: string
+  sic_description?: string
   industry?: string
   customer_vertical?: string
 }) => httpGet<Paginated<CompanyMetadata>>(`${V}/company-metadata/${qs(p)}`)
@@ -152,8 +158,8 @@ export const peerFactCompare = (id: number, concept: string, taxonomy = 'us-gaap
 // ---- Macro / public series ----
 export const listSeriesBundles = (p?: { page?: number }) =>
   httpGet<Paginated<SeriesBundle>>(`${V}/series-bundles/${qs(p ?? {})}`)
-export const getBundleObservations = (slug: string, limit = 5000) =>
-  httpGet<BundleObservations>(`${V}/series-bundles/${slug}/observations/${qs({ limit })}`)
+export const getBundleObservations = (slug: string, perSeries = 2000) =>
+  httpGet<BundleObservations>(`${V}/series-bundles/${slug}/observations/${qs({ per_series: perSeries })}`)
 
 // ---- Tasks ----
 export const getTask = (taskId: string) => httpGet<TaskStatus>(`${V}/tasks/${taskId}/`)

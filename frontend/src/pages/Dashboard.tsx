@@ -1,5 +1,5 @@
 /** Landing page: coverage overview + entry points into the rest of the app. */
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useFacets } from '../lib/queries'
 import { fullNum } from '../lib/format'
 import { CompanySearch } from '../components/CompanySearch'
@@ -26,6 +26,7 @@ const QUICK_LINKS = [
 
 export function Dashboard() {
   const facets = useFacets()
+  const navigate = useNavigate()
 
   return (
     <div className="page">
@@ -84,13 +85,13 @@ export function Dashboard() {
                 {f.top_sic.slice(0, 8).map((s) => {
                   const max = f.top_sic[0]?.count || 1
                   return (
-                    <div key={s.sic_code} className="col gap-1">
+                    <Link key={s.sic_code} to={`/companies?sic_code=${encodeURIComponent(s.sic_code)}`} className="drill-row col gap-1" style={{ color: 'inherit', textDecoration: 'none' }}>
                       <div className="row between text-sm">
-                        <span className="truncate" style={{ maxWidth: '70%' }}>{s.sic_description || `SIC ${s.sic_code}`}</span>
-                        <span className="num muted">{fullNum(s.count)}</span>
+                        <span className="truncate drill-label" style={{ maxWidth: '70%' }}>{s.sic_description || `SIC ${s.sic_code}`}</span>
+                        <span className="num muted">{fullNum(s.count)} ›</span>
                       </div>
                       <Meter value={s.count} max={max} />
-                    </div>
+                    </Link>
                   )
                 })}
               </div>
@@ -103,11 +104,13 @@ export function Dashboard() {
           <Query q={facets} isEmpty={(f) => f.hq_state.length === 0} empty={<EmptyBlock />}>
             {(f) => (
               <div className="card-body">
+                <div className="caption" style={{ marginBottom: 4 }}>Click a bar to view companies in that state.</div>
                 <BarsChart
                   height={260}
                   data={f.hq_state.slice(0, 10).map((s) => ({ x: s.hq_state || '—', y: s.count }))}
                   fmt={(v) => fullNum(v)}
                   colorBy={(_p, i) => `var(--viz-${(i % 6) + 1})`}
+                  onBarClick={(p) => p.x && p.x !== '—' && navigate(`/companies?hq_state=${encodeURIComponent(p.x)}`)}
                 />
               </div>
             )}
