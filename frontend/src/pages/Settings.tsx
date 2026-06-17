@@ -6,6 +6,8 @@ import { useMutation } from '@tanstack/react-query'
 import { useApp } from '../lib/app-context'
 import { useAddCompany } from '../lib/queries'
 import { bulkFromEdgar, ingestSubmission } from '../lib/api'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { useToast } from '../lib/toast'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -18,6 +20,8 @@ import {
 } from '../components/ui'
 
 export function Settings() {
+  useDocumentTitle('Settings')
+  const toast = useToast()
   const { token, email, theme, isAdmin, setToken, setEmail, setTheme } = useApp()
   const [tokenInput, setTokenInput] = useState(token)
   const [emailInput, setEmailInput] = useState(email)
@@ -38,13 +42,14 @@ export function Settings() {
             <Field label="Admin API token" hint="DRF token for write/sync actions. Generate with: manage.py drf_create_token <user>">
               <div className="row gap-2">
                 <input className="input" type="password" placeholder="paste token…" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)} />
-                <Button variant="primary" onClick={() => setToken(tokenInput)}>Save</Button>
+                <Button variant="primary" onClick={() => { setToken(tokenInput); toast.success(tokenInput.trim() ? 'Admin token saved.' : 'Token cleared.') }}>Save</Button>
+                {isAdmin && <Button variant="ghost" onClick={() => { setToken(''); setTokenInput(''); toast.info('Disconnected.') }}>Disconnect</Button>}
               </div>
             </Field>
             <Field label="SEC contact email" hint="Sent as X-Sec-User-Agent-Email — SEC requires a contact for fair-access.">
               <div className="row gap-2">
                 <input className="input" type="email" placeholder="you@example.com" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} />
-                <Button variant="primary" onClick={() => setEmail(emailInput)}>Save</Button>
+                <Button variant="primary" onClick={() => { setEmail(emailInput); toast.success('SEC contact email saved.') }}>Save</Button>
               </div>
             </Field>
             <Field label="Theme">
@@ -72,6 +77,7 @@ export function Settings() {
 
 function AddCompanyCard({ admin }: { admin: boolean }) {
   const navigate = useNavigate()
+  const toast = useToast()
   const add = useAddCompany()
   const [ticker, setTicker] = useState('')
   const [cik, setCik] = useState('')
@@ -83,7 +89,7 @@ function AddCompanyCard({ admin }: { admin: boolean }) {
         <div className="row gap-2 wrap">
           <input className="input" placeholder="Ticker (e.g. AAPL)" value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())} />
           <input className="input" placeholder="or CIK" value={cik} onChange={(e) => setCik(e.target.value)} />
-          <Button variant="primary" disabled={!admin || (!ticker && !cik)} loading={add.isPending} onClick={() => add.mutate({ ticker: ticker || undefined, cik: cik || undefined })}>
+          <Button variant="primary" disabled={!admin || (!ticker && !cik)} loading={add.isPending} onClick={() => add.mutate({ ticker: ticker || undefined, cik: cik || undefined }, { onSuccess: (c) => toast.success(`Imported ${c.name}.`), onError: (e) => toast.error((e as Error).message) })}>
             Import
           </Button>
         </div>

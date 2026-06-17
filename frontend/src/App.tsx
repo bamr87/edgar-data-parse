@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './layout/AppShell'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { Loading } from './components/ui'
 
 /** Route-level code splitting: each page (and its chart deps) loads on demand. */
@@ -21,8 +22,9 @@ export default function App() {
         <Route
           path="/*"
           element={
-            <Suspense fallback={<div className="page"><Loading /></div>}>
-              <Routes>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="page"><Loading /></div>}>
+                <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/companies" element={<CompanyExplorer />} />
                 <Route path="/companies/:id" element={<CompanyDetail />} />
@@ -34,8 +36,9 @@ export default function App() {
                 <Route path="/explore" element={<Navigate to="/companies" replace />} />
                 <Route path="/metadata" element={<Navigate to="/companies" replace />} />
                 <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
           }
         />
       </Route>

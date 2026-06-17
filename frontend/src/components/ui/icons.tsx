@@ -72,3 +72,6 @@ export const IconSparkle = (p: P) => (
 export const IconGlobe = (p: P) => (
   <svg {...base(p)}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" /></svg>
 )
+export const IconDownload = (p: P) => (
+  <svg {...base(p)}><path d="M12 3v12M7 11l5 4 5-4" /><path d="M5 19h14" /></svg>
+)

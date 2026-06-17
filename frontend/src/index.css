@@ -169,6 +169,14 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 
 ::selection { background: var(--c-accent-soft); }
 
+mark { background: color-mix(in srgb, var(--c-warning) 32%, transparent); color: var(--c-text); border-radius: 3px; padding: 0 2px; }
+
+/* Keyboard focus rings (mouse users unaffected via :focus-visible) */
+:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.btn:focus-visible, .nav-item:focus-visible, .tab:focus-visible, .cat-item:focus-visible,
+.combo-item:focus-visible, .segmented button:focus-visible, a:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; border-radius: var(--radius-sm); }
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible { outline: none; }
+
 /* Scrollbars */
 * { scrollbar-width: thin; scrollbar-color: var(--c-border-strong) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -246,11 +254,12 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   .page { padding: var(--sp-4); }
 }
 .scrim { display: none; }
+/* Default-hidden before the media query, so the ≤880px override wins on mobile. */
+.menu-btn { display: none; }
 @media (max-width: 880px) {
   .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 55; }
   .menu-btn { display: inline-flex; }
 }
-.menu-btn { display: none; }
 
 /* ============================================================================
    Card
@@ -314,6 +323,7 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 .search-box { position: relative; display: flex; align-items: center; }
 .search-box .ico { position: absolute; left: 11px; color: var(--c-text-subtle); pointer-events: none; }
 .search-box .input { padding-left: 34px; }
+.search-kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.7; }
 
 /* ============================================================================
    Badges / pills
@@ -414,6 +424,30 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
 .drawer-body { padding: var(--sp-4); overflow-y: auto; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slidein { from { transform: translateX(20px); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+
+/* Print — clean one-pager (hide chrome, force light, avoid card breaks) */
+@media print {
+  :root, :root[data-theme='dark'] {
+    --c-bg: #fff; --c-surface: #fff; --c-surface-2: #fff; --c-surface-3: #f0f0f0;
+    --c-text: #111; --c-text-muted: #444; --c-text-subtle: #666; --c-border: #ccc; --c-border-strong: #bbb;
+    color-scheme: light;
+  }
+  .sidebar, .topbar, .toaster, .scrim, .menu-btn, .drawer-root { display: none !important; }
+  .shell, .main { display: block; }
+  .page { max-width: none; padding: 0; margin: 0; }
+  .btn, .segmented, .tabs, .search-box, .combo-panel { display: none !important; }
+  .card { box-shadow: none !important; border-color: #ccc; break-inside: avoid; }
+  body { background: #fff; }
+  a { color: inherit; text-decoration: none; }
+}
+
+/* Toasts */
+.toaster { position: fixed; bottom: var(--sp-5); right: var(--sp-5); z-index: 100; display: flex; flex-direction: column; gap: var(--sp-2); max-width: 380px; }
+.toast { display: flex; align-items: center; gap: var(--sp-2); padding: 11px 14px; border-radius: var(--radius); background: var(--c-surface); border: 1px solid var(--c-border); box-shadow: var(--shadow-lg); font-size: var(--fs-sm); cursor: pointer; animation: slidein 0.18s ease; }
+.toast .dot { width: 8px; height: 8px; flex: none; }
+.toast-success { border-left: 3px solid var(--c-positive); } .toast-success .dot { color: var(--c-positive); }
+.toast-error { border-left: 3px solid var(--c-negative); } .toast-error .dot { color: var(--c-negative); }
+.toast-info { border-left: 3px solid var(--c-info); } .toast-info .dot { color: var(--c-info); }
 
 /* Macro workspace: category rail */
 .macro-grid { display: grid; grid-template-columns: 210px 1fr; gap: var(--sp-4); align-items: start; }

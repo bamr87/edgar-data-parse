@@ -5,6 +5,7 @@ import { useDocumentSearch } from '../lib/queries'
 import { useDebounce } from '../lib/useDebounce'
 import { cikInt } from '../lib/format'
 import { useCompanyIdByCik } from '../lib/lookup'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -15,6 +16,7 @@ import {
 } from '../components/ui'
 
 export function FilingSearch() {
+  useDocumentTitle('Filing Search')
   const [q, setQ] = useState('')
   const [formType, setFormType] = useState('')
   const [cik, setCik] = useState('')
@@ -59,7 +61,7 @@ export function FilingSearch() {
                       </div>
                       <CompanyLink cik={h.cik} />
                     </div>
-                    <p className="mt-2" style={{ lineHeight: 1.6, color: 'var(--c-text-muted)' }}>…{h.snippet}…</p>
+                    <p className="mt-2" style={{ lineHeight: 1.6, color: 'var(--c-text-muted)' }}>…{highlight(h.snippet, debounced)}…</p>
                   </Card>
                 ))}
               </div>
@@ -68,6 +70,18 @@ export function FilingSearch() {
         </div>
       )}
     </div>
+  )
+}
+
+/** Wrap matched query terms in the snippet with <mark> for readability. */
+function highlight(text: string, query: string) {
+  const terms = query.trim().split(/\s+/).filter((t) => t.length >= 2)
+  if (terms.length === 0) return text
+  const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const re = new RegExp(`(${escaped.join('|')})`, 'gi')
+  const lower = terms.map((t) => t.toLowerCase())
+  return text.split(re).map((part, i) =>
+    lower.includes(part.toLowerCase()) ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>,
   )
 }
 

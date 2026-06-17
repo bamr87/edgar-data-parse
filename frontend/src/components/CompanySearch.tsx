@@ -8,7 +8,7 @@ import { cx } from '../lib/format'
 import { IconSearch } from './ui/icons'
 import { Spinner } from './ui/states'
 
-export function CompanySearch({ placeholder = 'Search companies by name, ticker, or CIK…', autoFocus }: { placeholder?: string; autoFocus?: boolean }) {
+export function CompanySearch({ placeholder = 'Search companies by name, ticker, or CIK…', autoFocus, kbd }: { placeholder?: string; autoFocus?: boolean; kbd?: boolean }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
@@ -54,6 +54,7 @@ export function CompanySearch({ placeholder = 'Search companies by name, ticker,
           onKeyDown={onKey}
           aria-label="Search companies"
         />
+        {kbd && !q && <span className="kbd search-kbd">⌘K</span>}
       </div>
       {open && debounced.trim().length >= 1 && (
         <div className="combo-panel">

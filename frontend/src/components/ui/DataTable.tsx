@@ -17,6 +17,7 @@ export function DataTable<T>({
   rows,
   rowKey,
   onRowClick,
+  onRowHover,
   compact,
   initialSort,
   className,
@@ -25,6 +26,7 @@ export function DataTable<T>({
   rows: T[]
   rowKey: (row: T, i: number) => string | number
   onRowClick?: (row: T) => void
+  onRowHover?: (row: T) => void
   compact?: boolean
   initialSort?: { key: string; dir: 'asc' | 'desc' }
   className?: string
@@ -69,7 +71,7 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {sorted.map((row, i) => (
-            <tr key={rowKey(row, i)} className={cx(onRowClick && 'clickable')} onClick={onRowClick ? () => onRowClick(row) : undefined}>
+            <tr key={rowKey(row, i)} className={cx(onRowClick && 'clickable')} onClick={onRowClick ? () => onRowClick(row) : undefined} onMouseEnter={onRowHover ? () => onRowHover(row) : undefined}>
               {columns.map((c) => (
                 <td key={c.key} className={cx(c.align === 'right' && 'td-num')}>
                   {c.render(row)}

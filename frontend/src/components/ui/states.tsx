@@ -55,14 +55,16 @@ export function Query<T>({
   isEmpty,
   empty,
   loadingLabel,
+  pending,
 }: {
   q: UseQueryResult<T>
   children: (data: T) => ReactNode
   isEmpty?: (data: T) => boolean
   empty?: ReactNode
   loadingLabel?: string
+  pending?: ReactNode
 }) {
-  if (q.isPending) return <Loading label={loadingLabel} />
+  if (q.isPending) return <>{pending ?? <Loading label={loadingLabel} />}</>
   if (q.isError) return <ErrorState error={q.error} />
   const data = q.data as T
   if (isEmpty?.(data)) return <>{empty ?? <EmptyState title="No data yet" />}</>
@@ -75,6 +77,24 @@ export function SkeletonRows({ rows = 4, height = 16 }: { rows?: number; height?
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="skeleton" style={{ height, width: `${90 - i * 8}%` }} />
       ))}
+    </div>
+  )
+}
+
+/** Skeleton placeholder for a data table (header + rows). */
+export function SkeletonTable({ rows = 8 }: { rows?: number }) {
+  return (
+    <div style={{ padding: 'var(--sp-3) var(--sp-4)' }}>
+      <div className="skeleton" style={{ height: 14, width: '30%', marginBottom: 'var(--sp-3)' }} />
+      <div className="col gap-3">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="row gap-3" style={{ alignItems: 'center' }}>
+            <div className="skeleton" style={{ height: 28, width: 28, borderRadius: 8, flex: 'none' }} />
+            <div className="skeleton" style={{ height: 14, flex: 1 }} />
+            <div className="skeleton" style={{ height: 14, width: 80, flex: 'none' }} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

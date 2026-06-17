@@ -1,6 +1,7 @@
 /** Leadership roster + transparent stakeholder-orientation index + grounded AI analysis. */
 import { useApp } from '../../lib/app-context'
 import { useAnalyzeLeadership, useLeadership, useLeadershipAnalysis, useStakeholder } from '../../lib/queries'
+import { useToast } from '../../lib/toast'
 import { date, signed } from '../../lib/format'
 import {
   Badge,
@@ -131,8 +132,14 @@ function RosterCard({ id }: { id: number }) {
 
 function AnalysisCard({ id }: { id: number }) {
   const { isAdmin } = useApp()
+  const toast = useToast()
   const analysis = useLeadershipAnalysis(id)
   const analyze = useAnalyzeLeadership(id)
+  const runAnalysis = () =>
+    analyze.mutate(undefined, {
+      onSuccess: (d) => toast[d.enabled ? 'success' : 'info'](d.enabled ? 'Leadership analysis generated.' : 'AI analysis is disabled on the backend.'),
+      onError: (e) => toast.error((e as Error).message),
+    })
 
   return (
     <Card>
@@ -140,7 +147,7 @@ function AnalysisCard({ id }: { id: number }) {
         title="AI leadership analysis"
         sub="Initiatives, verbatim quotes & direction — grounded strictly in SEC filing text"
         icon={<IconSparkle width={16} height={16} />}
-        actions={isAdmin ? <Button size="sm" variant="primary" loading={analyze.isPending} onClick={() => analyze.mutate()}>Run analysis</Button> : undefined}
+        actions={isAdmin ? <Button size="sm" variant="primary" loading={analyze.isPending} onClick={runAnalysis}>Run analysis</Button> : undefined}
       />
       <Query q={analysis}>
         {(a) => {

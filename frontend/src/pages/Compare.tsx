@@ -5,10 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { leadershipCompare } from '../lib/api'
 import { useCohortCompare } from '../lib/queries'
 import { compact, fullNum, money } from '../lib/format'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
+import { CompanyMultiSelect, type PickedCompany } from '../components/CompanyMultiSelect'
 import {
   Badge,
-  Button,
   Card,
   CardHeader,
   DataTable,
@@ -35,6 +36,7 @@ const GROUP_BY = [
 ]
 
 export function Compare() {
+  useDocumentTitle('Compare')
   const [tab, setTab] = useState('cohort')
   return (
     <div className="page">
@@ -111,8 +113,8 @@ function CohortCompare() {
 }
 
 function LeadershipCompareView() {
-  const [raw, setRaw] = useState('')
-  const [ciks, setCiks] = useState<string[]>([])
+  const [selected, setSelected] = useState<PickedCompany[]>([])
+  const ciks = selected.map((s) => s.cik)
   const q = useQuery({
     queryKey: ['leadership-compare', ciks],
     queryFn: () => leadershipCompare(ciks),
@@ -122,12 +124,9 @@ function LeadershipCompareView() {
   return (
     <div className="col gap-4">
       <Card className="card-pad">
-        <span className="field-label">Compare by CIK</span>
-        <div className="row gap-2 wrap mt-1">
-          <input className="input grow" style={{ minWidth: 260 }} placeholder="Comma-separated CIKs, e.g. 0001318605, 0000037996" value={raw} onChange={(e) => setRaw(e.target.value)} />
-          <Button variant="primary" onClick={() => setCiks(raw.split(',').map((c) => c.trim()).filter(Boolean))}>Compare</Button>
-        </div>
-        <div className="caption mt-2">Compares leadership footprint + the transparent stakeholder-orientation index side by side.</div>
+        <span className="field-label">Companies to compare</span>
+        <div className="mt-2"><CompanyMultiSelect selected={selected} onChange={setSelected} placeholder="Search a company to add…" /></div>
+        <div className="caption mt-2">Add two or more companies to compare leadership footprint + the transparent stakeholder-orientation index side by side.</div>
       </Card>
 
       {ciks.length > 0 && (

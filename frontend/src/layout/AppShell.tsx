@@ -1,6 +1,6 @@
 /** Application chrome: sidebar navigation + sticky top bar with global search,
  *  theme toggle, backend-readiness indicator, and admin status. */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useApp } from '../lib/app-context'
 import { useReady } from '../lib/queries'
@@ -59,6 +59,21 @@ export function AppShell() {
   const { isAdmin } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Cmd/Ctrl+K focuses the global company search — unless the user is already
+  // typing in a field, so the shortcut never steals focus mid-edit.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        const el = document.activeElement as HTMLElement | null
+        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return
+        e.preventDefault()
+        document.querySelector<HTMLInputElement>('.topbar input')?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
     <div className="shell">
       <div className={cx('scrim', menuOpen && 'show')} onClick={() => setMenuOpen(false)} />
@@ -98,7 +113,7 @@ export function AppShell() {
             <IconMenu width={18} height={18} />
           </button>
           <div style={{ maxWidth: 460 }} className="grow">
-            <CompanySearch />
+            <CompanySearch kbd />
           </div>
           <div className="row gap-3" style={{ marginLeft: 'auto' }}>
             <ReadyDot />

@@ -12,6 +12,15 @@ export const useReady = () => useQuery({ queryKey: ['ready'], queryFn: api.getRe
 export const useCompanies = (params: Parameters<typeof api.listCompanies>[0]) =>
   useQuery({ queryKey: ['companies', params], queryFn: () => api.listCompanies(params), staleTime: FIVE_MIN })
 
+/** Returns a function to warm the cache for a company (call on hover for instant nav). */
+export function usePrefetchCompany() {
+  const qc = useQueryClient()
+  return (id: number) => {
+    qc.prefetchQuery({ queryKey: ['company', id], queryFn: () => api.getCompany(id), staleTime: FIVE_MIN })
+    qc.prefetchQuery({ queryKey: ['profile', id], queryFn: () => api.getProfile(id), staleTime: FIVE_MIN })
+  }
+}
+
 export const useCompany = (id: number | null) =>
   useQuery({ queryKey: ['company', id], queryFn: () => api.getCompany(id as number), enabled: id != null, staleTime: FIVE_MIN })
 

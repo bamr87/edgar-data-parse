@@ -2,6 +2,7 @@
  *  Categorize (theme rail) · filter (search/frequency) · group (Grid/Overlay/Table
  *  views) · drill (detail drawer) · adjust (time range + Level/YoY/Index transforms). */
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useBundleObservations, useSeriesBundles } from '../lib/queries'
 import { compact, cx, date } from '../lib/format'
 import {
@@ -20,6 +21,7 @@ import {
   type Transform,
 } from '../lib/macro'
 import type { BundleObservations, BundleSeriesMeta } from '../lib/types'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -42,13 +44,24 @@ type Prepared = { meta: BundleSeriesMeta; ranged: RawPoint[]; chart: ChartPoint[
 const VIZ = (i: number) => `var(--viz-${(i % 6) + 1})`
 
 export function Macro() {
+  useDocumentTitle('Macro Series')
   const bundles = useSeriesBundles()
-  const [slug, setSlug] = useState('core')
 
-  // Workspace controls (persist across category switches).
-  const [view, setView] = useState<View>('grid')
-  const [range, setRange] = useState<RangeKey>('5')
-  const [transform, setTransform] = useState<Transform>('level')
+  // Shareable workspace state lives in the URL (bundle/view/range/transform).
+  const [params, setParams] = useSearchParams()
+  const patch = (k: string, v: string) => setParams((p) => { p.set(k, v); return p }, { replace: true })
+  const oneOf = <T extends string>(v: string | null, allowed: readonly T[], def: T): T =>
+    (allowed as readonly string[]).includes(v ?? '') ? (v as T) : def
+  const slug = params.get('b') || 'core'
+  const view = oneOf<View>(params.get('v'), ['grid', 'overlay', 'table'], 'grid')
+  const range = oneOf<RangeKey>(params.get('r'), ['1', '3', '5', '10', 'max'], '5')
+  const transform = oneOf<Transform>(params.get('t'), ['level', 'yoy', 'index'], 'level')
+  const setSlug = (s: string) => patch('b', s)
+  const setView = (v: View) => patch('v', v)
+  const setRange = (r: RangeKey) => patch('r', r)
+  const setTransform = (t: Transform) => patch('t', t)
+
+  // Transient controls stay local.
   const [search, setSearch] = useState('')
   const [freq, setFreq] = useState('')
   const [overlaySel, setOverlaySel] = useState<Set<string>>(new Set())

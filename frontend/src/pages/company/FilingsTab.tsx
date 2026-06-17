@@ -13,6 +13,7 @@ import {
   IconExternal,
   IconSearch,
   Query,
+  SkeletonTable,
 } from '../../components/ui'
 import type { Filing } from '../../lib/types'
 
@@ -71,7 +72,7 @@ export function FilingsTab({ id, cik }: { id: number; cik: string }) {
             </select>
           }
         />
-        <Query q={filings} isEmpty={(f) => f.results.length === 0} empty={<EmptyState title="No filings" message="Sync filings from the admin bar above." />}>
+        <Query q={filings} pending={<SkeletonTable />} isEmpty={(f) => f.results.length === 0} empty={<EmptyState title="No filings" message="Sync filings from the admin bar above." />}>
           {(f) => (
             <>
               <DataTable<Filing>
