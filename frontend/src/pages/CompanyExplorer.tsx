@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFacets, useMetadata } from '../lib/queries'
 import { useDebounce } from '../lib/useDebounce'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { downloadCsv } from '../lib/csv'
 import { PageHeader } from '../components/PageHeader'
 import { Pager } from '../components/Pager'
 import {
@@ -13,9 +14,11 @@ import {
   DataTable,
   EmptyState,
   IconBuilding,
+  IconDownload,
   IconPlus,
   IconSearch,
   Query,
+  SkeletonTable,
 } from '../components/ui'
 import type { CompanyMetadata } from '../lib/types'
 
@@ -75,7 +78,14 @@ export function CompanyExplorer() {
       <PageHeader
         title="Companies"
         desc="Filter and browse every company in the warehouse. Click a row for the full 360° profile."
-        actions={<Button variant="primary" onClick={() => navigate('/settings')}><IconPlus width={16} height={16} /> Add company</Button>}
+        actions={
+          <div className="row gap-2">
+            <Button disabled={!list.data?.results.length} onClick={() => downloadCsv('companies.csv', list.data?.results ?? [], ['cik', 'ticker', 'name', 'sic_code', 'sic_description', 'hq_state', 'hq_country', 'customer_vertical'])} title="Download this page (CSV)">
+              <IconDownload width={16} height={16} /> Export
+            </Button>
+            <Button variant="primary" onClick={() => navigate('/settings')}><IconPlus width={16} height={16} /> Add company</Button>
+          </div>
+        }
       />
 
       {/* Filter bar */}
@@ -117,7 +127,7 @@ export function CompanyExplorer() {
 
       <div className="mt-4">
         <Card>
-          <Query q={list} isEmpty={(d) => d.results.length === 0} empty={<EmptyState icon={<IconBuilding />} title="No companies match" message="Try a different filter, or add a company from SEC in Settings." />}>
+          <Query q={list} pending={<SkeletonTable />} isEmpty={(d) => d.results.length === 0} empty={<EmptyState icon={<IconBuilding />} title="No companies match" message="Try a different filter, or add a company from SEC in Settings." />}>
             {(d) => (
               <>
                 <div className="caption" style={{ padding: 'var(--sp-3) var(--sp-4) 0' }}>{d.count.toLocaleString()} companies</div>

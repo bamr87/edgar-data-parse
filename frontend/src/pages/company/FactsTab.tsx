@@ -14,6 +14,7 @@ import {
   IconDownload,
   IconSearch,
   Query,
+  SkeletonTable,
 } from '../../components/ui'
 import { BarsChart } from '../../components/ui/Chart'
 import type { Fact } from '../../lib/types'
@@ -90,7 +91,7 @@ export function FactsTab({ id }: { id: number }) {
             </div>
           }
         />
-        <Query q={facts} isEmpty={(f) => f.results.length === 0} empty={<EmptyState title="No facts" message="Sync facts (admin) to populate XBRL data." />}>
+        <Query q={facts} pending={<SkeletonTable />} isEmpty={(f) => f.results.length === 0} empty={<EmptyState title="No facts" message="Sync facts (admin) to populate XBRL data." />}>
           {(f) => (
             <>
               <DataTable<Fact>
