@@ -254,11 +254,12 @@ mark { background: color-mix(in srgb, var(--c-warning) 32%, transparent); color:
   .page { padding: var(--sp-4); }
 }
 .scrim { display: none; }
+/* Default-hidden before the media query, so the ≤880px override wins on mobile. */
+.menu-btn { display: none; }
 @media (max-width: 880px) {
   .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 55; }
   .menu-btn { display: inline-flex; }
 }
-.menu-btn { display: none; }
 
 /* ============================================================================
    Card
