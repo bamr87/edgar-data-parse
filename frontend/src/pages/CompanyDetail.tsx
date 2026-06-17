@@ -1,7 +1,7 @@
 /** Company-360 detail: identity header + tabbed views (Overview, Financials,
  *  Filings & Documents, Leadership, Facts). */
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useApp } from '../lib/app-context'
 import { useCompany, useComputeMetrics, useSyncFacts, useSyncStatus, useSyncSubmissions } from '../lib/queries'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -31,7 +31,9 @@ export function CompanyDetail() {
   const { id } = useParams()
   const companyId = Number(id)
   const company = useCompany(Number.isFinite(companyId) ? companyId : null)
-  const [tab, setTab] = useState('overview')
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') || 'overview'
+  const setTab = (t: string) => setParams((p) => { p.set('tab', t); return p }, { replace: true })
   useDocumentTitle(company.data?.name)
 
   const cdata = company.data
