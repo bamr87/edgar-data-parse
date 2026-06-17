@@ -1,12 +1,29 @@
 /** Company-360 consolidated overview from GET /companies/:id/profile/. */
-import { useProfile } from '../../lib/queries'
-import { byUnit, date, humanize } from '../../lib/format'
+import { useProfile, useTimeseries } from '../../lib/queries'
+import { byUnit, date, humanize, money } from '../../lib/format'
 import { Card, CardHeader, EmptyState, Provenance, Query } from '../../components/ui'
+import { TrendChart } from '../../components/ui/Chart'
+
+const REVENUE_CHAIN = ['RevenueFromContractWithCustomerExcludingAssessedTax', 'Revenues', 'SalesRevenueNet', 'RevenueFromContractWithCustomerIncludingAssessedTax']
+
+function RevenueTrend({ id }: { id: number }) {
+  const trend = useTimeseries(id, REVENUE_CHAIN, true)
+  if (!trend.data || trend.data.series.length < 2) return null
+  const data = [...trend.data.series].reverse().map((p) => ({ x: (p.period_end || '').slice(0, 7), y: p.value }))
+  return (
+    <Card>
+      <CardHeader title="Revenue trend" sub="Annual — resolved across the XBRL tag history" />
+      <div className="card-body"><TrendChart data={data} height={200} fmt={(v) => money(v)} /></div>
+    </Card>
+  )
+}
 
 export function OverviewTab({ id }: { id: number }) {
   const profile = useProfile(id)
   return (
-    <Query q={profile}>
+    <div className="col gap-4">
+      <RevenueTrend id={id} />
+      <Query q={profile}>
       {(p) => {
         const metrics = Object.entries(p.financials.derived_metrics)
         return (
@@ -95,7 +112,8 @@ export function OverviewTab({ id }: { id: number }) {
           </div>
         )
       }}
-    </Query>
+      </Query>
+    </div>
   )
 }
 
