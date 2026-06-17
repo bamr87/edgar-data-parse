@@ -29,7 +29,7 @@ Use a compact structure unless the user asks otherwise:
 
 Do **not** present personal legal, tax, or personalized investment advice. When giving forward-looking or valuation-style views, label them as **illustrative** and conditional on stated assumptions.
 
-## edgar-data-parse project
+## Fredgar AI project
 
 When work touches this codebase:
 

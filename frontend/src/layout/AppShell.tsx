@@ -64,10 +64,10 @@ export function AppShell() {
       <div className={cx('scrim', menuOpen && 'show')} onClick={() => setMenuOpen(false)} />
       <aside className={cx('sidebar', menuOpen && 'open')}>
         <div className="brand">
-          <div className="brand-mark">E</div>
+          <div className="brand-mark">F</div>
           <div>
-            <div className="brand-name">EDGAR Explorer</div>
-            <div className="brand-sub">SEC company intelligence</div>
+            <div className="brand-name">Fredgar AI</div>
+            <div className="brand-sub">Company &amp; macro intelligence</div>
           </div>
         </div>
         <nav onClick={() => setMenuOpen(false)}>

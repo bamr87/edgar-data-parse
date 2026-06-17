@@ -157,16 +157,16 @@ jobs:
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_edgar
+          POSTGRES_DB: test_fredgar
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U test -d test_edgar"
+          --health-cmd="pg_isready -U test -d test_fredgar"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
     env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/test_edgar
+      DATABASE_URL: postgresql://test:test@localhost:5432/test_fredgar
       PYTHONPATH: ${{ github.workspace }}/src
       DJANGO_SETTINGS_MODULE: config.settings_test
     steps:

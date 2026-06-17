@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD): SEC EDGAR Data Analyzer
+# Product Requirements Document (PRD): Fredgar AI
 
 > **How to use this document:** Product vision, roadmap, and “implemented vs planned” live here. For **architecture**, **every REST route**, and **management commands**, use the technical index at [`docs/README.md`](docs/README.md) — especially [`docs/architecture.md`](docs/architecture.md) and [`docs/api-and-cli.md`](docs/api-and-cli.md). Anything labeled *future*, *roadmap*, or *aspirational* may not exist in the codebase yet.
 
@@ -6,7 +6,7 @@
 
 ### 1.1 Purpose
 
-This PRD describes **EDGAR Analyzer** (repository: **edgar-data-parse**): a web-oriented system to extract, normalize, and explore **SEC EDGAR** company and filing data, with a path toward **AI-assisted** interpretation and summaries. The long-term vision includes LLM-driven parsing, narrative insights, and rich visualizations; the **current product** emphasizes **direct SEC APIs**, a **structured warehouse** (companies, filings, XBRL facts, derived metrics), a **versioned REST API**, and a **React** UI.
+This PRD describes **Fredgar AI** (FRED + EDGAR, with AI; repository: **fredgar-ai**): a web-oriented system to extract, normalize, and explore **SEC EDGAR** company and filing data alongside **FRED** macro series, with a path toward **AI-assisted** interpretation and summaries. The long-term vision includes LLM-driven parsing, narrative insights, and rich visualizations; the **current product** emphasizes **direct SEC APIs**, a **structured warehouse** (companies, filings, XBRL facts, derived metrics), a **versioned REST API**, and a **React** UI.
 
 ### 1.2 Scope
 
