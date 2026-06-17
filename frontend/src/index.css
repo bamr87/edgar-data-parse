@@ -314,6 +314,7 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 .search-box { position: relative; display: flex; align-items: center; }
 .search-box .ico { position: absolute; left: 11px; color: var(--c-text-subtle); pointer-events: none; }
 .search-box .input { padding-left: 34px; }
+.search-kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.7; }
 
 /* ============================================================================
    Badges / pills
@@ -414,6 +415,14 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
 .drawer-body { padding: var(--sp-4); overflow-y: auto; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slidein { from { transform: translateX(20px); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+
+/* Toasts */
+.toaster { position: fixed; bottom: var(--sp-5); right: var(--sp-5); z-index: 100; display: flex; flex-direction: column; gap: var(--sp-2); max-width: 380px; }
+.toast { display: flex; align-items: center; gap: var(--sp-2); padding: 11px 14px; border-radius: var(--radius); background: var(--c-surface); border: 1px solid var(--c-border); box-shadow: var(--shadow-lg); font-size: var(--fs-sm); cursor: pointer; animation: slidein 0.18s ease; }
+.toast .dot { width: 8px; height: 8px; flex: none; }
+.toast-success { border-left: 3px solid var(--c-positive); } .toast-success .dot { color: var(--c-positive); }
+.toast-error { border-left: 3px solid var(--c-negative); } .toast-error .dot { color: var(--c-negative); }
+.toast-info { border-left: 3px solid var(--c-info); } .toast-info .dot { color: var(--c-info); }
 
 /* Macro workspace: category rail */
 .macro-grid { display: grid; grid-template-columns: 210px 1fr; gap: var(--sp-4); align-items: start; }

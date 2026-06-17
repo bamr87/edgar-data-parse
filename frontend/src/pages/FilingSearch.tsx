@@ -5,6 +5,7 @@ import { useDocumentSearch } from '../lib/queries'
 import { useDebounce } from '../lib/useDebounce'
 import { cikInt } from '../lib/format'
 import { useCompanyIdByCik } from '../lib/lookup'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -15,6 +16,7 @@ import {
 } from '../components/ui'
 
 export function FilingSearch() {
+  useDocumentTitle('Filing Search')
   const [q, setQ] = useState('')
   const [formType, setFormType] = useState('')
   const [cik, setCik] = useState('')

@@ -20,6 +20,7 @@ import {
   type Transform,
 } from '../lib/macro'
 import type { BundleObservations, BundleSeriesMeta } from '../lib/types'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -42,6 +43,7 @@ type Prepared = { meta: BundleSeriesMeta; ranged: RawPoint[]; chart: ChartPoint[
 const VIZ = (i: number) => `var(--viz-${(i % 6) + 1})`
 
 export function Macro() {
+  useDocumentTitle('Macro Series')
   const bundles = useSeriesBundles()
   const [slug, setSlug] = useState('core')
 

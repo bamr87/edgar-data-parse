@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { usePeerFactCompare, usePeerGroups } from '../lib/queries'
 import { money } from '../lib/format'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Card,
@@ -22,6 +23,7 @@ const CONCEPTS = [
 ]
 
 export function PeerGroups() {
+  useDocumentTitle('Peer Groups')
   const groups = usePeerGroups()
   const [selected, setSelected] = useState<number | null>(null)
   const [concept, setConcept] = useState('Revenues')

@@ -1,9 +1,12 @@
 /** Company-360 detail: identity header + tabbed views (Overview, Financials,
  *  Filings & Documents, Leadership, Facts). */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useApp } from '../lib/app-context'
 import { useCompany, useComputeMetrics, useSyncFacts, useSyncStatus, useSyncSubmissions } from '../lib/queries'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { recordRecent } from '../lib/recent'
+import { useToast } from '../lib/toast'
 import { cik10, relTime, secCompanyUrl } from '../lib/format'
 import {
   Badge,
@@ -29,6 +32,12 @@ export function CompanyDetail() {
   const companyId = Number(id)
   const company = useCompany(Number.isFinite(companyId) ? companyId : null)
   const [tab, setTab] = useState('overview')
+  useDocumentTitle(company.data?.name)
+
+  const cdata = company.data
+  useEffect(() => {
+    if (cdata) recordRecent({ id: cdata.id, name: cdata.name, ticker: cdata.ticker, cik: cdata.cik })
+  }, [cdata])
 
   if (company.isPending) return <div className="page"><Loading label="Loading company…" /></div>
   if (company.isError || !company.data) return <div className="page"><ErrorState error={company.error} /></div>
@@ -109,6 +118,7 @@ function SyncBadge({ id }: { id: number }) {
 /** Admin-only sync/compute toolbar (visible only with a token). */
 function AdminBar({ id }: { id: number }) {
   const { isAdmin } = useApp()
+  const toast = useToast()
   const subs = useSyncSubmissions(id)
   const facts = useSyncFacts(id)
   const metrics = useComputeMetrics(id)
@@ -116,6 +126,7 @@ function AdminBar({ id }: { id: number }) {
 
   const busy = subs.isPending || facts.isPending || metrics.isPending
   const err = subs.error || facts.error || metrics.error
+  const fail = (e: unknown) => toast.error((e as Error).message)
 
   return (
     <div className="card card-pad mt-2" style={{ background: 'var(--c-surface-2)' }}>
@@ -125,13 +136,13 @@ function AdminBar({ id }: { id: number }) {
           <span className="caption">Pull fresh data from SEC EDGAR (rate-limited).</span>
         </div>
         <div className="row gap-2 wrap">
-          <Button size="sm" loading={subs.isPending} disabled={busy} onClick={() => subs.mutate()}>
+          <Button size="sm" loading={subs.isPending} disabled={busy} onClick={() => subs.mutate(undefined, { onSuccess: (d) => toast.success(`Filings synced (${d.filings_processed ?? '—'}).`), onError: fail })}>
             <IconRefresh width={14} height={14} /> Sync filings
           </Button>
-          <Button size="sm" loading={facts.isPending} disabled={busy} onClick={() => facts.mutate()}>
+          <Button size="sm" loading={facts.isPending} disabled={busy} onClick={() => facts.mutate(undefined, { onSuccess: (d) => toast.success(`Facts loaded (${d.facts_loaded ?? '—'}).`), onError: fail })}>
             <IconRefresh width={14} height={14} /> Sync facts
           </Button>
-          <Button size="sm" variant="primary" loading={metrics.isPending} disabled={busy} onClick={() => metrics.mutate()}>
+          <Button size="sm" variant="primary" loading={metrics.isPending} disabled={busy} onClick={() => metrics.mutate(undefined, { onSuccess: (d) => toast.success(`${d.metrics_written} metrics computed.`), onError: fail })}>
             Compute metrics
           </Button>
         </div>

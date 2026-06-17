@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useApp } from '../lib/app-context'
 import { useAddCompany } from '../lib/queries'
 import { bulkFromEdgar, ingestSubmission } from '../lib/api'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -18,6 +19,7 @@ import {
 } from '../components/ui'
 
 export function Settings() {
+  useDocumentTitle('Settings')
   const { token, email, theme, isAdmin, setToken, setEmail, setTheme } = useApp()
   const [tokenInput, setTokenInput] = useState(token)
   const [emailInput, setEmailInput] = useState(email)

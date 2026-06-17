@@ -3,6 +3,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFacets, useMetadata } from '../lib/queries'
 import { useDebounce } from '../lib/useDebounce'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import { Pager } from '../components/Pager'
 import {
@@ -31,6 +32,7 @@ const FILTER_CHIPS: { key: string; label: string }[] = [
 ]
 
 export function CompanyExplorer() {
+  useDocumentTitle('Companies')
   const navigate = useNavigate()
   const facets = useFacets()
   const [params, setParams] = useSearchParams()

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { leadershipCompare } from '../lib/api'
 import { useCohortCompare } from '../lib/queries'
 import { compact, fullNum, money } from '../lib/format'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { PageHeader } from '../components/PageHeader'
 import {
   Badge,
@@ -35,6 +36,7 @@ const GROUP_BY = [
 ]
 
 export function Compare() {
+  useDocumentTitle('Compare')
   const [tab, setTab] = useState('cohort')
   return (
     <div className="page">

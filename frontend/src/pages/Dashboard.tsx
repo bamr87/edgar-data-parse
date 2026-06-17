@@ -1,7 +1,10 @@
-/** Landing page: coverage overview + entry points into the rest of the app. */
+/** Landing page: coverage overview, market snapshot, recent companies, entry points. */
 import { Link, useNavigate } from 'react-router-dom'
-import { useFacets } from '../lib/queries'
-import { fullNum } from '../lib/format'
+import { useBundleObservations, useFacets } from '../lib/queries'
+import { compact, fullNum, signed } from '../lib/format'
+import { applyRange, changeOver, seriesPoints } from '../lib/macro'
+import { useRecentCompanies } from '../lib/recent'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { CompanySearch } from '../components/CompanySearch'
 import {
   Card,
@@ -10,12 +13,11 @@ import {
   IconCompare,
   IconGlobe,
   IconSearch,
-  IconUsers,
   Meter,
   Query,
   Stat,
 } from '../components/ui'
-import { BarsChart } from '../components/ui/Chart'
+import { Sparkline } from '../components/ui/Chart'
 
 const QUICK_LINKS = [
   { to: '/companies', icon: <IconBuilding />, title: 'Company Explorer', desc: 'Filter & browse the warehouse' },
@@ -27,11 +29,13 @@ const QUICK_LINKS = [
 export function Dashboard() {
   const facets = useFacets()
   const navigate = useNavigate()
+  const recent = useRecentCompanies()
+  useDocumentTitle('Dashboard')
 
   return (
     <div className="page">
       {/* Hero */}
-      <Card className="card-pad" >
+      <Card className="card-pad">
         <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', padding: 'var(--sp-4) 0' }}>
           <h1 style={{ fontSize: 'var(--fs-3xl)' }}>Explore SEC company intelligence</h1>
           <p className="page-desc" style={{ margin: '8px auto var(--sp-4)', maxWidth: '58ch' }}>
@@ -44,8 +48,20 @@ export function Dashboard() {
         </div>
       </Card>
 
+      {/* Recently viewed */}
+      {recent.length > 0 && (
+        <div className="row gap-2 wrap mt-4" style={{ alignItems: 'center' }}>
+          <span className="caption">Recently viewed:</span>
+          {recent.map((c) => (
+            <Link key={c.id} to={`/companies/${c.id}`} className="badge" style={{ cursor: 'pointer' }}>
+              {c.ticker ? <strong>{c.ticker}</strong> : c.name.slice(0, 18)}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {/* Coverage stats */}
-      <div className="grid grid-4 mt-5">
+      <div className="grid grid-4 mt-4">
         <Query q={facets}>
           {(f) => (
             <>
@@ -78,7 +94,7 @@ export function Dashboard() {
       {/* Breakdowns */}
       <div className="grid grid-2 mt-4">
         <Card>
-          <CardHeader title="Top industries" sub="By SIC classification" icon={<IconBuilding width={16} height={16} />} />
+          <CardHeader title="Top industries" sub="By SIC classification — click to filter" icon={<IconBuilding width={16} height={16} />} />
           <Query q={facets} isEmpty={(f) => f.top_sic.length === 0} empty={<EmptyBlock />}>
             {(f) => (
               <div className="card-body col gap-3">
@@ -99,25 +115,52 @@ export function Dashboard() {
           </Query>
         </Card>
 
-        <Card>
-          <CardHeader title="Headquarters by state" sub="Top regions" icon={<IconUsers width={16} height={16} />} />
-          <Query q={facets} isEmpty={(f) => f.hq_state.length === 0} empty={<EmptyBlock />}>
-            {(f) => (
-              <div className="card-body">
-                <div className="caption" style={{ marginBottom: 4 }}>Click a bar to view companies in that state.</div>
-                <BarsChart
-                  height={260}
-                  data={f.hq_state.slice(0, 10).map((s) => ({ x: s.hq_state || '—', y: s.count }))}
-                  fmt={(v) => fullNum(v)}
-                  colorBy={(_p, i) => `var(--viz-${(i % 6) + 1})`}
-                  onBarClick={(p) => p.x && p.x !== '—' && navigate(`/companies?hq_state=${encodeURIComponent(p.x)}`)}
-                />
-              </div>
-            )}
-          </Query>
-        </Card>
+        <MarketSnapshot onOpen={() => navigate('/macro')} />
       </div>
     </div>
+  )
+}
+
+const SNAPSHOT = [
+  { id: 'DGS10', label: '10Y Treasury', mode: 'level' as const },
+  { id: 'FEDFUNDS', label: 'Fed Funds Rate', mode: 'level' as const },
+  { id: 'UNRATE', label: 'Unemployment', mode: 'level' as const },
+  { id: 'CPIAUCSL', label: 'CPI (YoY)', mode: 'yoy' as const },
+]
+
+function MarketSnapshot({ onOpen }: { onOpen: () => void }) {
+  const obs = useBundleObservations('core')
+  return (
+    <Card hover>
+      <CardHeader title="Market snapshot" sub="Key macro indicators (FRED)" icon={<IconGlobe width={16} height={16} />} actions={<button className="link-btn text-sm" onClick={onOpen}>All series →</button>} />
+      <Query q={obs} isEmpty={(d) => d.observations.length === 0} empty={<EmptyBlock />}>
+        {(d) => (
+          <div className="card-body grid grid-2">
+            {SNAPSHOT.map((cfg) => {
+              const pts = seriesPoints(d, cfg.id)
+              if (pts.length === 0) return null
+              const last = pts[pts.length - 1]
+              const chg = changeOver(pts, 365)
+              const spark = applyRange(pts, '3').map((p) => ({ x: p.date, y: p.value }))
+              const headline = cfg.mode === 'yoy' ? (chg.pct != null ? `${chg.pct >= 0 ? '+' : ''}${chg.pct.toFixed(1)}%` : '—') : compact(last.value)
+              const sub = cfg.mode === 'yoy' ? `${compact(last.value)} index` : (chg.abs != null ? `${signed(chg.abs, (n) => n.toFixed(2))} 1Y` : '')
+              return (
+                <div key={cfg.id} className="col gap-1" style={{ padding: 'var(--sp-2)' }} onClick={onOpen}>
+                  <div className="stat-label">{cfg.label}</div>
+                  <div className="row between" style={{ alignItems: 'flex-end' }}>
+                    <div>
+                      <div className="num" style={{ fontWeight: 680, fontSize: 'var(--fs-xl)' }}>{headline}</div>
+                      <div className="caption">{sub}</div>
+                    </div>
+                    <div style={{ width: 70 }}><Sparkline data={spark} width={70} height={34} /></div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </Query>
+    </Card>
   )
 }
 
@@ -129,7 +172,7 @@ function pctOf(n: number, total: number): string {
 function EmptyBlock() {
   return (
     <div className="card-body">
-      <div className="muted text-sm">No data yet. Add companies and sync filings from Settings.</div>
+      <div className="muted text-sm">No data yet. Add companies and sync from Settings.</div>
     </div>
   )
 }
