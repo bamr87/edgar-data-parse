@@ -45,10 +45,17 @@ class Command(BaseCommand):
                 prov = row["provider"]
                 sid = row["id"]
                 es, _ = ExternalSeries.objects.get_or_create(
-                    provider=prov,
-                    external_id=sid,
-                    defaults={"title": sid, "metadata": {"note": row.get("note", "")}},
+                    provider=prov, external_id=sid, defaults={"title": sid}
                 )
+                # Refresh curation metadata each load; FRED sync merges its own info in.
+                meta = dict(es.metadata or {})
+                meta["note"] = row.get("note", "")
+                if row.get("industries"):
+                    meta["industries"] = row["industries"]
+                if row.get("frequency"):
+                    meta["frequency_hint"] = row["frequency"]
+                es.metadata = meta
+                es.save(update_fields=["metadata"])
                 SeriesBundleItem.objects.create(
                     bundle=bundle, series=es, sort_order=order
                 )

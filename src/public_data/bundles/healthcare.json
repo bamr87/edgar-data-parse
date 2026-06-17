@@ -1,0 +1,202 @@
+{
+  "slug": "healthcare",
+  "name": "Healthcare, food & staples",
+  "description": "Health-care prices & employment plus agricultural/food prices for healthcare, pharma, and consumer staples.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "CPIMEDSL",
+      "note": "Broadest measure of medical-care inflation borne by consumers, capturing services plus commodities and signaling pricing power across the healthcare value chain.",
+      "frequency": "M",
+      "industries": [
+        "Healthcare services",
+        "Health insurers (UNH, ELV, CI)",
+        "Hospitals (HCA)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SAM2",
+      "note": "Isolates inflation in physician, hospital, and insurance services, the demand/pricing signal most relevant to provider and managed-care revenue.",
+      "frequency": "M",
+      "industries": [
+        "Hospitals (HCA, THC)",
+        "Managed care (UNH, HUM, CNC)",
+        "Physician services"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DHLCRC1Q027SBEA",
+      "note": "National-accounts measure of total consumer health-care spending, the best high-level proxy for sector demand and national health expenditure.",
+      "frequency": "Q",
+      "industries": [
+        "Healthcare services",
+        "Managed care",
+        "Medical devices"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USEHS",
+      "note": "Labor-demand gauge for the broad health-and-education super-sector, reflecting staffing-driven cost and capacity trends.",
+      "frequency": "M",
+      "industries": [
+        "Hospitals",
+        "Staffing firms",
+        "Senior care"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES6562000101",
+      "note": "Direct headcount in health-care delivery, signaling sector expansion, labor-cost inflation, and wage pressure for providers.",
+      "frequency": "M",
+      "industries": [
+        "Hospitals (HCA)",
+        "Physician practices",
+        "Healthcare staffing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES6562200001",
+      "note": "Hospital-specific employment, a leading indicator of acute-care capacity, labor cost, and admissions volume trends.",
+      "frequency": "M",
+      "industries": [
+        "Hospitals (HCA, THC, UHS)",
+        "Health insurers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0638",
+      "note": "Wholesale (producer) drug-price inflation, capturing manufacturer pricing power upstream of retail and isolating pharma margin dynamics.",
+      "frequency": "M",
+      "industries": [
+        "Pharma (PFE, MRK, LLY, ABBV)",
+        "Generics (TEVA)",
+        "Drug distributors (MCK, COR)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU325412325412",
+      "note": "Industry-level producer price index for drug manufacturing, a precise input/output price signal for pharmaceutical makers.",
+      "frequency": "M",
+      "industries": [
+        "Pharma manufacturers (PFE, MRK, BMY)",
+        "Biotech (AMGN, GILD)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU02",
+      "note": "Wholesale price index for processed food and animal feed, a direct input-cost gauge for packaged-food and protein companies.",
+      "frequency": "M",
+      "industries": [
+        "Packaged food (GIS, K, CAG)",
+        "Protein (TSN)",
+        "Restaurants"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU012",
+      "note": "Producer price index for grains, a primary raw-material cost driver for food, feed, ethanol, and beverage producers.",
+      "frequency": "M",
+      "industries": [
+        "Ag processors (ADM, BG)",
+        "Packaged food",
+        "Ethanol"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SEFV",
+      "note": "Restaurant-menu price inflation, a direct pricing-power and demand signal for foodservice and quick-service chains.",
+      "frequency": "M",
+      "industries": [
+        "Restaurants (MCD, YUM, CMG)",
+        "Foodservice distributors (SYY)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "APU0000708111",
+      "note": "Closely watched staple-protein retail price, a sensitive read on supply shocks (e.g., avian flu) feeding grocer and food-cost narratives.",
+      "frequency": "M",
+      "industries": [
+        "Egg producers (CALM)",
+        "Grocers (KR)",
+        "Restaurants"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PFOODINDEXM",
+      "note": "Global food-commodity benchmark, a macro input-cost and demand signal for multinational food and ag companies.",
+      "frequency": "M",
+      "industries": [
+        "Ag processors (ADM, BG)",
+        "Global staples (NSRGY)",
+        "Fertilizer (NTR, MOS)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PWHEAMTUSDM",
+      "note": "World wheat price, a core grain-input cost and a barometer of food-security and ag-trade conditions.",
+      "frequency": "M",
+      "industries": [
+        "Ag processors (ADM, BG)",
+        "Packaged food (GIS)",
+        "Fertilizer"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PMAIZMTUSDM",
+      "note": "World corn price, a key feed/ethanol/sweetener input cost driving protein, ethanol, and beverage margins.",
+      "frequency": "M",
+      "industries": [
+        "Protein (TSN)",
+        "Ethanol",
+        "Ag processors (ADM)",
+        "Beverages (KO via HFCS)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0223",
+      "note": "Wholesale beverage-input price index, a cost-pressure gauge for soft-drink, alcohol, and bottling companies.",
+      "frequency": "M",
+      "industries": [
+        "Beverages (KO, PEP, KDP)",
+        "Brewers (TAP)",
+        "Bottlers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM4451USS",
+      "note": "Direct demand signal for grocery channel volume/value, the top-line driver for food retailers and a proxy for staples consumption.",
+      "frequency": "M",
+      "industries": [
+        "Grocers (KR, ACI)",
+        "Packaged food",
+        "Consumer staples"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM44611USN",
+      "note": "Demand gauge for pharmacy and personal-care retail, informing front-of-store and prescription volume trends.",
+      "frequency": "M",
+      "industries": [
+        "Pharmacies (CVS, WBA)",
+        "Personal care (PG, CL)"
+      ]
+    }
+  ]
+}

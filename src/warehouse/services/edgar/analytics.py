@@ -66,6 +66,55 @@ class EdgarAnalyticsService:
         ]
 
     @staticmethod
+    def timeseries_for_concepts(
+        company: Company,
+        concepts: list[str],
+        *,
+        taxonomy: str = "us-gaap",
+        limit: int = 80,
+        annual_only: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Time series resolved across a *priority chain* of concepts.
+
+        Companies migrate XBRL tags over time (e.g. ``Revenues`` →
+        ``RevenueFromContractWithCustomerExcludingAssessedTax`` under ASC 606), so a
+        single literal tag yields a series that ends when the company switched tags.
+        For each ``period_end`` this picks the value from the highest-priority concept
+        that reported it, producing a continuous series across the tag history.
+
+        ``annual_only`` drops sub-annual *durational* facts (keeps the ~full-year
+        value per fiscal year); instant/point-in-time facts (no ``period_start``,
+        e.g. balance-sheet items) always pass through.
+        """
+        priority = {c: i for i, c in enumerate(concepts)}
+        chosen: dict[date, tuple[int, Fact]] = {}
+        for f in (
+            Fact.objects.filter(company=company, taxonomy=taxonomy, concept__in=concepts)
+            .order_by("-period_end", "-id")
+        ):
+            if f.period_end is None or f.value is None:
+                continue
+            if annual_only and f.period_start is not None and (f.period_end - f.period_start).days < 300:
+                continue
+            pr = priority.get(f.concept, len(concepts))
+            current = chosen.get(f.period_end)
+            if current is None or pr < current[0]:
+                chosen[f.period_end] = (pr, f)
+        # Sort by the dict key (period_end date — guaranteed non-null), newest first.
+        ordered = [v for _k, v in sorted(chosen.items(), key=lambda kv: kv[0], reverse=True)][:limit]
+        return [
+            {
+                "period_end": f.period_end.isoformat() if f.period_end else None,
+                "period_start": f.period_start.isoformat() if f.period_start else None,
+                "value": float(f.value) if f.value is not None else None,
+                "unit": f.unit,
+                "concept": f.concept,
+                "dimensions": f.dimensions,
+            }
+            for _pr, f in ordered
+        ]
+
+    @staticmethod
     def peer_group_latest_for_concept(
         peer_group: PeerGroup,
         concept: str,

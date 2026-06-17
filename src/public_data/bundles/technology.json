@@ -1,0 +1,188 @@
+{
+  "slug": "technology",
+  "name": "Technology & equipment",
+  "description": "Semiconductor/computer/electronics output and prices plus business equipment & software investment.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "IPG3344S",
+      "note": "Direct physical-output gauge of US semiconductor and electronic component production, the cleanest real-activity signal for the chip supply chain.",
+      "frequency": "M",
+      "industries": [
+        "Semiconductors",
+        "Electronic components",
+        "NVDA",
+        "INTC",
+        "TXN",
+        "MU",
+        "AMAT"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPB53122S",
+      "note": "Broad output index for computers and electronic products, capturing aggregate tech-hardware manufacturing momentum.",
+      "frequency": "M",
+      "industries": [
+        "Tech hardware",
+        "Computers",
+        "Electronics",
+        "HPQ",
+        "DELL",
+        "AAPL"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPG334S",
+      "note": "NAICS-334 production index tracks the full computer-and-electronics manufacturing complex for demand-trend analysis.",
+      "frequency": "M",
+      "industries": [
+        "Tech hardware",
+        "Computers",
+        "Electronics",
+        "AAPL",
+        "DELL"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU33443344",
+      "note": "Tracks selling-price trends for semiconductors and components, a direct read on chip pricing power and margins.",
+      "frequency": "M",
+      "industries": [
+        "Semiconductors",
+        "Electronic components",
+        "MU",
+        "TXN",
+        "ADI",
+        "MCHP"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU334413334413",
+      "note": "Narrow PPI for semiconductor devices isolates chip price deflation/inflation that drives memory and logic margins.",
+      "frequency": "M",
+      "industries": [
+        "Semiconductors",
+        "Memory",
+        "MU",
+        "INTC",
+        "AMD"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU334111334111",
+      "note": "Measures computer/server selling prices, informing hardware ASP trends and OEM pricing power.",
+      "frequency": "M",
+      "industries": [
+        "Computers",
+        "Servers",
+        "DELL",
+        "HPE",
+        "HPQ"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU518210518210",
+      "note": "Tracks pricing for data processing, hosting and cloud-adjacent services, a margin and demand signal for cloud/data infrastructure.",
+      "frequency": "M",
+      "industries": [
+        "Cloud",
+        "Data centers",
+        "AMZN",
+        "MSFT",
+        "GOOGL",
+        "Hosting"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "A679RC1Q027SBEA",
+      "note": "GDP-account measure of business spending on computers/IT equipment, a direct demand line for tech hardware.",
+      "frequency": "Q",
+      "industries": [
+        "Tech hardware",
+        "Computers",
+        "Business equipment",
+        "DELL",
+        "HPE"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "B935RC1Q027SBEA",
+      "note": "GDP-component capturing business investment in software, the cleanest macro line for enterprise/IP software demand.",
+      "frequency": "Q",
+      "industries": [
+        "Enterprise software",
+        "IP software",
+        "MSFT",
+        "ORCL",
+        "CRM",
+        "ADBE"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "Y033RC1Q027SBEA",
+      "note": "Total business equipment investment frames the capex cycle that drives hardware and equipment vendors.",
+      "frequency": "Q",
+      "industries": [
+        "Capital goods",
+        "Business equipment",
+        "Industrial tech"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU334515334515",
+      "note": "Pricing for test-and-measurement instruments, relevant to electronics test/inspection equipment margins.",
+      "frequency": "M",
+      "industries": [
+        "Test and measurement",
+        "Electronics equipment",
+        "KEYS",
+        "TER"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES6054150001",
+      "note": "Headcount in IT services/computer systems design is a demand and labor-cost signal for the tech-services sector.",
+      "frequency": "M",
+      "industries": [
+        "IT services",
+        "Software",
+        "ACN",
+        "IBM",
+        "CTSH"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM443USS",
+      "note": "Consumer electronics retail demand signal for PCs, phones, and devices at the channel level.",
+      "frequency": "M",
+      "industries": [
+        "Consumer electronics",
+        "Retail tech",
+        "AAPL",
+        "BBY"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EXPGSC1",
+      "note": "Captures external demand, important because semiconductors and hardware are heavily export-dependent.",
+      "frequency": "Q",
+      "industries": [
+        "Semiconductors",
+        "Tech hardware exporters"
+      ]
+    }
+  ]
+}

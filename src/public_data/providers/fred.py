@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
@@ -18,6 +19,10 @@ logger = logging.getLogger(__name__)
 FRED_OBSERVATIONS_URL = "https://api.stlouisfed.org/fred/series/observations"
 FRED_SERIES_INFO_URL = "https://api.stlouisfed.org/fred/series"
 
+# FRED allows 120 requests/minute; back off politely on 429/5xx.
+_MAX_RETRIES = 4
+_BACKOFF_SECONDS = 8
+
 
 class FredProvider:
     provider_slug = "fred"
@@ -29,9 +34,16 @@ class FredProvider:
         if not self.api_key:
             raise RuntimeError("FRED_API_KEY is not set")
         q = {**params, "api_key": self.api_key, "file_type": "json"}
-        r = requests.get(url, params=q, timeout=60)
-        r.raise_for_status()
-        return r.json()
+        for attempt in range(_MAX_RETRIES):
+            r = requests.get(url, params=q, timeout=60)
+            if r.status_code in (429, 500, 502, 503, 504) and attempt < _MAX_RETRIES - 1:
+                wait = _BACKOFF_SECONDS * (attempt + 1)
+                logger.warning("FRED %s on %s; backing off %ss", r.status_code, params.get("series_id"), wait)
+                time.sleep(wait)
+                continue
+            r.raise_for_status()
+            return r.json()
+        raise RuntimeError("FRED request failed after retries")  # pragma: no cover
 
     def series_info(self, series_id: str) -> dict[str, Any]:
         return self._get(

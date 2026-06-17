@@ -49,6 +49,13 @@ def ensure_fred_series(external_id: str) -> ExternalSeries:
     title = str(ser.get("title") or external_id)[:512]
     freq = str(ser.get("frequency") or "")[:32]
     units = str(ser.get("units") or "")[:128]
+    existing = (
+        ExternalSeries.objects.filter(provider="fred", external_id=external_id)
+        .values_list("metadata", flat=True)
+        .first()
+    )
+    # Preserve curation metadata (note/industries from the bundle) alongside FRED info.
+    metadata = {**(existing or {}), "fred": ser}
     obj, _ = ExternalSeries.objects.update_or_create(
         provider="fred",
         external_id=external_id,
@@ -56,7 +63,7 @@ def ensure_fred_series(external_id: str) -> ExternalSeries:
             "title": title,
             "frequency": freq,
             "units": units,
-            "metadata": {"fred": ser},
+            "metadata": metadata,
         },
     )
     return obj

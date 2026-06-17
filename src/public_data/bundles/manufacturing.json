@@ -1,0 +1,278 @@
+{
+  "slug": "manufacturing",
+  "name": "Manufacturing & industrial",
+  "description": "Industrial production, capacity, orders, and inventories across the goods economy.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "IPMAN",
+      "note": "Isolates factory output from mining/utilities, the cleanest read on manufacturing volume trends driving industrial revenue.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Industrials",
+        "DOV",
+        "ITW",
+        "PH"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPDMAN",
+      "note": "Tracks output of long-lived goods (machinery, autos, equipment) most sensitive to capex cycles and rate-driven demand.",
+      "frequency": "M",
+      "industries": [
+        "Machinery",
+        "Autos",
+        "Capital goods",
+        "CAT",
+        "DE",
+        "PCAR"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPNMAN",
+      "note": "Measures output of consumable goods (chemicals, food, paper) \u2014 steadier demand that signals consumer-staples-linked industrial activity.",
+      "frequency": "M",
+      "industries": [
+        "Chemicals",
+        "Paper",
+        "Food processing",
+        "DOW",
+        "LYB",
+        "IP"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPMINE",
+      "note": "Captures extraction-sector output, a direct demand signal for drilling equipment, OCTG, and mining machinery.",
+      "frequency": "M",
+      "industries": [
+        "Oil & gas E&P",
+        "Mining",
+        "Oilfield services",
+        "SLB",
+        "HAL",
+        "CAT"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPG3361T3S",
+      "note": "Directly measures auto-sector production volume, the key throughput metric for automakers and their parts supply chain.",
+      "frequency": "M",
+      "industries": [
+        "Autos",
+        "Auto parts",
+        "F",
+        "GM",
+        "BWA",
+        "APTV"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TCU",
+      "note": "Share of installed capacity in use \u2014 high utilization signals pricing power and capex need; low signals idle assets and margin pressure.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Materials",
+        "Capital goods"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MCUMFN",
+      "note": "Factory-specific utilization, the leading indicator for when manufacturers must add capacity (capex) and where pricing power emerges.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Machinery",
+        "ETN",
+        "ROK",
+        "PH"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGORDER",
+      "note": "Forward-looking demand signal for big-ticket manufactured goods, a primary driver of future production and industrial backlogs.",
+      "frequency": "M",
+      "industries": [
+        "Machinery",
+        "Capital goods",
+        "Aerospace",
+        "BA",
+        "GE"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "NEWORDER",
+      "note": "The 'core capex' proxy \u2014 cleanest read on business investment intent in equipment, stripping out volatile aircraft/defense.",
+      "frequency": "M",
+      "industries": [
+        "Machinery",
+        "Capital goods",
+        "Automation",
+        "EMR",
+        "ROK",
+        "CMI"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AMTMNO",
+      "note": "Broadest new-orders gauge across durables and nondurables, leading total factory demand and revenue.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Industrials",
+        "Chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AMTMUO",
+      "note": "Order backlog \u2014 a buffer of future revenue and a tell on whether demand is outpacing production capacity.",
+      "frequency": "M",
+      "industries": [
+        "Aerospace",
+        "Machinery",
+        "Capital goods",
+        "BA",
+        "GE"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AMTMTI",
+      "note": "Factory-level inventory stock \u2014 rising levels can foreshadow production cuts and destocking pressure on suppliers.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Distributors",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BUSINV",
+      "note": "Economy-wide inventory level across manufacturing, wholesale, and retail \u2014 the stock side of the inventory cycle.",
+      "frequency": "M",
+      "industries": [
+        "Distributors",
+        "Retail",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ISRATIO",
+      "note": "Bellwether of the inventory cycle \u2014 a rising ratio flags overstocking, looming destocking, and weakening orders for upstream producers.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Distributors",
+        "Materials",
+        "FAST",
+        "GWW"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MNFCTRIRSA",
+      "note": "Manufacturing-specific inventory-to-sales, a tighter read on factory destocking risk than the all-business ratio.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Machinery",
+        "Chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AMDMVS",
+      "note": "Actual realized durable-goods revenue shipped, converting orders/backlog into recognized sales for industrial producers.",
+      "frequency": "M",
+      "industries": [
+        "Machinery",
+        "Capital goods",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AMTMVS",
+      "note": "Total dollar value of goods shipped across all manufacturing \u2014 the top-line revenue proxy for the factory sector.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Industrials",
+        "Chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES3000000008",
+      "note": "Direct read on manufacturing labor cost per hour, a key input to industrial gross-margin pressure.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCUOMFGOMFG",
+      "note": "Output-price inflation for manufactured goods \u2014 the pricing-power side of the margin equation against input costs.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Materials",
+        "Chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPSID61",
+      "note": "Final-demand producer prices, the canonical headline PPI gauge of cost/price pressure passing through the industrial supply chain.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Industrials",
+        "Materials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AISRSA",
+      "note": "Dealer auto stock relative to sales \u2014 a leading signal for vehicle production cuts and parts-supplier demand.",
+      "frequency": "M",
+      "industries": [
+        "Autos",
+        "Auto parts",
+        "Dealers",
+        "F",
+        "GM",
+        "AN"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DAUPSA",
+      "note": "Units of domestically assembled autos, the direct throughput metric for North American vehicle and component output.",
+      "frequency": "M",
+      "industries": [
+        "Autos",
+        "Auto parts",
+        "F",
+        "GM",
+        "BWA"
+      ]
+    }
+  ]
+}

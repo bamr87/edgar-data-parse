@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.core.management.base import BaseCommand
 
@@ -20,22 +21,41 @@ class Command(BaseCommand):
             default=365 * 15,
             help="Observation window start (days back from today)",
         )
+        parser.add_argument(
+            "--delay",
+            type=float,
+            default=0.4,
+            help="Seconds between series (FRED allows 120 req/min).",
+        )
 
     def handle(self, *args, **options):
         with ingest_job_context(logger, "sync_series_bundle") as fields:
             slug = options["slug"]
             bundle = SeriesBundle.objects.get(slug=slug)
-            total = 0
+            total = ok = failed = 0
+            delay = max(0.0, options["delay"])
             for item in bundle.items.select_related("series").all():
                 s = item.series
-                if s.provider == "fred":
-                    ensure_fred_series(s.external_id)
-                    s.refresh_from_db()
-                n = sync_series_incremental(s, days_back=options["days_back"])
-                total += n
-                self.stdout.write(f"  {s}: {n} observations")
+                # One bad series id must not abort the whole bundle.
+                try:
+                    if s.provider == "fred":
+                        ensure_fred_series(s.external_id)
+                        s.refresh_from_db()
+                    n = sync_series_incremental(s, days_back=options["days_back"])
+                    total += n
+                    ok += 1
+                    self.stdout.write(f"  {s.external_id}: {n} observations")
+                except Exception as e:  # noqa: BLE001 - record + continue
+                    failed += 1
+                    self.stdout.write(self.style.WARNING(f"  {s.external_id}: FAILED ({str(e)[:120]})"))
+                if delay:
+                    time.sleep(delay)
             fields["bundle_slug"] = slug
             fields["observations_upserted"] = total
+            fields["series_ok"] = ok
+            fields["series_failed"] = failed
             self.stdout.write(
-                self.style.SUCCESS(f"Synced bundle {slug}, total rows upserted ~{total}")
+                self.style.SUCCESS(
+                    f"Synced bundle {slug}: {ok} series ok, {failed} failed, ~{total} rows."
+                )
             )

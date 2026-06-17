@@ -1,0 +1,213 @@
+{
+  "slug": "energy",
+  "name": "Energy & commodities",
+  "description": "Crude, natural gas, fuels, electricity, and production/stocks for energy producers, refiners, and utilities.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "DCOILWTICO",
+      "note": "The benchmark U.S. crude price that drives upstream revenue, drilling economics, and the WTI-Brent spread; the single most important energy price indicator.",
+      "frequency": "D",
+      "industries": [
+        "E&P / Upstream (XOM, CVX, COP, EOG, OXY, DVN, FANG)",
+        "Oil services (SLB, HAL)",
+        "Energy ETFs (XLE)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DCOILBRENTEU",
+      "note": "The global seaborne crude benchmark; the WTI-Brent differential signals U.S. export economics and refiner feedstock advantages.",
+      "frequency": "D",
+      "industries": [
+        "Integrated majors (XOM, CVX, SHEL, BP)",
+        "Refiners (VLO, MPC, PSX)",
+        "International E&P"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DHHNGSP",
+      "note": "The U.S. natural gas benchmark that drives gas producer cash flow, LNG export margins, and utility fuel costs.",
+      "frequency": "D",
+      "industries": [
+        "Gas E&P (EQT, RRC, AR, CTRA)",
+        "LNG (LNG, CQP)",
+        "Utilities (fuel cost)",
+        "Chemicals (feedstock)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "GASREGW",
+      "note": "Retail gasoline price at the pump is a direct consumer demand and discretionary-spending signal and a key refiner downstream margin component.",
+      "frequency": "W",
+      "industries": [
+        "Refiners (VLO, MPC, PSX)",
+        "Convenience/fuel retail",
+        "Consumer discretionary",
+        "Transports (fuel cost)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "GASDESW",
+      "note": "Diesel is the lifeblood fuel of freight, rail, and agriculture, making it a leading cost input and industrial-demand barometer.",
+      "frequency": "W",
+      "industries": [
+        "Trucking/Logistics (UPS, FDX, JBHT, ODFL)",
+        "Railroads (UNP, CSX, NSC)",
+        "Refiners",
+        "Agriculture"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WCOILWTICO",
+      "note": "Weekly WTI smooths daily noise for cleaner trend analysis of crude price cycles affecting producer hedging and capex decisions.",
+      "frequency": "W",
+      "industries": [
+        "E&P (XOM, CVX, COP, EOG)",
+        "Oil services",
+        "Energy ETFs (XLE, XOP)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MHHNGSP",
+      "note": "Monthly Henry Hub gas price provides a smoothed basis for tracking gas-fired utility fuel costs and producer realized prices.",
+      "frequency": "M",
+      "industries": [
+        "Gas utilities",
+        "Gas E&P (EQT, RRC, CTRA)",
+        "Power generation",
+        "Chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IPUTIL",
+      "note": "Utility output tracks electricity and gas generation volumes, a direct read on regulated and merchant power demand.",
+      "frequency": "M",
+      "industries": [
+        "Electric utilities (DUK, SO, NEE, AEP)",
+        "Gas utilities (ATO)",
+        "IPPs (VST, NRG)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "APU000072610",
+      "note": "Retail electricity price is a regulated-utility revenue and inflation signal, and a cost input for energy-intensive manufacturers.",
+      "frequency": "M",
+      "industries": [
+        "Electric utilities (DUK, SO, AEP, EXC)",
+        "Industrials",
+        "Data centers",
+        "Chemicals/Aluminum"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU221122221122",
+      "note": "Wholesale power-distribution PPI captures cost-side pricing pressure across the regulated electric value chain.",
+      "frequency": "M",
+      "industries": [
+        "Electric utilities",
+        "T&D operators",
+        "Industrial power buyers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0561",
+      "note": "Crude petroleum PPI tracks wholesale feedstock cost inflation flowing into refiners, chemicals, and the broader goods PPI.",
+      "frequency": "M",
+      "industries": [
+        "Refiners (VLO, MPC, PSX)",
+        "Chemicals (LYB, DOW)",
+        "Plastics/Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU057",
+      "note": "The broad energy-PPI bucket is the canonical gauge of fuel and power cost inflation feeding into every energy-intensive sector's margins.",
+      "frequency": "M",
+      "industries": [
+        "Transports",
+        "Chemicals",
+        "Utilities",
+        "Manufacturing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU324110324110",
+      "note": "Refinery output PPI captures product-price realizations, the key to refining crack spreads and downstream margin analysis.",
+      "frequency": "M",
+      "industries": [
+        "Refiners (VLO, MPC, PSX, DK, PBF)",
+        "Marketing/Distribution"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU051",
+      "note": "Coal PPI tracks thermal and met-coal price trends affecting coal producers and coal-fired generation fuel costs.",
+      "frequency": "M",
+      "industries": [
+        "Coal miners (BTU, ARCH, AMR, HCC)",
+        "Coal utilities",
+        "Steel (met coal)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCOPPUSDM",
+      "note": "Copper is the bellwether industrial metal ('Dr. Copper') signaling global growth, electrification demand, and base-metal miner economics.",
+      "frequency": "M",
+      "industries": [
+        "Miners (FCX, SCCO)",
+        "Electrical/grid",
+        "EV/renewables",
+        "Construction"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PNGASEUUSDM",
+      "note": "European TTF-linked gas price drives U.S. LNG export arbitrage and global gas spreads versus Henry Hub.",
+      "frequency": "M",
+      "industries": [
+        "LNG exporters (LNG, CQP, VG)",
+        "Gas E&P",
+        "Global chemicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PALLFNFINDEXM",
+      "note": "A broad all-commodity index gives the top-down inflation and global-demand backdrop framing energy and materials cycles.",
+      "frequency": "M",
+      "industries": [
+        "Materials",
+        "Energy",
+        "Industrials",
+        "Inflation-sensitive equities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DTWEXBGS",
+      "note": "The dollar is inversely correlated with dollar-priced commodities; a stronger USD pressures crude, metals, and energy-producer realizations.",
+      "frequency": "D",
+      "industries": [
+        "Commodity producers",
+        "Miners",
+        "Energy exporters",
+        "Global macro"
+      ]
+    }
+  ]
+}

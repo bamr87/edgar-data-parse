@@ -1,0 +1,231 @@
+{
+  "slug": "labor",
+  "name": "Labor market & wages",
+  "description": "Payrolls, claims, JOLTS, participation, and wage/cost measures for labor-cost-sensitive companies.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "USPRIV",
+      "note": "Strips out government hiring to isolate private-sector labor demand, the cleaner read on corporate hiring momentum and cyclical strength.",
+      "frequency": "M",
+      "industries": [
+        "Staffing (RHI, MAN, ASGN)",
+        "Cyclicals",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CCSA",
+      "note": "Tracks how hard it is for the unemployed to find new work; rising continued claims signal labor-market slack and softening re-hiring.",
+      "frequency": "W",
+      "industries": [
+        "Consumer discretionary",
+        "Auto",
+        "Housing-related retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CIVPART",
+      "note": "Determines labor supply; falling participation tightens the market and pressures wages even when the unemployment rate looks benign.",
+      "frequency": "M",
+      "industries": [
+        "Labor-intensive services",
+        "Restaurants (DRI, CMG)",
+        "Healthcare staffing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "JTSJOL",
+      "note": "Measures unmet labor demand; the openings-to-unemployed ratio is the Fed's preferred tightness gauge and a leading wage-pressure signal.",
+      "frequency": "M",
+      "industries": [
+        "Staffing (RHI, MAN)",
+        "Job boards (RCRT)",
+        "Broad cyclicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "JTSQUL",
+      "note": "The quits rate proxies worker confidence and voluntary churn; high quits force employers to raise pay, directly pressuring labor-cost margins.",
+      "frequency": "M",
+      "industries": [
+        "Restaurants & leisure (SBUX, MCD)",
+        "Retail",
+        "Logistics/warehousing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "JTSHIL",
+      "note": "Captures realized gross hiring flow, complementing openings to show whether demand is converting into actual employment.",
+      "frequency": "M",
+      "industries": [
+        "Staffing",
+        "Payroll processors (ADP, PAYX)",
+        "Cyclicals"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "JTSLDL",
+      "note": "Direct measure of involuntary separations; an uptick is an early, granular sign of deteriorating corporate labor demand before payroll losses appear.",
+      "frequency": "M",
+      "industries": [
+        "Consumer discretionary",
+        "Tech",
+        "Banks (loss modeling)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES0500000003",
+      "note": "The timeliest monthly wage-inflation print; accelerating hourly earnings squeeze margins for labor-heavy firms and inform Fed policy.",
+      "frequency": "M",
+      "industries": [
+        "Restaurants (CMG, DPZ)",
+        "Retail (WMT, TGT)",
+        "Staffing",
+        "Logistics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ECIWAG",
+      "note": "The cleanest mix-adjusted measure of underlying wage growth; the Fed's preferred labor-cost gauge and a structural margin-pressure signal.",
+      "frequency": "Q",
+      "industries": [
+        "Labor-intensive services",
+        "Healthcare",
+        "Broad market (cost trends)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ECIALLCIV",
+      "note": "Adds benefits to wages for total compensation cost trends, capturing full labor-cost inflation including healthcare and pensions.",
+      "frequency": "Q",
+      "industries": [
+        "Insurers/healthcare (UNH)",
+        "Manufacturing",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ULCNFB",
+      "note": "Wages relative to productivity; rising unit labor costs are the core economy-wide margin-compression and inflation-persistence signal.",
+      "frequency": "Q",
+      "industries": [
+        "Broad market margins",
+        "Manufacturing",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "OPHNFB",
+      "note": "Productivity growth offsets wage inflation; rising output-per-hour lets firms absorb higher pay without margin loss and lifts potential GDP.",
+      "frequency": "Q",
+      "industries": [
+        "Tech/automation (productivity beneficiaries)",
+        "Manufacturing",
+        "Broad market"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MANEMP",
+      "note": "A cyclical bellwether of goods-sector labor demand; manufacturing payrolls turn early and track industrial activity and capex cycles.",
+      "frequency": "M",
+      "industries": [
+        "Industrials (CAT, DE)",
+        "Machinery",
+        "Materials",
+        "Autos"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USCONS",
+      "note": "Tracks construction-sector hiring, a rate-sensitive read on residential and nonresidential building demand and labor tightness in the trades.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders (DHI, LEN)",
+        "Building products (VMC, MLM)",
+        "Machinery"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USTRADE",
+      "note": "Gauges retail-sector labor demand and seasonal staffing; a barometer of consumer-facing employment and discretionary spending capacity.",
+      "frequency": "M",
+      "industries": [
+        "Retail (WMT, TGT, COST)",
+        "E-commerce",
+        "Consumer discretionary"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USLAH",
+      "note": "The most labor-cost-sensitive, low-wage sector; its payrolls and pay trends drive minimum-wage pass-through and services inflation.",
+      "frequency": "M",
+      "industries": [
+        "Restaurants (MCD, SBUX, DRI)",
+        "Hotels (MAR, HLT)",
+        "Gaming/leisure"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AWHAETP",
+      "note": "A leading labor-demand signal; employers cut hours before headcount, so falling weekly hours flag softening before payroll declines.",
+      "frequency": "M",
+      "industries": [
+        "Manufacturing",
+        "Staffing",
+        "Cyclicals",
+        "Logistics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES3000000003",
+      "note": "Sector-specific wage inflation for goods producers, isolating manufacturing labor-cost pressure on industrial margins.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Autos (F, GM)",
+        "Machinery",
+        "Materials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PAYNSA",
+      "note": "The raw payroll level for analysts needing unadjusted year-over-year comparisons and seasonal-pattern analysis of hiring.",
+      "frequency": "M",
+      "industries": [
+        "Macro research",
+        "Seasonal retail",
+        "Staffing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EMRATIO",
+      "note": "Share of the working-age population employed; a structural utilization measure unaffected by participation-driven distortions in the jobless rate.",
+      "frequency": "M",
+      "industries": [
+        "Consumer-facing sectors",
+        "Labor-intensive services",
+        "Broad market"
+      ]
+    }
+  ]
+}

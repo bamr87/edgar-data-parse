@@ -1,0 +1,218 @@
+{
+  "slug": "autos",
+  "name": "Autos & durables",
+  "description": "Vehicle sales, production, inventories, and used-vehicle prices for automakers, dealers, and suppliers.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "ALTSALES",
+      "note": "Light-vehicle-only sales rate that strips heavy trucks out of TOTALSA, the cleanest read on consumer auto demand momentum.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "Auto dealers",
+        "AN",
+        "PAG",
+        "GPI"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "HTRUCKSSAAR",
+      "note": "Class 8 heavy-truck sales are a freight-cycle and capex barometer distinct from light vehicles, driving truck OEM and component demand.",
+      "frequency": "M",
+      "industries": [
+        "Heavy truck OEMs",
+        "PCAR",
+        "Cummins (CMI)",
+        "Freight",
+        "Dealers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DAUTOSAAR",
+      "note": "Domestically produced passenger-car sales isolate North American production demand from imports for mix and capacity analysis.",
+      "frequency": "M",
+      "industries": [
+        "Domestic automakers",
+        "GM",
+        "F",
+        "STLA"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "FAUTOSA",
+      "note": "Imported-auto sales gauge import penetration and FX/tariff exposure versus domestic-built cars.",
+      "frequency": "M",
+      "industries": [
+        "Import-heavy automakers",
+        "TM",
+        "HMC",
+        "Importers",
+        "Dealers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DLTRUCKSSAAR",
+      "note": "Domestic light-truck/SUV sales track the highest-margin, highest-volume U.S. segment that drives Detroit profitability.",
+      "frequency": "M",
+      "industries": [
+        "Domestic automakers",
+        "F",
+        "GM",
+        "STLA"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "FLTRUCKSSAAR",
+      "note": "Imported light-truck sales measure foreign-brand share gains in the dominant U.S. crossover/SUV category.",
+      "frequency": "M",
+      "industries": [
+        "Import automakers",
+        "TM",
+        "HMC",
+        "Subaru",
+        "Dealers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AUINSA",
+      "note": "Stock of domestically produced autos on dealer/manufacturer lots; rising inventory signals incentive/discount pressure on margins.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "Dealers",
+        "GM",
+        "F"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM441USS",
+      "note": "Dollar revenue at franchised dealers and parts stores, the direct top-line for the dealer and aftermarket channel.",
+      "frequency": "M",
+      "industries": [
+        "Auto dealers",
+        "Parts retailers",
+        "AN",
+        "AAP",
+        "AZO",
+        "ORLY"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RSMVPD",
+      "note": "Timely advance estimate of dealer/parts revenue that moves dealer-group and aftermarket stocks on release.",
+      "frequency": "M",
+      "industries": [
+        "Dealers",
+        "Aftermarket parts",
+        "AN",
+        "GPI",
+        "AZO"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SETA01",
+      "note": "New-vehicle transaction price inflation, a direct driver of automaker ASPs, affordability, and revenue per unit.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "Dealers",
+        "TM",
+        "GM"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU1413",
+      "note": "Wholesale/producer-level vehicle price inflation that reveals OEM pricing power and pass-through ahead of retail CPI.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "GM",
+        "F",
+        "STLA"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU1411",
+      "note": "Producer prices for vehicle parts, a cost-input and pricing gauge for the supplier tier and aftermarket.",
+      "frequency": "M",
+      "industries": [
+        "Parts suppliers",
+        "Aftermarket",
+        "BWA",
+        "APTV",
+        "AZO"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU33613361",
+      "note": "Industry-level producer price index for vehicle assemblers, isolating factory-gate pricing trends for the OEM segment.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "GM",
+        "F"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TERMCBAUTO48NS",
+      "note": "Benchmark new-auto loan APR; rising rates raise monthly payments, compress affordability, and suppress unit demand.",
+      "frequency": "M",
+      "industries": [
+        "Auto lenders",
+        "Automakers",
+        "Dealers",
+        "ALLY",
+        "CACC"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DTCTHFNM",
+      "note": "Outstanding auto credit at finance companies, tracking captive/lender balance-sheet growth and consumer leverage in autos.",
+      "frequency": "M",
+      "industries": [
+        "Auto finance",
+        "Captive lenders",
+        "ALLY",
+        "Credit Acceptance",
+        "Banks"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES3133600101",
+      "note": "Employment in vehicle and parts manufacturing, a labor-cost and production-activity signal for the supply side.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "Parts manufacturers",
+        "Suppliers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "LTOTALNSA",
+      "note": "Non-seasonally-adjusted unit sales for actual-period volume work, calendar effects, and year-over-year unit comparisons.",
+      "frequency": "M",
+      "industries": [
+        "Automakers",
+        "Dealers",
+        "Parts suppliers"
+      ]
+    }
+  ]
+}

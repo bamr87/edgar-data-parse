@@ -53,6 +53,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Exception: the frontend data layer is source code, not a Python build artifact.
+!/frontend/src/lib/
 parts/
 sdist/
 var/

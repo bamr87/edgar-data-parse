@@ -1,0 +1,243 @@
+{
+  "slug": "consumer",
+  "name": "Consumer & retail",
+  "description": "Retail sales, income & spending, saving, credit, and sentiment \u2014 the demand backdrop for consumer sectors.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "RSAFS",
+      "note": "The headline monthly measure of total US retail and food-service spending and the single best near-real-time read on consumer demand.",
+      "frequency": "M",
+      "industries": [
+        "Retail (WMT, TGT, COST)",
+        "Consumer Discretionary",
+        "Consumer Staples",
+        "Restaurants"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RSXFS",
+      "note": "Strips out volatile auto sales to show core retail demand, a cleaner demand signal for non-auto retailers.",
+      "frequency": "M",
+      "industries": [
+        "General Merchandise Retail",
+        "Specialty Retail",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM44X72USS",
+      "note": "The Census Bureau benchmarked retail-trade-and-food-services level used to build the e-commerce share and sector trend lines.",
+      "frequency": "M",
+      "industries": [
+        "Retail",
+        "Restaurants",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ECOMSA",
+      "note": "Tracks the dollar level of online retail sales, the demand backbone for e-commerce and last-mile logistics.",
+      "frequency": "Q",
+      "industries": [
+        "E-commerce (AMZN, ETSY, SHOP)",
+        "Logistics",
+        "Payments"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "ECOMPCTSA",
+      "note": "The structural online-penetration ratio that signals channel-shift winners and pressure on brick-and-mortar formats.",
+      "frequency": "Q",
+      "industries": [
+        "E-commerce (AMZN, SHOP)",
+        "Department Stores",
+        "Mall REITs"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RSFSDP",
+      "note": "Isolates restaurant and bar spending, the cleanest read on discretionary 'experience' demand and away-from-home eating.",
+      "frequency": "M",
+      "industries": [
+        "Restaurants (MCD, CMG, DRI)",
+        "Food Distribution (SYY)",
+        "Beverages"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM4541USS",
+      "note": "A monthly online/direct-to-consumer sales proxy that leads the quarterly e-commerce data for nowcasting digital demand.",
+      "frequency": "M",
+      "industries": [
+        "E-commerce (AMZN, CHWY)",
+        "Direct-to-Consumer",
+        "Parcel Delivery"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCE",
+      "note": "The broadest measure of household spending (goods plus services) and the dominant driver of US GDP.",
+      "frequency": "M",
+      "industries": [
+        "Consumer Discretionary",
+        "Consumer Staples",
+        "Services"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCEDG",
+      "note": "Big-ticket discretionary spending (autos, appliances, electronics) that is highly rate-sensitive and cyclical.",
+      "frequency": "M",
+      "industries": [
+        "Autos",
+        "Appliances (WHR)",
+        "Furniture",
+        "Consumer Electronics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCES",
+      "note": "Captures the post-pandemic shift toward services spending, the larger and stickier share of the consumer wallet.",
+      "frequency": "M",
+      "industries": [
+        "Travel & Leisure",
+        "Healthcare Services",
+        "Restaurants",
+        "Subscription Services"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PI",
+      "note": "Total household income from all sources, the fuel for future spending and a gauge of demand sustainability.",
+      "frequency": "M",
+      "industries": [
+        "Consumer Discretionary",
+        "Financials",
+        "Housing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DSPIC96",
+      "note": "Inflation-adjusted after-tax income, the truest measure of household purchasing power and real spending capacity.",
+      "frequency": "M",
+      "industries": [
+        "Consumer Staples",
+        "Consumer Discretionary",
+        "Retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PSAVERT",
+      "note": "Share of income saved versus spent; a falling rate flags spending pulled forward and a thinning consumer cushion.",
+      "frequency": "M",
+      "industries": [
+        "Banks",
+        "Consumer Discretionary",
+        "Credit-dependent Retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "REVOLSL",
+      "note": "The credit-card balance level; rising revolving debt shows consumers leaning on credit to sustain spending.",
+      "frequency": "M",
+      "industries": [
+        "Card Issuers (V, MA, COF, SYF)",
+        "Banks",
+        "Discretionary Retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TOTALSL",
+      "note": "All non-mortgage consumer debt (cards, auto, student), a broad gauge of household leverage and credit appetite.",
+      "frequency": "M",
+      "industries": [
+        "Consumer Finance",
+        "Banks",
+        "Autos",
+        "Payments"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DRCCLACBS",
+      "note": "Rising card delinquencies are the earliest warning of consumer stress and impending charge-offs for lenders.",
+      "frequency": "Q",
+      "industries": [
+        "Card Issuers (COF, SYF, DFS)",
+        "Banks",
+        "Subprime Lenders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TERMCBCCALLNS",
+      "note": "The average APR consumers pay on cards; high rates raise debt-service burden and pressure discretionary spending.",
+      "frequency": "M",
+      "industries": [
+        "Card Issuers",
+        "Banks",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MARTSMPCSM44000USS",
+      "note": "Month-over-month momentum in core retail goods spending, a high-frequency demand-acceleration signal.",
+      "frequency": "M",
+      "industries": [
+        "Retail",
+        "Consumer Discretionary",
+        "Consumer Staples"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DSPI",
+      "note": "After-tax income in dollars, the denominator for the saving rate and a baseline for nominal spending capacity.",
+      "frequency": "M",
+      "industries": [
+        "Retail",
+        "Consumer Finance",
+        "Housing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MRTSSM448USS",
+      "note": "Apparel sales are a pure discretionary-demand and fashion-cycle read, sensitive to confidence and weather.",
+      "frequency": "M",
+      "industries": [
+        "Apparel Retail (GAP, ANF, URBN)",
+        "Footwear (NKE)",
+        "Specialty Retail"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TOTALSA",
+      "note": "The largest single big-ticket discretionary purchase and a rate-sensitive bellwether for the auto value chain.",
+      "frequency": "M",
+      "industries": [
+        "Autos (F, GM, TSLA)",
+        "Auto Dealers",
+        "Auto Lenders",
+        "Parts"
+      ]
+    }
+  ]
+}

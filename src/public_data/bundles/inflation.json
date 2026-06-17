@@ -1,0 +1,215 @@
+{
+  "slug": "inflation",
+  "name": "Inflation & prices",
+  "description": "CPI/PCE/PPI headline and by-category price indices for margin and pricing-power analysis.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "CORESTICKM159SFRBATL",
+      "note": "Sticky-price CPI isolates slow-to-adjust prices (rents, services) that forecast where inflation is heading more reliably than flexible items.",
+      "frequency": "M",
+      "industries": [
+        "Services",
+        "Real Estate",
+        "Labor-intensive sectors",
+        "Fixed Income"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCETRIM12M159SFRBDAL",
+      "note": "Trimmed-mean PCE removes outlier price moves to expose the central inflation tendency, a cleaner persistence signal than headline or core.",
+      "frequency": "M",
+      "industries": [
+        "Fixed Income",
+        "Banks",
+        "Macro/rate-sensitive equities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PPIACO",
+      "note": "Broad producer/commodity PPI is an upstream cost gauge that leads consumer inflation and compresses margins before it reaches the shelf.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Materials",
+        "Manufacturers (CAT, DE)",
+        "Consumer Goods"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PPIFIS",
+      "note": "Final-demand PPI captures the prices producers receive at the end of the supply chain, a direct read on industrial pricing power and margins.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Wholesale/Distribution",
+        "Manufacturing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPSFD4131",
+      "note": "Core final-demand PPI shows underlying producer cost pressure excluding volatile inputs, signaling sustainable input-cost inflation.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Consumer Discretionary manufacturers",
+        "Materials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SEHA",
+      "note": "Rent is the largest, stickiest CPI component, so its trajectory dominates core services inflation and shelter-driven cost pressure.",
+      "frequency": "M",
+      "industries": [
+        "Apartment REITs (AVB, EQR)",
+        "Homebuilders",
+        "Banks",
+        "Fixed Income"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SAF11",
+      "note": "Grocery price inflation directly drives food-retailer and packaged-goods revenue/margin dynamics and consumer wallet share.",
+      "frequency": "M",
+      "industries": [
+        "Grocers (KR)",
+        "Packaged Food (GIS, K)",
+        "Consumer Staples"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CPIENGSL",
+      "note": "Energy CPI captures gasoline and utility price swings that hit household discretionary budgets and feed headline-inflation volatility.",
+      "frequency": "M",
+      "industries": [
+        "Energy (XOM, CVX)",
+        "Utilities",
+        "Airlines",
+        "Consumer Discretionary"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SETA02",
+      "note": "Used-vehicle prices are a high-beta inflation swing factor that signals auto-sector demand, dealer margins, and lender collateral values.",
+      "frequency": "M",
+      "industries": [
+        "Auto Retail (KMX, AN)",
+        "Auto Lenders (ALLY)",
+        "Insurers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CUSR0000SAS",
+      "note": "Services CPI captures the labor-driven, sticky majority of the consumer basket that determines whether inflation durably returns to target.",
+      "frequency": "M",
+      "industries": [
+        "Labor-intensive services",
+        "Real Estate",
+        "Healthcare",
+        "Financials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IR",
+      "note": "Import prices measure the cost of foreign goods entering the US, a direct input to import-reliant retailer/manufacturer margins and FX pass-through.",
+      "frequency": "M",
+      "industries": [
+        "Retail importers (WMT, TGT)",
+        "Manufacturers",
+        "Consumer Electronics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IQ",
+      "note": "Export prices gauge the pricing power and competitiveness of US producers abroad, informing exporter revenue and terms-of-trade dynamics.",
+      "frequency": "M",
+      "industries": [
+        "Industrials",
+        "Ag exporters (ADM)",
+        "Aerospace (BA)",
+        "Commodities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T5YIE",
+      "note": "The breakeven embeds the bond market's real-time expected inflation, a forward-looking signal that moves ahead of CPI prints and repricing risk.",
+      "frequency": "D",
+      "industries": [
+        "Fixed Income",
+        "TIPS",
+        "Banks",
+        "All rate-sensitive equities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T5YIFR",
+      "note": "The 5y5y forward strips near-term noise to reveal long-run inflation expectations the Fed watches for de-anchoring risk.",
+      "frequency": "D",
+      "industries": [
+        "Fixed Income",
+        "Central-bank-sensitive macro",
+        "Long-duration equities"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PPIIDC",
+      "note": "Industrial-commodity PPI tracks core manufacturing input costs (metals, chemicals, machinery), a leading indicator of factory margin pressure.",
+      "frequency": "M",
+      "industries": [
+        "Industrials (HON, EMR)",
+        "Materials",
+        "Chemicals (DOW)",
+        "Machinery"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MICH",
+      "note": "Consumer inflation expectations shape wage demands and spending behavior, a behavioral feedback signal that can entrench or break inflation.",
+      "frequency": "M",
+      "industries": [
+        "Consumer Discretionary",
+        "Retail",
+        "Fixed Income",
+        "Macro"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU0911",
+      "note": "Paper/packaging PPI is a direct input-cost gauge for packaging-intensive consumer and e-commerce supply chains, informing pass-through margins.",
+      "frequency": "M",
+      "industries": [
+        "Packaging (IP, PKG)",
+        "Consumer Staples",
+        "E-commerce logistics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PPIDES",
+      "note": "Services PPI isolates producer-side services inflation (trade, transport, finance) that feeds B2B pricing power and the sticky core trend.",
+      "frequency": "M",
+      "industries": [
+        "Transportation",
+        "Financial Services",
+        "Wholesale Trade",
+        "B2B Services"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "slug": "rates",
+  "name": "Rates & credit",
+  "description": "The full Treasury curve, yield-curve spreads, mortgage rates, and corporate credit spreads \u2014 drives banks, REITs, and rate-sensitive sectors.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "DGS3MO",
+      "note": "The front end of the curve and the de facto risk-free rate that anchors money-market yields, T-bill pricing, and short-term funding costs.",
+      "frequency": "D",
+      "industries": [
+        "Banks (JPM, BAC)",
+        "Money market funds",
+        "Treasury/cash management"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGS2",
+      "note": "The 2Y is the most Fed-policy-sensitive Treasury, encoding near-term rate-hike/cut expectations that drive bank net interest margins and floating-rate repricing.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Auto lenders",
+        "Insurers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGS5",
+      "note": "The belly of the curve benchmarks medium-term corporate and consumer lending and is a key duration point for bond portfolios.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Insurers",
+        "Asset managers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGS30",
+      "note": "The long bond anchors pension and life-insurer liability discounting and signals secular growth/inflation expectations at the curve's far end.",
+      "frequency": "D",
+      "industries": [
+        "Life insurers (MET, PRU)",
+        "Pension funds",
+        "Long-duration REITs"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T10Y3M",
+      "note": "The Fed-favored recession-signal spread; its inversion is the academically strongest leading indicator of downturns and credit stress.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Cyclicals",
+        "Macro/credit allocation"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "T10Y2YM",
+      "note": "A smoothed monthly version of the 10Y-2Y slope, useful for trend charts and aligning curve signals with monthly macro and earnings data.",
+      "frequency": "M",
+      "industries": [
+        "Banks",
+        "Macro strategy",
+        "Credit"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MORTGAGE30US",
+      "note": "The headline consumer borrowing rate that drives housing affordability, mortgage origination volumes, and refinancing waves.",
+      "frequency": "W",
+      "industries": [
+        "Homebuilders (DHI, LEN, PHM)",
+        "Mortgage REITs (NLY)",
+        "Banks",
+        "Building products"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MORTGAGE15US",
+      "note": "The shorter-tenor mortgage rate informs refinancing economics and the spread between consumer mortgage products.",
+      "frequency": "W",
+      "industries": [
+        "Mortgage lenders",
+        "Banks",
+        "Homebuilders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "SOFR",
+      "note": "The post-LIBOR benchmark for trillions in floating-rate loans, derivatives, and corporate debt, reflecting overnight repo funding conditions.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Leveraged-loan issuers",
+        "Derivatives desks"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EFFR",
+      "note": "The realized overnight interbank rate the Fed targets; the base from which nearly all U.S. short-term funding costs cascade.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Money markets",
+        "All rate-sensitive sectors"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DPRIME",
+      "note": "The benchmark banks use to price credit cards, HELOCs, and small-business loans, directly setting consumer and SME borrowing costs.",
+      "frequency": "D",
+      "industries": [
+        "Card issuers (COF, DFS)",
+        "Regional banks",
+        "Small-business lenders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DAAA",
+      "note": "The yield on the highest-quality corporate debt, a benchmark for blue-chip borrowing costs and a long-history gauge of investment-grade conditions.",
+      "frequency": "D",
+      "industries": [
+        "Investment-grade issuers",
+        "Insurers",
+        "Corporate treasurers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DBAA",
+      "note": "The yield on lower-tier investment-grade debt; its gap over Aaa/Treasuries is a classic credit-risk and recession barometer.",
+      "frequency": "D",
+      "industries": [
+        "Lower-IG issuers",
+        "Credit funds",
+        "Cyclical corporates"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BAA10Y",
+      "note": "A clean credit-risk-premium spread isolating corporate default/illiquidity compensation from the risk-free rate.",
+      "frequency": "D",
+      "industries": [
+        "Credit investors",
+        "High-leverage corporates",
+        "Banks"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BAMLC0A0CM",
+      "note": "The investment-grade OAS measures the credit premium on the broad IG market, a key input to corporate borrowing costs and credit allocation.",
+      "frequency": "D",
+      "industries": [
+        "Investment-grade issuers",
+        "Insurers",
+        "Pension funds",
+        "Asset managers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BAMLH0A3HYC",
+      "note": "The riskiest corner of credit; CCC spreads blow out first under stress and lead the default cycle, making this an early-warning distress signal.",
+      "frequency": "D",
+      "industries": [
+        "Distressed credit",
+        "Leveraged loans",
+        "Restructuring",
+        "BDCs"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BAMLC0A1CAAA",
+      "note": "The tightest-quality IG spread isolates the credit premium on top-rated corporates versus broader IG, refining credit-quality differentiation.",
+      "frequency": "D",
+      "industries": [
+        "Top-rated corporates",
+        "Insurers",
+        "Liability-driven investors"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TEDRATE",
+      "note": "The classic bank-funding-stress gauge; spikes flag interbank credit fear (note: discontinued post-LIBOR but historically definitive for crisis analysis).",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Money markets",
+        "Systemic-risk monitoring"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DFII10",
+      "note": "The 10Y real (TIPS) yield is the true cost of capital and the dominant driver of gold, growth-equity, and long-duration asset valuations.",
+      "frequency": "D",
+      "industries": [
+        "Gold (GLD)",
+        "Growth tech",
+        "REITs",
+        "Long-duration assets"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DGS1",
+      "note": "The 1Y bridges bills and notes, benchmarking short-duration corporate paper and reflecting the cumulative near-term Fed path.",
+      "frequency": "D",
+      "industries": [
+        "Banks",
+        "Cash/short-duration funds",
+        "Floating-rate borrowers"
+      ]
+    }
+  ]
+}

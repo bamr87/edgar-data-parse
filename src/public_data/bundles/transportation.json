@@ -1,0 +1,211 @@
+{
+  "slug": "transportation",
+  "name": "Transportation & trade",
+  "description": "Truck, rail, air, and freight activity plus trade volumes for transports and logistics.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "TRUCKD11",
+      "note": "Tracks volume of freight hauled by motor carriers, the broadest read on domestic goods demand and trucking utilization.",
+      "frequency": "M",
+      "industries": [
+        "Trucking (KNX, WERN, ODFL, JBHT)",
+        "Logistics",
+        "Industrial demand"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "FRGSHPUSM649NCIS",
+      "note": "Cass-style shipments proxy aggregating North American freight activity across modes, a leading demand signal for the whole freight cycle.",
+      "frequency": "M",
+      "industries": [
+        "Freight brokers",
+        "Trucking",
+        "Rail",
+        "Parcel (FDX, UPS)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TSIFRGHT",
+      "note": "BTS index of for-hire freight movement across all modes, a clean monthly gauge of physical goods flow and logistics throughput.",
+      "frequency": "M",
+      "industries": [
+        "Freight transport",
+        "Logistics",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RAILFRTCARLOADSD11",
+      "note": "Measures bulk/commodity rail volumes (coal, chemicals, grain, autos), a direct read on heavy-industry and commodity demand for the rails.",
+      "frequency": "M",
+      "industries": [
+        "Railroads (UNP, CSX, NSC)",
+        "Commodities",
+        "Industrials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RAILFRTINTERMODALD11",
+      "note": "Tracks containerized intermodal volumes tied to imports and retail inventory flows, the rail growth engine most sensitive to consumer goods.",
+      "frequency": "M",
+      "industries": [
+        "Railroads (UNP, CSX, NSC)",
+        "Intermodal/Logistics (JBHT)",
+        "Retail supply chain"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "AIRRPMTSI",
+      "note": "Core airline demand metric capturing paid passenger travel volume, the top-line driver for carrier revenue and capacity decisions.",
+      "frequency": "M",
+      "industries": [
+        "Airlines (DAL, UAL, AAL, LUV)",
+        "Travel"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TRFVOLUSM227NFWA",
+      "note": "Aggregate U.S. road travel, a demand proxy for fuel consumption, toll/road usage, and consumer mobility.",
+      "frequency": "M",
+      "industries": [
+        "Fuel retail",
+        "Toll roads",
+        "Auto/insurance",
+        "Energy"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "BOPGSTB",
+      "note": "Headline net trade balance driving the external sector of GDP and signaling import/export momentum for trade-exposed sectors.",
+      "frequency": "M",
+      "industries": [
+        "Multinationals",
+        "Ports",
+        "Manufacturing",
+        "Macro/FX"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EXPGS",
+      "note": "Inflation-adjusted exports, a demand gauge for U.S.-made goods and a barometer for global trade and industrial exporters.",
+      "frequency": "Q",
+      "industries": [
+        "Industrials",
+        "Agriculture",
+        "Aerospace (BA)",
+        "Capital goods"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "IMPGS",
+      "note": "Inflation-adjusted imports, a leading signal for port volumes, intermodal rail, and consumer-goods supply chains.",
+      "frequency": "Q",
+      "industries": [
+        "Ports",
+        "Intermodal rail",
+        "Retail",
+        "Logistics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EXPCH",
+      "note": "Bilateral China import flows that drive trans-Pacific container traffic and reveal supply-chain reshoring/tariff effects.",
+      "frequency": "M",
+      "industries": [
+        "Container shipping",
+        "West Coast ports",
+        "Retail",
+        "Manufacturing"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU484121484121",
+      "note": "Transportation PPI capturing truckload pricing/rate trends, a direct margin and shipper-cost signal for the trucking cycle.",
+      "frequency": "M",
+      "industries": [
+        "Trucking (KNX, WERN, SNDR)",
+        "Shippers",
+        "Logistics"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU482111482111",
+      "note": "Tracks rail pricing power, a core driver of railroad revenue per carload and pricing-led margin expansion.",
+      "frequency": "M",
+      "industries": [
+        "Railroads (UNP, CSX, NSC)",
+        "Bulk shippers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PCU481111481111",
+      "note": "Proxy for airfare/yield trends, informing airline revenue-per-mile and pricing power across the cycle.",
+      "frequency": "M",
+      "industries": [
+        "Airlines (DAL, UAL, AAL, LUV)",
+        "Travel"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "WPU3012",
+      "note": "Diesel is the dominant variable cost for trucking and rail, making this a key margin and fuel-surcharge input.",
+      "frequency": "M",
+      "industries": [
+        "Trucking",
+        "Railroads",
+        "Logistics",
+        "Energy"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES4348400001",
+      "note": "Trucking payroll trends signal capacity expansion/contraction and labor-cost pressure in the largest freight mode.",
+      "frequency": "M",
+      "industries": [
+        "Trucking",
+        "Logistics",
+        "Labor markets"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CES4300000001",
+      "note": "Broad sector employment gauge for capacity and labor costs across freight, parcel, and warehousing.",
+      "frequency": "M",
+      "industries": [
+        "Logistics",
+        "Warehousing",
+        "Parcel (FDX, UPS)",
+        "Rail/Air"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TOTBUSMPCIMSA",
+      "note": "The inventory-to-sales ratio leads restocking cycles that drive freight demand swings across trucking and intermodal.",
+      "frequency": "M",
+      "industries": [
+        "Trucking",
+        "Rail intermodal",
+        "Retail",
+        "Logistics"
+      ]
+    }
+  ]
+}

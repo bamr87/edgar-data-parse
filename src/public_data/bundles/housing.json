@@ -1,0 +1,177 @@
+{
+  "slug": "housing",
+  "name": "Housing & construction",
+  "description": "Starts, permits, prices, sales, and construction spending for homebuilders, REITs, and building products.",
+  "series": [
+    {
+      "provider": "fred",
+      "id": "HOUST1F",
+      "note": "Isolates single-family starts, the highest-margin and most volume-relevant segment for production homebuilders versus multifamily apartment supply.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders (DHI, LEN, PHM, NVR)",
+        "Lumber/OSB producers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "HOUST5F",
+      "note": "Tracks multifamily/apartment construction, a direct demand signal for apartment REIT supply pipelines and a leading indicator of future rent growth.",
+      "frequency": "M",
+      "industries": [
+        "Apartment REITs (EQR, AVB, MAA, ESS)",
+        "Building products"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "PERMIT",
+      "note": "Building permits lead starts by 1-2 months, giving the earliest read on the future construction pipeline and builder confidence in demand.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders",
+        "Building products",
+        "Construction materials"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "HSN1F",
+      "note": "New home sales are the direct top-line demand metric for homebuilders and the cleanest gauge of new-construction absorption.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders (DHI, LEN, PHM, KBH, TOL)",
+        "Mortgage lenders"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MSACSR",
+      "note": "Months' supply of new homes signals inventory/demand balance and pricing power; rising supply pressures builder gross margins and incentives.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders",
+        "Building products"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "EXHOSLUSM495S",
+      "note": "Existing sales are ~85% of the market and drive demand for remodeling, real estate brokerage, title, and home-improvement retail.",
+      "frequency": "M",
+      "industries": [
+        "Home improvement retail (HD, LOW)",
+        "Real estate brokerage (Z, RDFN)",
+        "Title insurance (FNF, FAF)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "MSPNHSUS",
+      "note": "Median new-home price tracks builder pricing power and revenue per unit, a core driver of homebuilder margins and average selling price.",
+      "frequency": "M",
+      "industries": [
+        "Homebuilders",
+        "Mortgage originators"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "CSUSHPINSA",
+      "note": "The benchmark repeat-sales home price index; rising prices support homeowner equity, refi/HELOC volume, and mortgage credit quality.",
+      "frequency": "M",
+      "industries": [
+        "Mortgage insurers (MTG, ESNT)",
+        "Banks",
+        "REITs",
+        "Title insurance"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "USSTHPI",
+      "note": "FHFA's broad purchase/refi price index used for LTV and collateral valuation; complements Case-Shiller for mortgage credit-risk analysis.",
+      "frequency": "Q",
+      "industries": [
+        "GSEs/mortgage",
+        "Banks",
+        "Mortgage insurers"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TLRESCONS",
+      "note": "Dollar value of residential construction put in place, a direct revenue proxy for builders, building products, and materials demand.",
+      "frequency": "M",
+      "industries": [
+        "Building products (BLDR, MAS, FBIN)",
+        "Materials (VMC, MLM)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TLNRESCONS",
+      "note": "Commercial/industrial construction spending differentiates nonresidential-exposed contractors, materials, and industrial REIT development.",
+      "frequency": "M",
+      "industries": [
+        "Nonresidential contractors",
+        "Materials",
+        "Industrial REITs (PLD)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "TTLCONS",
+      "note": "Aggregate construction put-in-place captures total end-market demand for cement, aggregates, machinery, and engineering & construction firms.",
+      "frequency": "M",
+      "industries": [
+        "Materials (VMC, MLM)",
+        "Machinery (CAT, DE)",
+        "E&C firms"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RRVRUSQ156N",
+      "note": "Rental vacancy is the supply/demand barometer for apartment REIT occupancy and pricing power; lower vacancy supports rent growth.",
+      "frequency": "Q",
+      "industries": [
+        "Apartment REITs (EQR, AVB, MAA)",
+        "Single-family rental REITs (INVH, AMH)"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "RHVRUSQ156N",
+      "note": "Homeowner vacancy gauges excess for-sale inventory and shadow supply, an early signal of price softening and absorption stress.",
+      "frequency": "Q",
+      "industries": [
+        "Homebuilders",
+        "Single-family rental REITs",
+        "Mortgage credit"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DRSFRMACBS",
+      "note": "Residential mortgage delinquencies are the core housing credit-quality metric driving bank loss provisions and mortgage-insurer claims.",
+      "frequency": "Q",
+      "industries": [
+        "Banks",
+        "Mortgage insurers (MTG, ESNT, RDN)",
+        "Mortgage REITs"
+      ]
+    },
+    {
+      "provider": "fred",
+      "id": "DRCRELEXFACBS",
+      "note": "CRE delinquencies flag stress in office/retail lending, critical for regional banks and commercial mortgage REIT credit analysis.",
+      "frequency": "Q",
+      "industries": [
+        "Regional banks",
+        "Commercial mortgage REITs (BXMT, STWD)",
+        "Office REITs"
+      ]
+    }
+  ]
+}
