@@ -100,7 +100,8 @@ class EdgarAnalyticsService:
             current = chosen.get(f.period_end)
             if current is None or pr < current[0]:
                 chosen[f.period_end] = (pr, f)
-        ordered = sorted(chosen.values(), key=lambda t: t[1].period_end, reverse=True)[:limit]
+        # Sort by the dict key (period_end date — guaranteed non-null), newest first.
+        ordered = [v for _k, v in sorted(chosen.items(), key=lambda kv: kv[0], reverse=True)][:limit]
         return [
             {
                 "period_end": f.period_end.isoformat() if f.period_end else None,
