@@ -21,3 +21,10 @@ REST_FRAMEWORK = {  # noqa: F405
     "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {"anon": None, "user": None, "sec": None},
 }
+
+# AI analysis is on by default in production, but tests must never hit the live Anthropic
+# API. Force it off and clear credentials here; tests that exercise the analyzer enable it
+# explicitly via @override_settings and inject a fake client (or set a fake credential).
+ENABLE_AI_ANALYSIS = False
+AI_ANALYSIS_AUTH_TOKEN = ""
+AI_ANALYSIS_API_KEY = ""

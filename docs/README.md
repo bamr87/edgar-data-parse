@@ -1,5 +1,7 @@
 # Documentation index
 
+Documentation for **Fredgar AI** (FRED + EDGAR, with AI) — a Django + DRF backend and Vite/React UI for SEC EDGAR company data and FRED macro series, with AI-assisted analysis.
+
 Start with the [root README](../README.md) for environment setup, Docker, and tests. Use this folder for deeper technical and product context.
 
 ## Architecture and API

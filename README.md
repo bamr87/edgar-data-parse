@@ -11,6 +11,8 @@
 ## Quick start
 
 ```bash
+git clone https://github.com/bamr87/fredgar-ai.git
+cd fredgar-ai
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -51,15 +53,15 @@ python manage.py sync_submissions --ticker AAPL
 python manage.py sync_company_facts --ticker AAPL
 python manage.py sync_derived_metrics --ticker AAPL
 python manage.py generate_static_site --ticker AAPL --output ../site   # static "Wikipedia" site
-python manage.py load_series_bundle
-python manage.py sync_series_bundle --slug macro
+python manage.py refresh_series_bundles            # register + FRED-sync all series bundles
+python manage.py sync_series_bundle --slug core    # or sync one bundle by slug (needs FRED_API_KEY)
 ```
 
 The static site (`generate_static_site`) renders offline HTML — one page per company with financial statements, derived metrics, filings, and a 23k-row facts table, each with copy-to-clipboard and CSV/JSON downloads. Serve `site/` from any static host (GitHub Pages, S3, nginx).
 
 Same sync actions are available on the API, for example `POST /api/v1/companies/{id}/sync-submissions/` and `POST /api/v1/companies/{id}/sync-facts/`. **Full command list, CRM pipeline, and bulk ZIP loaders** are documented in [`docs/api-and-cli.md`](docs/api-and-cli.md).
 
-Bundles are defined in [`src/public_data/bundles/macro.json`](src/public_data/bundles/macro.json). Observations: `GET /api/v1/series-bundles/macro/observations/`.
+Bundles are defined as JSON under [`src/public_data/bundles/`](src/public_data/bundles/). Observations: `GET /api/v1/series-bundles/{slug}/observations/`.
 
 ### Sample company list (reference data, not ingested by Django)
 
@@ -119,8 +121,8 @@ docker compose --profile ci run --rm test
 Single-image API build (no Compose) still works:
 
 ```bash
-docker build -t edgar-analyzer .
-docker run -p 8000:8000 -e USER_AGENT_EMAIL=you@example.com edgar-analyzer
+docker build -t fredgar-ai .
+docker run -p 8000:8000 -e USER_AGENT_EMAIL=you@example.com fredgar-ai
 ```
 
 ## Tests & CI

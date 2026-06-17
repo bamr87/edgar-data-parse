@@ -73,8 +73,9 @@ def _company_with_text() -> Company:
 # --- gating ---
 
 
+@override_settings(ENABLE_AI_ANALYSIS=False)
 @pytest.mark.django_db
-def test_disabled_by_default_returns_noop():
+def test_disabled_returns_noop():
     assert isinstance(get_leadership_analyzer(), NoopAnalyzer)
     co = _company_with_text()
     result = analyze_company_leadership(co)
@@ -84,6 +85,14 @@ def test_disabled_by_default_returns_noop():
     row = LeadershipAnalysis.objects.get(company=co)
     assert row.enabled is False
     assert row.initiatives == []
+
+
+@override_settings(ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_AUTH_TOKEN="", AI_ANALYSIS_API_KEY="")
+@pytest.mark.django_db
+def test_enabled_without_credentials_degrades_to_noop():
+    # On by default but no token/key configured and no client injected -> safe no-op,
+    # never a surprise API call or an auth error.
+    assert isinstance(get_leadership_analyzer(), NoopAnalyzer)
 
 
 @override_settings(ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_BACKEND="none")
@@ -160,11 +169,12 @@ def test_analyze_with_injected_client_persists_and_grounds():
     assert row.model_name == "claude-opus-4-8"
 
 
-@override_settings(ENABLE_AI_ANALYSIS=True)
+@override_settings(ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_API_KEY="test-key")
 @pytest.mark.django_db
 def test_enabled_but_no_text_records_error_without_calling_model():
     co = Company.objects.create(cik="0000000009", name="NoText")
-    # No client injected; if analyze() were called it would try to import the SDK.
+    # A credential is configured so the real analyzer is selected, but with no filing text
+    # the model is never called (analyze() — and the SDK import — are short-circuited).
     result = analyze_company_leadership(co)
     assert result["enabled"] is True
     assert "No filing text" in result["error"]
@@ -186,6 +196,74 @@ def test_model_failure_is_recorded_not_raised():
     result = analyze_company_leadership(co, client=_BoomClient())
     assert result["enabled"] is True
     assert "529" in result["error"]
+
+
+# --- credential / token auth ---
+
+
+def _install_fake_anthropic_sdk(monkeypatch):
+    """Insert a fake top-level ``anthropic`` module so ``_get_client()`` can build a client
+    without the real SDK; returns a dict capturing the constructor kwargs."""
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class _Client:
+        def __init__(self, **kwargs):
+            captured["init"] = kwargs
+            self.api_key = kwargs.get("api_key")
+            self.auth_token = kwargs.get("auth_token")
+            self.default_headers = kwargs.get("default_headers")
+
+    mod = types.ModuleType("anthropic")
+    mod.Anthropic = _Client
+    monkeypatch.setitem(sys.modules, "anthropic", mod)
+    return captured
+
+
+@override_settings(
+    ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_AUTH_TOKEN="oauth-tok", AI_ANALYSIS_API_KEY=""
+)
+@pytest.mark.django_db
+def test_get_client_prefers_oauth_token(monkeypatch):
+    captured = _install_fake_anthropic_sdk(monkeypatch)
+    analyzer = get_leadership_analyzer()
+    assert isinstance(analyzer, AnthropicAnalyzer)
+    client = analyzer._get_client()
+    # Bearer token + oauth beta header; api_key never passed and explicitly neutralized so
+    # x-api-key is not sent alongside the Authorization header (which would 401).
+    assert captured["init"]["auth_token"] == "oauth-tok"
+    assert captured["init"]["default_headers"] == {"anthropic-beta": "oauth-2025-04-20"}
+    assert "api_key" not in captured["init"]
+    assert client.api_key is None
+
+
+@override_settings(
+    ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_AUTH_TOKEN="", AI_ANALYSIS_API_KEY="key-123"
+)
+@pytest.mark.django_db
+def test_get_client_falls_back_to_api_key(monkeypatch):
+    captured = _install_fake_anthropic_sdk(monkeypatch)
+    analyzer = get_leadership_analyzer()
+    assert isinstance(analyzer, AnthropicAnalyzer)
+    analyzer._get_client()
+    assert captured["init"]["api_key"] == "key-123"
+    assert "auth_token" not in captured["init"]
+
+
+@override_settings(
+    ENABLE_AI_ANALYSIS=True, AI_ANALYSIS_AUTH_TOKEN="oauth-tok", AI_ANALYSIS_API_KEY="key-123"
+)
+@pytest.mark.django_db
+def test_get_client_warns_and_uses_token_when_both_set(monkeypatch, caplog):
+    captured = _install_fake_anthropic_sdk(monkeypatch)
+    analyzer = AnthropicAnalyzer()
+    with caplog.at_level("WARNING"):
+        analyzer._get_client()
+    assert captured["init"]["auth_token"] == "oauth-tok"
+    assert "api_key" not in captured["init"]  # never send both
+    assert any("ignoring the API key" in r.getMessage() for r in caplog.records)
 
 
 # --- API ---

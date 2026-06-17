@@ -1,5 +1,7 @@
 # Optional AI narrative analysis (leadership initiatives/quotes from filing text).
-# NOT part of the core runtime — install only when ENABLE_AI_ANALYSIS=true.
+# AI analysis is enabled by default but DEGRADES TO A NO-OP until this SDK is installed
+# AND a credential is set, so it is never required for the core runtime:
 #   pip install -r requirements-ai.txt
-# Also requires ANTHROPIC_API_KEY in the environment. See docs/leadership-methodology.md.
+# Auth (set only ONE — both 401): a Claude Code OAuth token (CLAUDE_CODE_OAUTH_TOKEN, from
+# `claude setup-token`, preferred) or ANTHROPIC_API_KEY. See docs/leadership-methodology.md.
 anthropic>=0.40

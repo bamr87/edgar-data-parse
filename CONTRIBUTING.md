@@ -1,5 +1,7 @@
 # Contributing
 
+Thanks for contributing to **Fredgar AI** (FRED + EDGAR, with AI) — a Django + DRF backend and Vite/React UI for **SEC EDGAR** company data and **FRED** macro series, with AI-assisted analysis. Repo: [`fredgar-ai`](https://github.com/bamr87/fredgar-ai).
+
 ## Prerequisites
 
 - Python 3.12+
