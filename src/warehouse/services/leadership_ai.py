@@ -151,7 +151,29 @@ class AnthropicAnalyzer:
                 "AI analysis requires the 'anthropic' package. "
                 "Install it with: pip install -r requirements-ai.txt"
             ) from e
-        self._client = anthropic.Anthropic()
+        token, api_key = _resolve_credential()
+        if token:
+            # Claude Code / OAuth tokens are Bearer credentials: pass as auth_token and send
+            # the oauth beta header. Never also send an API key — the API 401s when both the
+            # x-api-key and Authorization headers are present, so null out api_key (which the
+            # SDK would otherwise pick up from ANTHROPIC_API_KEY in the environment).
+            if api_key:
+                logger.warning(
+                    "Both a Claude OAuth token and ANTHROPIC_API_KEY are configured; using "
+                    "the OAuth token and ignoring the API key (sending both would 401)."
+                )
+            client = anthropic.Anthropic(
+                auth_token=token,
+                default_headers={"anthropic-beta": "oauth-2025-04-20"},
+            )
+            client.api_key = None
+            self._client = client
+        elif api_key:
+            self._client = anthropic.Anthropic(api_key=api_key)
+        else:
+            # No explicit credential configured — fall back to the SDK's own env/profile
+            # resolution (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / `ant auth login`).
+            self._client = anthropic.Anthropic()
         return self._client
 
     def analyze(self, company_name: str, passages: list[dict[str, Any]]) -> dict[str, Any]:
@@ -174,18 +196,47 @@ class AnthropicAnalyzer:
             output_config={"format": {"type": "json_schema", "schema": ANALYSIS_SCHEMA}},
         )
         # output_config.format guarantees a text block with schema-valid JSON.
-        text = next(b.text for b in resp.content if getattr(b, "type", None) == "text")
+        text = next((b.text for b in resp.content if getattr(b, "type", None) == "text"), None)
+        if text is None:
+            stop = getattr(resp, "stop_reason", None)
+            raise RuntimeError(f"Claude returned no text block (stop_reason={stop!r}).")
         return json.loads(text)
 
 
+def _resolve_credential() -> tuple[str, str]:
+    """Return ``(auth_token, api_key)`` from settings. The OAuth/Claude Code token is
+    preferred; only one should ever reach the API (both -> 401)."""
+    token = (getattr(settings, "AI_ANALYSIS_AUTH_TOKEN", "") or "").strip()
+    api_key = (getattr(settings, "AI_ANALYSIS_API_KEY", "") or "").strip()
+    return token, api_key
+
+
+def _credentials_present() -> bool:
+    token, api_key = _resolve_credential()
+    return bool(token or api_key)
+
+
 def get_leadership_analyzer(*, client: Any | None = None) -> LeadershipAnalyzer:
-    """Return the configured analyzer (Noop unless AI analysis is enabled)."""
+    """Return the configured analyzer.
+
+    Claude (``anthropic``) is the default backend. AI analysis is enabled by default, but
+    when it is on with no credential configured (and no client injected) we degrade to
+    ``NoopAnalyzer`` so a credential-less checkout never errors or makes a surprise API call.
+    Configure a Claude Code OAuth token (``CLAUDE_CODE_OAUTH_TOKEN``) or ``ANTHROPIC_API_KEY``
+    — and install ``requirements-ai.txt`` — to enable live analysis.
+    """
     if not getattr(settings, "ENABLE_AI_ANALYSIS", False):
         return NoopAnalyzer()
-    backend = getattr(settings, "AI_ANALYSIS_BACKEND", "anthropic")
-    if backend == "anthropic":
-        return AnthropicAnalyzer(client=client)
-    return NoopAnalyzer()
+    if getattr(settings, "AI_ANALYSIS_BACKEND", "anthropic") != "anthropic":
+        return NoopAnalyzer()
+    if client is None and not _credentials_present():
+        logger.info(
+            "AI analysis is enabled but no Claude credential is configured; using "
+            "NoopAnalyzer. Set CLAUDE_CODE_OAUTH_TOKEN (or ANTHROPIC_API_KEY) and install "
+            "requirements-ai.txt to enable live analysis."
+        )
+        return NoopAnalyzer()
+    return AnthropicAnalyzer(client=client)
 
 
 def _gather_passages(company: Company, *, limit: int = MAX_PASSAGES) -> list[dict[str, Any]]:

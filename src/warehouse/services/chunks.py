@@ -7,12 +7,15 @@ regardless, so a real embedder can be enabled later with no migration.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 from typing import Protocol
 
 from django.conf import settings
 
 from warehouse.models import ContentChunk, FilingDocument
+
+logger = logging.getLogger(__name__)
 
 
 def chunk_text(text: str, *, size: int = 1000, overlap: int = 100) -> Iterator[tuple[int, int, str]]:
@@ -48,8 +51,12 @@ def get_embedder() -> Embedder:
         return NoopEmbedder()
     backend = getattr(settings, "EMBEDDINGS_BACKEND", "none")
     # 'local' / 'api' backends are deferred; wiring one in needs only a class here.
-    if backend == "none":
-        return NoopEmbedder()
+    if backend != "none":
+        logger.warning(
+            "ENABLE_EMBEDDINGS is on but EMBEDDINGS_BACKEND=%r is not implemented yet; "
+            "falling back to NoopEmbedder (no vectors written).",
+            backend,
+        )
     return NoopEmbedder()
 
 
