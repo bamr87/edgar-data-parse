@@ -19,6 +19,10 @@ import {
   IconSun,
 } from '../components/ui/icons'
 
+// Public, read-only static mirror of the warehouse (GitHub Pages). Optional —
+// the link renders only when the deployment sets VITE_STATIC_SITE_URL.
+const STATIC_SITE_URL = import.meta.env.VITE_STATIC_SITE_URL?.replace(/\/$/, '') || ''
+
 const NAV = [
   { group: 'Overview', items: [{ to: '/', label: 'Dashboard', icon: <IconDashboard />, end: true }] },
   {
@@ -99,6 +103,12 @@ export function AppShell() {
           ))}
         </nav>
         <div className="sidebar-footer">
+          {STATIC_SITE_URL && (
+            <a className="nav-item" href={`${STATIC_SITE_URL}/`} target="_blank" rel="noreferrer" title="Static, no-login mirror of this data">
+              <IconGlobe />
+              Public mirror ↗
+            </a>
+          )}
           <NavLink to="/settings" className={({ isActive }) => cx('nav-item', isActive && 'active')} onClick={() => setMenuOpen(false)}>
             <IconSettings />
             Settings

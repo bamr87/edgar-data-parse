@@ -202,6 +202,15 @@ EDGAR_DATA_DIR = os.getenv('EDGAR_DATA_DIR', str((BASE_DIR.parent / 'data').reso
 
 SEC_USER_AGENT_EMAIL = os.getenv('USER_AGENT_EMAIL', '')
 
+# Static site mirror (GitHub Pages). STATIC_SITE_BASE_URL is the canonical public URL
+# of the published mirror (drives sitemap/robots + the frontend cross-link);
+# STATIC_SITE_APP_URL is the interactive app the mirror links back to. Both optional.
+STATIC_SITE_BASE_URL = os.getenv('STATIC_SITE_BASE_URL', '').rstrip('/')
+STATIC_SITE_APP_URL = os.getenv('STATIC_SITE_APP_URL', '').rstrip('/')
+STATIC_SITE_SOURCE_URL = os.getenv(
+    'STATIC_SITE_SOURCE_URL', 'https://github.com/bamr87/fredgar-ai'
+).rstrip('/')
+
 # Content-addressed storage for filing artifacts (raw + extracted text).
 STORAGE_BACKEND = os.getenv('STORAGE_BACKEND', 'local')  # 'local' | 's3'
 STORAGE_ROOT = os.getenv('STORAGE_ROOT', os.path.join(EDGAR_DATA_DIR, 'storage'))

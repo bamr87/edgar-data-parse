@@ -1,0 +1,74 @@
+{% extends "staticsite/base.html" %}
+{% block title %}About — Fredgar AI Company Financials{% endblock %}
+{% block content %}
+<h1>About this site</h1>
+<p class="sub">A static, publicly browsable mirror of the Fredgar AI warehouse —
+  {{ company_count }} compan{{ company_count|pluralize:"y,ies" }} of SEC financial data, no login required.</p>
+
+<h2 id="what">What this is</h2>
+<p><strong>Fredgar AI</strong> (FRED + EDGAR, with AI) collects public company data from
+  <a href="https://www.sec.gov/edgar" target="_blank" rel="noreferrer">SEC EDGAR</a> — filings,
+  XBRL facts, derived metrics, and leadership signals — into an open warehouse with an API and an
+  interactive application. This site is the <em>static mirror</em> of that warehouse: every page is
+  plain HTML generated at build time, so anyone can read, copy, and download the data without an
+  account or a running backend.</p>
+
+<h2 id="editions">Two ways to use Fredgar AI</h2>
+<table>
+  <thead><tr><th></th><th>This static mirror</th><th>Interactive app</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Access</strong></td>
+      <td>Public, read-only, no account</td>
+      <td>User accounts (token/session); reads are public, writes and syncs require staff access</td>
+    </tr>
+    <tr>
+      <td><strong>Freshness</strong></td>
+      <td>Rebuilt on a schedule from SEC EDGAR (see the footer date)</td>
+      <td>Live — syncs on demand from SEC EDGAR and FRED</td>
+    </tr>
+    <tr>
+      <td><strong>Capabilities</strong></td>
+      <td>Browse, search (client-side), copy tables, download CSV/JSON</td>
+      <td>Cohort comparison, peer groups, filing full-text search, macro series, AI-assisted analysis</td>
+    </tr>
+  </tbody>
+</table>
+{% if site.app_url %}
+<p><a class="btn" href="{{ site.app_url }}/" target="_blank" rel="noreferrer">Open the interactive app ↗</a></p>
+{% endif %}
+
+<h2 id="data">Where the data comes from</h2>
+<ul>
+  <li><strong>Filings &amp; XBRL facts</strong> — SEC EDGAR public APIs
+    (<code>data.sec.gov</code>), cached in the warehouse and re-served here. Each statement line
+    links to the source filing on sec.gov.</li>
+  <li><strong>Derived metrics</strong> — computed from the XBRL facts with a transparent,
+    reviewable formula set (no black boxes; formulas are evaluated with a safe expression
+    walker).</li>
+  <li><strong>Leadership</strong> — officers, directors, and ≥10% owners extracted from public
+    SEC Forms 3/4/5. Tenure ranges are filing-date proxies, not official appointment records.</li>
+  <li><strong>Stakeholder orientation</strong> — a heuristic index of capital-allocation tilt
+    (reinvestment vs. payout), computed only from disclosed figures, with every input and caveat
+    shown on the page. It is <em>not</em> a rating of any person.</li>
+  <li><strong>AI leadership analysis</strong> (where present) — narrative extracted by an LLM
+    strictly from the company's own SEC filing excerpts, with sources cited. Invented quotes and
+    personal judgments are prohibited by design.</li>
+</ul>
+
+<h2 id="how">How this site is built</h2>
+<p>A scheduled pipeline syncs a curated set of companies from SEC EDGAR (respecting SEC
+  fair-access rate limits and a declared contact <code>User-Agent</code>), computes metrics, and
+  renders these pages with the same services that power the API — so the mirror shows exactly what
+  the application does. The site is republished automatically; the generation date is in the
+  footer of every page.</p>
+{% if site.source_url %}
+<p>The pipeline, data model, and methodology are open source:
+  <a href="{{ site.source_url }}" target="_blank" rel="noreferrer">{{ site.source_url }}</a>.</p>
+{% endif %}
+
+<h2 id="disclaimer">Disclaimer</h2>
+<p class="muted">Informational use only. Figures are machine-extracted from public filings and may
+  contain extraction or tagging errors — always verify material numbers against the original SEC
+  filings linked on each page. Nothing here is investment advice.</p>
+{% endblock %}

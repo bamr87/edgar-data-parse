@@ -17,6 +17,7 @@ npm run lint     # ESLint
 - **Local dev:** Vite proxies `/api` to the backend (default `http://127.0.0.1:8000`, override with `API_PROXY_TARGET`). Start Django from `src/` (`python manage.py runserver`) first.
 - **`VITE_API_BASE`:** Set in `.env` or `.env.local` to prefix all API URLs (e.g. `https://api.example.com`). Omit trailing slash. When unset, requests use same-origin paths like `/api/v1/...` (works with the proxy or nginx same-origin deploy).
 - **SEC `User-Agent`:** The backend must send a contact email to SEC. The UI can supply it per browser via `localStorage` or `VITE_SEC_USER_AGENT_EMAIL`; see [`src/lib/http.ts`](src/lib/http.ts) (`X-Sec-User-Agent-Email` header).
+- **`VITE_STATIC_SITE_URL`:** Public URL of the statically generated mirror (GitHub Pages). When set, the sidebar shows a "Public mirror" link; see [`docs/static-site.md`](../docs/static-site.md).
 
 Copy [`frontend/.env.example`](.env.example) if you need a template.
 
