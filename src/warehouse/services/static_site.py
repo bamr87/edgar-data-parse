@@ -374,10 +374,14 @@ def _site_links(
     base_url: str | None, app_url: str | None, source_url: str | None
 ) -> dict[str, str]:
     """Resolve site-wide cross-links, falling back to settings (all optional)."""
+
+    def pick(override: str | None, setting: str) -> str:
+        return str(override or getattr(settings, setting, "") or "").rstrip("/")
+
     return {
-        "base_url": (base_url or getattr(settings, "STATIC_SITE_BASE_URL", "")).rstrip("/"),
-        "app_url": (app_url or getattr(settings, "STATIC_SITE_APP_URL", "")).rstrip("/"),
-        "source_url": (source_url or getattr(settings, "STATIC_SITE_SOURCE_URL", "")).rstrip("/"),
+        "base_url": pick(base_url, "STATIC_SITE_BASE_URL"),
+        "app_url": pick(app_url, "STATIC_SITE_APP_URL"),
+        "source_url": pick(source_url, "STATIC_SITE_SOURCE_URL"),
     }
 
 
