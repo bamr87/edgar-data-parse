@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, cast
 
+from django.conf import settings
 from django.template.loader import render_to_string
 
 from warehouse.models import (
@@ -369,25 +370,48 @@ def _write_company_data_files(company: Company, ctx: dict[str, Any], cdir: Path)
     (cdir / "facts.csv").write_text(buf.getvalue(), encoding="utf-8")
 
 
+def _site_links(
+    base_url: str | None, app_url: str | None, source_url: str | None
+) -> dict[str, str]:
+    """Resolve site-wide cross-links, falling back to settings (all optional)."""
+
+    def pick(override: str | None, setting: str) -> str:
+        return str(override or getattr(settings, setting, "") or "").rstrip("/")
+
+    return {
+        "base_url": pick(base_url, "STATIC_SITE_BASE_URL"),
+        "app_url": pick(app_url, "STATIC_SITE_APP_URL"),
+        "source_url": pick(source_url, "STATIC_SITE_SOURCE_URL"),
+    }
+
+
 def generate_site(
     companies: Iterable[Company],
     output_dir: str | Path,
     *,
     generated_at: datetime.datetime | None = None,
+    base_url: str | None = None,
+    app_url: str | None = None,
+    source_url: str | None = None,
 ) -> dict[str, Any]:
     """Render a full static site for ``companies`` into ``output_dir``.
 
-    Returns a summary dict (counts + output path).
+    ``base_url`` (the canonical public URL, e.g. the GitHub Pages URL) enables
+    sitemap.xml/robots.txt; ``app_url`` adds a "Live app" cross-link. Returns a
+    summary dict (counts + output path).
     """
     out = Path(output_dir)
     (out / "companies").mkdir(parents=True, exist_ok=True)
     stamp = (generated_at or datetime.datetime.now(datetime.timezone.utc)).date().isoformat()
+    site = _site_links(base_url, app_url, source_url)
 
     index_rows: list[dict[str, Any]] = []
     pages = 0
     for company in companies:
         ctx = build_company_context(company)
         ctx["generated_at"] = stamp
+        ctx["site"] = site
+        ctx["root"] = "../../"
         cdir = out / "companies" / company.cik
         cdir.mkdir(parents=True, exist_ok=True)
         (cdir / "index.html").write_text(
@@ -410,10 +434,13 @@ def generate_site(
         pages += 1
 
     index_rows.sort(key=lambda r: r["name"].lower())
+    base_ctx = {"generated_at": stamp, "site": site, "root": ""}
     (out / "index.html").write_text(
-        render_to_string(
-            "staticsite/index.html", {"companies": index_rows, "generated_at": stamp}
-        ),
+        render_to_string("staticsite/index.html", {"companies": index_rows, **base_ctx}),
+        encoding="utf-8",
+    )
+    (out / "about.html").write_text(
+        render_to_string("staticsite/about.html", {"company_count": pages, **base_ctx}),
         encoding="utf-8",
     )
     (out / "companies.json").write_text(
@@ -426,4 +453,29 @@ def generate_site(
         ),
         encoding="utf-8",
     )
+    # GitHub Pages: serve files verbatim (no Jekyll pass over the output).
+    (out / ".nojekyll").write_text("", encoding="utf-8")
+    if site["base_url"]:
+        _write_seo_files(out, site["base_url"], index_rows, stamp)
     return {"pages": pages, "output_dir": str(out), "generated_at": stamp}
+
+
+def _write_seo_files(
+    out: Path, base_url: str, index_rows: list[dict[str, Any]], stamp: str
+) -> None:
+    """sitemap.xml + robots.txt so the published mirror is crawlable."""
+    urls = [f"{base_url}/index.html", f"{base_url}/about.html"] + [
+        f"{base_url}/{r['href']}" for r in index_rows
+    ]
+    entries = "\n".join(
+        f"  <url><loc>{u}</loc><lastmod>{stamp}</lastmod></url>" for u in urls
+    )
+    (out / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}\n</urlset>\n",
+        encoding="utf-8",
+    )
+    (out / "robots.txt").write_text(
+        f"User-agent: *\nAllow: /\n\nSitemap: {base_url}/sitemap.xml\n", encoding="utf-8"
+    )

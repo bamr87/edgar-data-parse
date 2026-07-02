@@ -53,11 +53,12 @@ python manage.py sync_submissions --ticker AAPL
 python manage.py sync_company_facts --ticker AAPL
 python manage.py sync_derived_metrics --ticker AAPL
 python manage.py generate_static_site --ticker AAPL --output ../site   # static "Wikipedia" site
+python manage.py publish_static_site --output ../site   # sync default cohort from SEC + render (the GitHub Pages build)
 python manage.py refresh_series_bundles            # register + FRED-sync all series bundles
 python manage.py sync_series_bundle --slug core    # or sync one bundle by slug (needs FRED_API_KEY)
 ```
 
-The static site (`generate_static_site`) renders offline HTML — one page per company with financial statements, derived metrics, filings, and a 23k-row facts table, each with copy-to-clipboard and CSV/JSON downloads. Serve `site/` from any static host (GitHub Pages, S3, nginx).
+The static site (`generate_static_site`) renders offline HTML — one page per company with financial statements, derived metrics, filings, and a 23k-row facts table, each with copy-to-clipboard and CSV/JSON downloads. Serve `site/` from any static host (GitHub Pages, S3, nginx). A GitHub Actions workflow ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) publishes it to **GitHub Pages** on a weekly schedule via `publish_static_site` — the public, no-login mirror of the interactive app. Setup and details: [`docs/static-site.md`](docs/static-site.md).
 
 Same sync actions are available on the API, for example `POST /api/v1/companies/{id}/sync-submissions/` and `POST /api/v1/companies/{id}/sync-facts/`. **Full command list, CRM pipeline, and bulk ZIP loaders** are documented in [`docs/api-and-cli.md`](docs/api-and-cli.md).
 

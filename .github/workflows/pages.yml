@@ -1,0 +1,88 @@
+name: Publish static site
+
+# Builds the public, read-only static mirror ("Wikipedia of company financials")
+# and deploys it to GitHub Pages. The build syncs a curated set of companies
+# from SEC EDGAR (rate-limited, cached DB-first), computes metrics, and renders
+# plain HTML with `manage.py publish_static_site`.
+#
+# Repository configuration:
+#   - Settings -> Pages -> Source: "GitHub Actions".
+#   - Set USER_AGENT_EMAIL (repo variable or secret) — SEC requires a contact
+#     email in the User-Agent; the build fails fast without it.
+#   - Optional STATIC_SITE_APP_URL repo variable: public URL of the interactive
+#     app, shown as a "Live app" cross-link on every page.
+
+on:
+  schedule:
+    - cron: "17 11 * * 1" # weekly refresh (Mondays 11:17 UTC), off SEC's peak hours
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Comma-separated tickers to publish (empty = default cohort)"
+        required: false
+        default: ""
+  push:
+    branches: [master, main]
+    paths:
+      - ".github/workflows/pages.yml"
+      - "src/warehouse/services/static_site*.py"
+      - "src/warehouse/templates/staticsite/**"
+      - "src/warehouse/management/commands/publish_static_site.py"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two publishes at once; let an in-flight deploy finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      USER_AGENT_EMAIL: ${{ vars.USER_AGENT_EMAIL || secrets.USER_AGENT_EMAIL }}
+      STATIC_SITE_APP_URL: ${{ vars.STATIC_SITE_APP_URL }}
+      TICKERS: ${{ inputs.tickers }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+
+      - name: Require SEC contact email
+        run: |
+          if [ -z "$USER_AGENT_EMAIL" ]; then
+            echo "::error::USER_AGENT_EMAIL is not set. SEC requires a contact email in the" \
+                 "User-Agent — add a USER_AGENT_EMAIL repository variable or secret."
+            exit 1
+          fi
+
+      - name: Build static site from SEC EDGAR
+        working-directory: src
+        run: |
+          BASE_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          ARGS=(--output "$GITHUB_WORKSPACE/_site" --base-url "$BASE_URL")
+          if [ -n "$TICKERS" ]; then ARGS+=(--tickers "$TICKERS"); fi
+          python manage.py migrate --noinput
+          python manage.py publish_static_site "${ARGS[@]}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
