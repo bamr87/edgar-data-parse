@@ -58,7 +58,7 @@ python manage.py publish_static_site --skip-sync --output ../site
 
 - a **weekly schedule** (Mondays 11:17 UTC — keeps the mirror fresh),
 - **manual dispatch** (optional `tickers` input to publish a custom cohort),
-- **pushes to master** that touch the static-site code, templates, or the workflow.
+- **pushes to `main`** that touch the static-site code, templates, or the workflow.
 
 One-time repository setup:
 

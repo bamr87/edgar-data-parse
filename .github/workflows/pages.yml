@@ -22,7 +22,7 @@ on:
         required: false
         default: ""
   push:
-    branches: [master, main]
+    branches: [main, master]
     paths:
       - ".github/workflows/pages.yml"
       - "src/warehouse/services/static_site*.py"
